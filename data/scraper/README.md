@@ -24,7 +24,7 @@ data/datasets/
   dataset_manifest.json
 ```
 
-API searches are sequential; image downloads use four workers by default, are rate spaced, bounded to 20 MiB, validated with Pillow, and normalized to RGB JPEG. Retries handle transient HTTP failures. Pixel hashes remove exact duplicates globally across classes and runs. Near duplicates and alternate photographs of the same object still require review. Existing manifest entries are validated for file presence before resuming. Avoid concurrent runs against the same output folder.
+API searches are sequential; image downloads use 16 workers by default, are rate spaced, bounded to 20 MiB, validated with Pillow, and normalized to RGB JPEG. Retries handle transient HTTP failures. Pixel hashes remove exact duplicates globally across classes and runs. Near duplicates and alternate photographs of the same object still require review. Existing manifest entries are validated for file presence before resuming. Avoid concurrent runs against the same output folder.
 
 Each JSONL record preserves source URL/page, search query, source group, license name/URL, attribution HTML, and collection time. Unknown physical properties remain unknown/null. `material` is only a proposed label from the search query; `label_verified` and `license_verified` start false. Review relevance, license obligations, attribution, and labels before using images. Source HTML is untrusted and must be sanitized before rendering. Search results can include mixed scenes, irrelevant images, and multiple objects. No images are automatically placed in training or testing sets.
 
@@ -46,6 +46,18 @@ data/scraper/.venv/bin/python -u data/scraper/scrape.py --new-total 8000 --worke
 
 `--new-total` excludes every image already recorded at launch and allocates the new target evenly across selected classes. Existing source URLs are skipped before downloading; decoded pixel hashes reject duplicates across workers and previous runs. Only the main thread saves files and annotations. Searches prioritize household objects, but household relevance is unverified. Near duplicates still require review.
 
-The live `data/datasets/dataset_manifest.json` includes `added_this_run`, total counts, class targets, and incomplete classes. Download workers can be configured from 1 to 8. An output-folder lock prevents simultaneous scraper processes. A fresh invocation of `--new-total` starts a new additional target; to finish an interrupted run without increasing its target, use the recorded per-class targets with separate `--classes CLASS --per-class TARGET` commands.
+The live `data/datasets/dataset_manifest.json` includes `added_this_run`, total counts, class targets, and incomplete classes. Download workers can be configured from 1 to 32. An output-folder lock prevents simultaneous scraper processes. A fresh invocation of `--new-total` starts a new additional target; to finish an interrupted run without increasing its target, use the recorded per-class targets with separate `--classes CLASS --per-class TARGET` commands.
 
 The target is a collection goal, not a guarantee: search exhaustion, duplicate rejection, invalid images, and server limits can leave a shortfall. Generated logs and datasets stay outside Git.
+
+## Faster collection and exact-target restart
+
+Downloads now use a bounded rolling queue (two pending tasks per worker) and reuse one HTTP session per worker. Slow downloads do not block completed images. The default is 16 workers, no artificial image delay, and a separate one-second spacing for sequential search API requests. HTTP retry/backoff remains enabled. Exact original pixel hashing and full-resolution downloads are preserved.
+
+Before stopping an active run, save its `dataset_manifest.json` to a separate file after the process stops. Restart using that snapshot:
+
+```sh
+data/scraper/.venv/bin/python -u data/scraper/scrape.py --resume-targets data/datasets/collection-8000-targets.json --workers 16 --candidates-per-query 1000
+```
+
+This preserves the original per-class targets and cumulative collection count. Do not use `--new-total` to resume an existing collection. Higher worker counts may run into network bandwidth or source rate limits; inspect failures in the log when tuning.

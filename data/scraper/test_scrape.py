@@ -110,3 +110,26 @@ class BatchTests(unittest.TestCase):
             results = list(scrape.parallel_candidates(None, "query", args, {"0"}))
             self.assertEqual(fetch.call_count, 2)
             self.assertEqual({r[1]["url"] for r in results}, {"1", "2"})
+
+class SpeedTests(unittest.TestCase):
+    def test_fast_download_finishes_before_slow_first_item(self):
+        import threading
+        release = threading.Event()
+        args = SimpleNamespace(candidates_per_query=10, delay=0, download_delay=0,
+                               workers=2, user_agent="test", min_size=224)
+        def source(*unused):
+            for i in range(3):
+                yield {"pageid": i}, {"url": str(i), "mime": "image/jpeg", "size": 1,
+                                      "extmetadata": {"LicenseShortName": {"value": "CC0"}}}
+        def fetch(client, url, *unused):
+            if url == "0":
+                release.wait(timeout=5)
+            return b"image", url
+        with patch.object(scrape, "candidates", side_effect=source), patch.object(scrape, "download", side_effect=fetch):
+            iterator = scrape.parallel_candidates(None, "query", args, set())
+            try:
+                first = next(iterator)
+                self.assertNotEqual(first[1]["url"], "0")
+            finally:
+                release.set()
+                iterator.close()
