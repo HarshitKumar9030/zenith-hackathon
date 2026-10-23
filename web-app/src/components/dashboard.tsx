@@ -22,13 +22,17 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import LiveCamera from "./live-camera";
+import ServiceHub from "./service-hub";
+import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
 import { streakSummary } from "@/lib/streak";
 import type { Guide, Identification } from "@/lib/rules";
-type User = { id: string; name: string; email: string };
+type User = { id: string; name: string; email: string; role?: string };
 type Result = {
+  confirmed?: boolean;
   _id: string;
   identification: Identification;
   recommendation: {
@@ -80,7 +84,7 @@ export default function Dashboard() {
     [history, setHistory] = useState<Result[]>([]),
     [guides, setGuides] = useState<Guide[]>([]),
     [guideId, setGuideId] = useState(""),
-    [mode, setMode] = useState("photo"),
+    [mode, setMode] = useState("camera"),
     [text, setText] = useState(""),
     [image, setImage] = useState(""),
     [ocr, setOcr] = useState(""),
@@ -90,6 +94,10 @@ export default function Dashboard() {
     [filter, setFilter] = useState("all"),
     [guideDraft, setGuideDraft] = useState(""),
     [authBusy, setAuthBusy] = useState(false);
+  const [liveStop, setLiveStop] = useState(0);
+  const scanEpoch = useRef(0);
+  const currentPage = useRef(page);
+  currentPage.current = page;
   const [activityDays, setActivityDays] = useState<string[]>([]);
   const streak = streakSummary(activityDays);
   const upload = useRef<HTMLInputElement>(null),
@@ -220,6 +228,22 @@ export default function Dashboard() {
       setProgress("");
     }
   }
+  async function scanLive(frame: string) {
+    if (!user) {
+      setAuth(true);
+      throw new Error("Sign in before starting a live identification.");
+    }
+    const epoch = scanEpoch.current;
+    const data = await api("classify", "POST", {
+      image: frame,
+      preview: true,
+      text,
+      ocr,
+      guideId: guideId || undefined,
+    });
+    if (currentPage.current === "Identify waste" && epoch === scanEpoch.current)
+      setResult(data);
+  }
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthBusy(true);
@@ -335,6 +359,17 @@ export default function Dashboard() {
               : "Needs review"}
           </span>
         </div>
+        <ConfirmationChecklist
+          key={item._id}
+          id={item._id}
+          identification={item.identification}
+          confirmed={item.confirmed}
+          notify={setMessage}
+          onConfirmed={(value) => {
+            setResult(value as Result);
+            void refresh();
+          }}
+        />
         <div className="attribute-row">
           <span>
             {title(item.correction?.material || item.identification.material)}
@@ -415,7 +450,9 @@ export default function Dashboard() {
               }
             }}
           />
-          <small>Gemini 3.8 Flash · Saved to your history</small>
+          <small>
+            Gemini 3.8 Flash · Confirm the checklist to save and earn points
+          </small>
         </div>
       </Reveal>
     );
@@ -423,6 +460,7 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <AnimatedSidebar
+        role={user?.role}
         page={page}
         onNavigate={(next) => {
           setPage(next);
@@ -488,10 +526,13 @@ export default function Dashboard() {
                   </p>
                   <button
                     className="primary"
-                    onClick={() => upload.current?.click()}
+                    onClick={() => {
+                      setMode("camera");
+                      setPage("Identify waste");
+                    }}
                   >
                     <Upload size={18} />
-                    Upload an image
+                    Start live scan
                     <ArrowRight size={17} />
                   </button>
                   <button
@@ -592,6 +633,23 @@ export default function Dashboard() {
                   ))}
                 </div>
               </section>
+              <div className="service-shortcuts">
+                <button
+                  className="secondary"
+                  onClick={() => setPage("Pickups")}
+                >
+                  Arrange a pickup <ArrowRight size={15} />
+                </button>
+                <button
+                  className="secondary"
+                  onClick={() => setPage("Rewards")}
+                >
+                  Scan points & free pickups <ArrowRight size={15} />
+                </button>
+                <button className="secondary" onClick={() => setPage("Plans")}>
+                  Explore collection plans <ArrowRight size={15} />
+                </button>
+              </div>
               <div className="stats">
                 {[
                   {
@@ -684,7 +742,8 @@ export default function Dashboard() {
                     aria-label="Input method"
                   >
                     {[
-                      { id: "photo", label: "Upload an image", Icon: Camera },
+                      { id: "camera", label: "Live camera", Icon: ScanLine },
+                      { id: "photo", label: "Photo", Icon: Camera },
                       { id: "text", label: "Write a description", Icon: Type },
                     ].map(({ id, label, Icon }) => (
                       <button
@@ -702,7 +761,13 @@ export default function Dashboard() {
                       </button>
                     ))}
                   </div>
-                  {mode === "photo" ? (
+                  {mode === "camera" ? (
+                    <LiveCamera
+                      stopSignal={liveStop}
+                      onScan={scanLive}
+                      onError={setMessage}
+                    />
+                  ) : mode === "photo" ? (
                     <div
                       className="scan-upload"
                       onDragOver={(e) => e.preventDefault()}
@@ -821,21 +886,25 @@ export default function Dashboard() {
                       </div>
                     </Reveal>
                   )}
-                  <button
-                    className="primary identify-button"
-                    onClick={identify}
-                    disabled={busy || !(mode === "photo" ? image : text.trim())}
-                  >
-                    {busy ? (
-                      <Loader2 className="spin" size={17} />
-                    ) : (
-                      <ScanLine size={17} />
-                    )}{" "}
-                    {busy ? progress : "Identify my item"}{" "}
-                    {!busy && <ArrowRight size={17} />}
-                  </button>
+                  {mode !== "camera" && (
+                    <button
+                      className="primary identify-button"
+                      onClick={identify}
+                      disabled={
+                        busy || !(mode === "photo" ? image : text.trim())
+                      }
+                    >
+                      {busy ? (
+                        <Loader2 className="spin" size={17} />
+                      ) : (
+                        <ScanLine size={17} />
+                      )}{" "}
+                      {busy ? progress : "Identify my item"}{" "}
+                      {!busy && <ArrowRight size={17} />}
+                    </button>
+                  )}
                   <small className="privacy-note">
-                    Your image is sent to Gemini only when you identify it.
+                    Camera frames are sent to Gemini during active scanning.
                     Images are not saved or used for training.
                   </small>
                 </section>
@@ -1107,6 +1176,21 @@ export default function Dashboard() {
               )}
             </>
           )}
+          {[
+            "Plans",
+            "Pickups",
+            "Rewards",
+            "Collection route",
+            "Operations",
+          ].includes(page) && (
+            <ServiceHub
+              page={page}
+              signedIn={Boolean(user)}
+              onSignIn={() => setAuth(true)}
+              notify={setMessage}
+              onRefresh={() => void refresh()}
+            />
+          )}
           {page === "Settings" && (
             <>
               <div className="page-heading">
@@ -1171,7 +1255,7 @@ export default function Dashboard() {
             <span>
               <Leaf size={13} /> A thoughtful next step.
             </span>
-            <span>WasteWise · Made for everyday change</span>
+            <span>Waste Right · Made for everyday change</span>
           </footer>
         </PageTransition>
       </div>

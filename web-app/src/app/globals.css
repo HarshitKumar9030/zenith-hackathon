@@ -1580,3 +1580,369 @@ main,
     transform: none;
   }
 }
+:root {
+  --accent: #b85a26;
+  --accent-light: #fbefe2;
+}
+.brand-dot {
+  color: var(--accent);
+}
+.primary {
+  background: var(--accent);
+}
+.primary:hover {
+  background: #96471b;
+}
+.status {
+  background: var(--accent-light);
+  color: #87471f;
+}
+.micro {
+  color: #956235;
+}
+.sidebar {
+  padding-top: 26px;
+}
+.sidebar nav {
+  margin-top: 28px;
+  gap: 5px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  max-height: calc(100dvh - 235px);
+}
+.nav-item {
+  padding: 12px 15px;
+}
+.sidebar-bottom {
+  padding-top: 24px;
+}
+.sidebar-bottom svg {
+  height: 48px;
+  width: 48px;
+  margin-bottom: 8px;
+}
+.sidebar-bottom p {
+  font-size: 14px;
+}
+.sidebar-bottom .tiny-line {
+  margin: 12px 0;
+}
+.camera-panel {
+  background: #edf4e8;
+  border-radius: 18px;
+  padding: 18px;
+}
+.camera-view {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: #e2eadd;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.camera-view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.camera-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+  padding: 25px;
+}
+.camera-empty h2 {
+  font-size: 24px;
+}
+.camera-empty p {
+  font-size: 12px;
+}
+.camera-target {
+  position: absolute;
+  inset: 20%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  pointer-events: none;
+}
+.camera-target.working {
+  animation: camera-pulse 1.3s ease-in-out infinite;
+}
+.camera-panel small {
+  display: block;
+  margin-top: 12px;
+  font-size: 10px;
+}
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 16px 0;
+  color: #4b6354;
+}
+.check-row input {
+  accent-color: var(--accent);
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.plan-option {
+  padding: 28px;
+  background: #f3f5ee;
+  border-radius: 17px;
+}
+.plan-option.featured {
+  background: #f7eddf;
+}
+.plan-price {
+  font-family: Manrope, sans-serif;
+  font-size: 37px;
+  font-weight: 750;
+  letter-spacing: -1px;
+  margin: 24px 0 14px;
+}
+.plan-price small {
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.plan-option p {
+  font-size: 13px;
+}
+.plan-option ul {
+  padding-left: 18px;
+  margin: 22px 0;
+  min-height: 165px;
+}
+.plan-option li {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 10px;
+  color: #66745f;
+}
+.plan-option .primary {
+  width: 100%;
+  font-size: 12px;
+}
+.service-notice {
+  background: var(--accent-light);
+  color: #81532e;
+  padding: 19px 24px;
+  border-radius: 12px;
+  margin-top: 24px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.service-footnote {
+  font-size: 12px;
+  margin-top: 23px;
+}
+.service-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.service-block {
+  padding: 26px;
+  background: #f5f6f0;
+  border-radius: 16px;
+  margin-bottom: 22px;
+}
+.service-block > p {
+  font-size: 13px;
+  margin: 15px 0 22px;
+}
+.service-block .primary {
+  margin-top: 12px;
+}
+.service-block form small {
+  display: block;
+  margin-top: 14px;
+  font-size: 11px;
+}
+.field select {
+  border: 0;
+  background: #ebf0e4;
+  color: var(--ink);
+  padding: 14px;
+  border-radius: 9px;
+}
+.booking-entry {
+  padding: 25px;
+  background: #f5f6f0;
+  border-radius: 14px;
+  margin: 18px 0;
+}
+.booking-entry p {
+  font-size: 13px;
+  margin: 12px 0;
+}
+.booking-entry .inline-actions {
+  justify-content: flex-start;
+}
+.receipt {
+  background: #e8efdf;
+  padding: 18px;
+  border-radius: 10px;
+  margin: 16px 0;
+}
+.inline-form {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.inline-form input,
+.weigh-form input {
+  border: 0;
+  border-radius: 8px;
+  padding: 13px;
+  background: white;
+  color: var(--ink);
+  min-width: 0;
+  flex: 1;
+}
+.weigh-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.weigh-form .field {
+  margin: 14px 0;
+}
+.weigh-form button {
+  grid-column: 1/-1;
+}
+.rewards-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin: 24px 0;
+}
+.rewards-summary > div {
+  padding: 30px;
+  background: var(--accent-light);
+  border-radius: 18px;
+}
+.rewards-summary h2 {
+  font-size: 30px;
+  margin: 18px 0 10px;
+}
+.rewards-summary p {
+  font-size: 13px;
+}
+.service-shortcuts {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 23px;
+}
+.confirmation {
+  background: #e8efdf;
+  padding: 22px;
+  border-radius: 13px;
+  margin: 20px 0;
+}
+.confirmation > p {
+  font-size: 12px;
+  margin: 9px 0 16px;
+}
+.checklist-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.checklist-fields label {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.checklist-fields .dropdown {
+  display: block;
+}
+.checklist-fields .select-trigger {
+  width: 100%;
+  background: #f8faf4;
+}
+.section-spaced {
+  margin: 30px 0 16px;
+}
+@keyframes camera-pulse {
+  50% {
+    opacity: 0.4;
+    transform: scale(0.94);
+  }
+}
+@media (max-width: 1050px) {
+  .plan-grid {
+    grid-template-columns: 1fr;
+  }
+  .plan-option ul {
+    min-height: 0;
+  }
+  .service-columns {
+    grid-template-columns: 1fr;
+  }
+  .plan-option .primary {
+    width: auto;
+  }
+  .sidebar-bottom small {
+    display: none;
+  }
+}
+@media (max-width: 780px) {
+  .sidebar nav {
+    max-height: calc(100dvh - 100px);
+    margin-top: 24px;
+  }
+  .nav-item {
+    min-height: 46px;
+  }
+  .sidebar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .checklist-fields {
+    grid-template-columns: 1fr;
+  }
+  .rewards-summary {
+    grid-template-columns: 1fr;
+  }
+  .inline-form {
+    flex-direction: column;
+  }
+  .weigh-form {
+    grid-template-columns: 1fr;
+  }
+  .camera-empty h2 {
+    font-size: 19px;
+  }
+  .camera-empty p {
+    font-size: 11px;
+  }
+  .service-block {
+    padding: 20px;
+  }
+  .plan-option {
+    padding: 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .camera-target.working {
+    animation: none;
+  }
+}

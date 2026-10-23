@@ -1,19 +1,36 @@
 "use client";
 import { useState } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
-import { Home, ScanLine, Clock3, BookOpen, Settings, Leaf } from "lucide-react";
+import {
+  Home,
+  ScanLine,
+  Clock3,
+  BookOpen,
+  Settings,
+  Leaf,
+  CalendarDays,
+  Gift,
+  CreditCard,
+  Truck,
+  ShieldCheck,
+} from "lucide-react";
 const items = [
   { label: "Overview", Icon: Home },
   { label: "Identify waste", Icon: ScanLine },
   { label: "My history", Icon: Clock3 },
   { label: "Local guides", Icon: BookOpen },
+  { label: "Plans", Icon: CreditCard },
+  { label: "Pickups", Icon: CalendarDays },
+  { label: "Rewards", Icon: Gift },
   { label: "Settings", Icon: Settings },
 ];
 export default function AnimatedSidebar({
   page,
+  role,
   onNavigate,
 }: {
   page: string;
+  role?: string;
   onNavigate: (page: string) => void;
 }) {
   const reduce = useReducedMotion();
@@ -53,7 +70,15 @@ export default function AnimatedSidebar({
           }}
           onMouseLeave={() => setHovered(null)}
         >
-          {items.map(({ label, Icon }) => (
+          {[
+            ...items,
+            ...(["collector", "admin"].includes(role || "")
+              ? [{ label: "Collection route", Icon: Truck }]
+              : []),
+            ...(role === "admin"
+              ? [{ label: "Operations", Icon: ShieldCheck }]
+              : []),
+          ].map(({ label, Icon }) => (
             <motion.button
               key={label}
               className={`nav-item ${page === label ? "active" : ""}`}
