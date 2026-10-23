@@ -1391,3 +1391,11 @@ main {
     transform: none;
   }
 }
+@media (max-width: 480px) {
+  .streak-band { padding: 18px 15px; gap: 18px; min-width: 0; }
+  .streak-week { width: 100%; justify-content: space-between; gap: 4px; }
+  .streak-intro { gap: 10px; }
+  .streak-intro h3 { font-size: 12px; }
+  .streak-intro p { font-size: 10px; }
+  .day-dot { width: 24px; height: 24px; }
+}
