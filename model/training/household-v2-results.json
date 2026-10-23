@@ -1,0 +1,535 @@
+{
+  "evaluation.json": {
+    "selected_epoch": 6,
+    "validation_foreground_miou": 0.7486200523942697,
+    "classes": [
+      "background",
+      "organic",
+      "non_organic"
+    ],
+    "split_images": {
+      "train": 315,
+      "val": 68,
+      "test": 67
+    },
+    "fingerprint": "b554f5b74144dfb4e806e1ecaa68d7e59a40b3676be3d05b43bf043e522bc91c",
+    "device": "cuda",
+    "torch": "2.11.0+cu130",
+    "torchvision": "0.26.0+cu130",
+    "config": {
+      "data": "data/datasets/household-v2/prepared",
+      "output": "/content/drive/MyDrive/Waste Right Model Training/household-v2/runs/deeplab-v1",
+      "epochs": 25,
+      "batch_size": 4,
+      "size": 512,
+      "workers": 2,
+      "lr": 0.0003,
+      "seed": 42,
+      "patience": 6,
+      "resume": true,
+      "require_cuda": true,
+      "smoke_steps": 0
+    },
+    "source_report": {
+      "source": "https://doi.org/10.48436/27k90-dvw73",
+      "license": "CC BY 4.0",
+      "creators": [
+        "Florian Wolling",
+        "Gabor Pal"
+      ],
+      "classes": [
+        "background",
+        "organic",
+        "non_organic"
+      ],
+      "images": 450,
+      "independent_groups": 55,
+      "split_seed": 80,
+      "split_policy": "Capture day + exact/dHash<=4 connected components; count-balanced seeded grouped split",
+      "limitation": "One household and one fixed camera; test is capture-group-held-out, not independent-household or phone-camera validation",
+      "splits": {
+        "train": {
+          "images": 315,
+          "groups": 36,
+          "scene_counts": {
+            "non-organic": 235,
+            "organic": 79,
+            "background": 1
+          },
+          "pixel_counts": [
+            46415756,
+            19551668,
+            6608576
+          ]
+        },
+        "val": {
+          "images": 68,
+          "groups": 9,
+          "scene_counts": {
+            "non-organic": 56,
+            "organic": 11,
+            "background": 1
+          },
+          "pixel_counts": [
+            8779029,
+            4943542,
+            1944629
+          ]
+        },
+        "test": {
+          "images": 67,
+          "groups": 10,
+          "scene_counts": {
+            "non-organic": 33,
+            "background": 5,
+            "organic": 29
+          },
+          "pixel_counts": [
+            10436763,
+            3528585,
+            1471452
+          ]
+        }
+      }
+    },
+    "test": {
+      "confusion_matrix": [
+        [
+          11590400,
+          133339,
+          151146
+        ],
+        [
+          383441,
+          2995533,
+          635494
+        ],
+        [
+          36039,
+          113326,
+          1524930
+        ]
+      ],
+      "iou_per_class": {
+        "background": 0.9427408410275765,
+        "organic": 0.7029897916821652,
+        "non_organic": 0.6196547247286093
+      },
+      "mean_iou": 0.7551284524794504,
+      "foreground_mean_iou": 0.6613222582053873,
+      "pixel_accuracy": 0.9172845527307311,
+      "mean_forward_ms": 14.610586522394442
+    },
+    "smoke_only": false
+  },
+  "history.json": [
+    {
+      "epoch": 1,
+      "loss": 0.9694873820512723,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9643716,
+            231964,
+            113926
+          ],
+          [
+            274802,
+            5012511,
+            336332
+          ],
+          [
+            155929,
+            490297,
+            1566315
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9254706445674453,
+          "organic": 0.7898810666278385,
+          "non_organic": 0.5882212664192829
+        },
+        "mean_iou": 0.7678576592048555,
+        "foreground_mean_iou": 0.6890511665235607,
+        "pixel_accuracy": 0.9100600971895105,
+        "mean_forward_ms": 12.388150867657126
+      }
+    },
+    {
+      "epoch": 2,
+      "loss": 0.636778324460372,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9574487,
+            215339,
+            199780
+          ],
+          [
+            182891,
+            5006994,
+            433760
+          ],
+          [
+            93018,
+            419777,
+            1699746
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9326845267870146,
+          "organic": 0.7999976353147212,
+          "non_organic": 0.5972233397433172
+        },
+        "mean_iou": 0.7766351672816844,
+        "foreground_mean_iou": 0.6986104875290192,
+        "pixel_accuracy": 0.9133522370282341,
+        "mean_forward_ms": 10.429046794102119
+      }
+    },
+    {
+      "epoch": 3,
+      "loss": 0.5643791804711024,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9614736,
+            215982,
+            158888
+          ],
+          [
+            155483,
+            4970305,
+            497857
+          ],
+          [
+            103723,
+            374448,
+            1734370
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9381317561489078,
+          "organic": 0.7998463166279776,
+          "non_organic": 0.6044604825033126
+        },
+        "mean_iou": 0.7808128517600661,
+        "foreground_mean_iou": 0.702153399565645,
+        "pixel_accuracy": 0.915494301739861,
+        "mean_forward_ms": 10.843966279387185
+      }
+    },
+    {
+      "epoch": 4,
+      "loss": 0.49434511745587373,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9420139,
+            183710,
+            385757
+          ],
+          [
+            159625,
+            5141595,
+            322425
+          ],
+          [
+            48902,
+            440215,
+            1723424
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9237121147566912,
+          "organic": 0.8229751727471641,
+          "non_organic": 0.5900675962766754
+        },
+        "mean_iou": 0.7789182945935104,
+        "foreground_mean_iou": 0.7065213845119198,
+        "pixel_accuracy": 0.9135727601892808,
+        "mean_forward_ms": 12.047901029404784
+      }
+    },
+    {
+      "epoch": 5,
+      "loss": 0.4586712542252663,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9695997,
+            173873,
+            119736
+          ],
+          [
+            159568,
+            5341075,
+            123002
+          ],
+          [
+            114632,
+            619159,
+            1478750
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9446785139937368,
+          "organic": 0.8323739842289085,
+          "non_organic": 0.6022737130892253
+        },
+        "mean_iou": 0.7931087371039568,
+        "foreground_mean_iou": 0.717323848659067,
+        "pixel_accuracy": 0.9265126621021944,
+        "mean_forward_ms": 10.829615882344383
+      }
+    },
+    {
+      "epoch": 6,
+      "loss": 0.4092156348320154,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9639111,
+            205356,
+            145139
+          ],
+          [
+            121006,
+            5210684,
+            291955
+          ],
+          [
+            78277,
+            387908,
+            1746356
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9460414182547283,
+          "organic": 0.8381470598974506,
+          "non_organic": 0.6590930448910888
+        },
+        "mean_iou": 0.814427174347756,
+        "foreground_mean_iou": 0.7486200523942697,
+        "pixel_accuracy": 0.9310189976411707,
+        "mean_forward_ms": 10.356591249981594
+      }
+    },
+    {
+      "epoch": 7,
+      "loss": 0.3831256582186772,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9627505,
+            188036,
+            174065
+          ],
+          [
+            119987,
+            4977930,
+            525728
+          ],
+          [
+            68374,
+            296113,
+            1848054
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9459163111847385,
+          "organic": 0.8150127525584524,
+          "non_organic": 0.6345611458026449
+        },
+        "mean_iou": 0.7984967365152786,
+        "foreground_mean_iou": 0.7247869491805486,
+        "pixel_accuracy": 0.9230158749748679,
+        "mean_forward_ms": 12.335803323507582
+      }
+    },
+    {
+      "epoch": 8,
+      "loss": 0.3765569730446889,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9609536,
+            260897,
+            119173
+          ],
+          [
+            87600,
+            5414583,
+            121462
+          ],
+          [
+            81873,
+            674066,
+            1456602
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9459062184672449,
+          "organic": 0.8255689317001412,
+          "non_organic": 0.5937617195015767
+        },
+        "mean_iou": 0.7884122898896543,
+        "foreground_mean_iou": 0.7096653256008589,
+        "pixel_accuracy": 0.9245435490327722,
+        "mean_forward_ms": 11.729528588228492
+      }
+    },
+    {
+      "epoch": 9,
+      "loss": 0.34229151006692493,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9676399,
+            192310,
+            120897
+          ],
+          [
+            117338,
+            5327283,
+            179024
+          ],
+          [
+            91269,
+            523360,
+            1597912
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9488328004131704,
+          "organic": 0.8403562530020988,
+          "non_organic": 0.6359944946431031
+        },
+        "mean_iou": 0.8083945160194576,
+        "foreground_mean_iou": 0.7381753738226009,
+        "pixel_accuracy": 0.9313243417178884,
+        "mean_forward_ms": 10.487833823517308
+      }
+    },
+    {
+      "epoch": 10,
+      "loss": 0.3261522927727455,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9661151,
+            182703,
+            145752
+          ],
+          [
+            125264,
+            5326985,
+            171396
+          ],
+          [
+            73391,
+            527725,
+            1611425
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9482630058260187,
+          "organic": 0.8410046742435713,
+          "non_organic": 0.637005181269318
+        },
+        "mean_iou": 0.8087576204463027,
+        "foreground_mean_iou": 0.7390049277564447,
+        "pixel_accuracy": 0.931210293489344,
+        "mean_forward_ms": 10.762084750019634
+      }
+    },
+    {
+      "epoch": 11,
+      "loss": 0.3368126665934538,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9732247,
+            165292,
+            92067
+          ],
+          [
+            157582,
+            5373163,
+            92900
+          ],
+          [
+            122503,
+            692642,
+            1397396
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9476669745954381,
+          "organic": 0.8289898186846137,
+          "non_organic": 0.5828535295815488
+        },
+        "mean_iou": 0.7865034409538669,
+        "foreground_mean_iou": 0.7059216741330813,
+        "pixel_accuracy": 0.9257824841667625,
+        "mean_forward_ms": 11.662718014704028
+      }
+    },
+    {
+      "epoch": 12,
+      "loss": 0.30612088434207135,
+      "validation": {
+        "confusion_matrix": [
+          [
+            9630697,
+            210858,
+            148051
+          ],
+          [
+            98156,
+            5366546,
+            158943
+          ],
+          [
+            69737,
+            544848,
+            1597956
+          ]
+        ],
+        "iou_per_class": {
+          "background": 0.9481366426912766,
+          "organic": 0.8412369847653782,
+          "non_organic": 0.6342265537093154
+        },
+        "mean_iou": 0.8078667270553234,
+        "foreground_mean_iou": 0.7377317692373468,
+        "pixel_accuracy": 0.9309655918794519,
+        "mean_forward_ms": 12.509018176468304
+      }
+    }
+  ],
+  "model_card.json": {
+    "architecture": "deeplabv3_mobilenet_v3_large",
+    "classes": [
+      "background",
+      "organic",
+      "non_organic"
+    ],
+    "input_size": 512,
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "deployment_ready": false,
+    "requires_confirmation": true,
+    "limitation": "One household, fixed camera. Capture-group test only; independent household/phone evaluation and confidence calibration remain required. Does not distinguish recyclable materials or establish compostability, safety, mass or disposal rules."
+  }
+}

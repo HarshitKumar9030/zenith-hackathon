@@ -2,6 +2,8 @@
 
 The first fine-tuned model detects several visible items with bounding boxes. It uses Torchvision SSDLite320 MobileNetV3 Large, initialized from COCO weights. It suggests plastic, paper, cardboard, glass, metal or `needs_review`. A person must confirm the result. The model cannot infer weight, hidden contamination, local collection rules or safety.
 
+A separate [household organic/contaminant segmentation experiment](HOUSEHOLD_V2.md) is now trained and evaluated. Its capture-group-held-out foreground mean IoU is 66.13%; independent household and phone-camera evaluation remain outstanding. It does not replace this detector or the app inference path.
+
 ## Data
 
 The annotated starting dataset is [TACO](https://github.com/pedropro/TACO), pinned to revision `70479ad9adc3da971a8ae75ac97eb1026910eec7`. The [dataset release](https://zenodo.org/records/3587843) declares CC BY 4.0. The MIT toolkit license is distinct from dataset attribution. The collector retains original URLs, original categories and the release attribution in its training package. Images are normalized to JPEG and at most 640 px, with rescaled COCO bounding boxes.
