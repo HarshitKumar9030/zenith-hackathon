@@ -200,3 +200,17 @@ Expand only after the pilot demonstrates service reliability, fair worker income
 **WasteWise is a trusted neighbourhood collection and recovery service: AI removes sorting friction, people verify reality, and transparent records connect the household to the collector and processor.**
 
 Its defensible advantage should be reliable local operations and trusted settlement. The camera, model, animations and leaderboard support that service; they are not the business model by themselves.
+
+
+## Presentation pricing revision: higher-capacity plans
+
+This revision supersedes the earlier ₹559/₹859 plans and their 24/48 kg caps for the pitch presentation. All figures remain pilot assumptions.
+
+| Plan | Price/month | Dry pickups/month | Per-pickup cap | Monthly cap |
+|---|---:|---:|---:|---:|
+| Gold | ₹1,499 | 14 | 8 kg | 112 kg |
+| Platinum | ₹2,499 | 24 | 10 kg | 240 kg |
+
+Metal counts toward the caps. Bulky and specialist waste need separate quotes. Frequent organic collection remains a separate building contract, not an infrequent dry-pickup service.
+
+Full-use planning assumptions: route labour/travel ₹45 per stop; separate downstream handling ₹2/kg; support/technology ₹180 Gold or ₹220 Platinum. Gold contribution: ₹1,499 − ₹630 − ₹224 − ₹180 = ₹465. Platinum: ₹2,499 − ₹1,080 − ₹480 − ₹220 = ₹719. At ₹60/stop, these fall to ₹255 and ₹359. These balances precede taxes, acquisition, cameras and other fixed costs. Validate actual costs and willingness to pay before selling either plan. Do not double-charge costs already funded by subscriptions against recovery payouts.
