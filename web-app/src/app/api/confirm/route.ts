@@ -29,7 +29,11 @@ export async function POST(req: Request) {
     const database = await db();
     const record = await database
       .collection("history")
-      .findOne({ _id: new ObjectId(data.id), userId: u._id });
+      .findOne({
+        _id: new ObjectId(data.id),
+        userId: u._id,
+        deletedAt: { $exists: false },
+      });
     if (!record) throw new Error("Scan not found.");
     const detected = record.identification.detected_items;
     if (

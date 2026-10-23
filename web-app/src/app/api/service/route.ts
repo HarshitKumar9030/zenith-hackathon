@@ -14,6 +14,7 @@ import {
   surgeTime,
   pickupSurgePaise,
 } from "@/lib/pickup-time";
+import { pickupPrice } from "@/lib/pickup-pricing";
 import { db } from "@/lib/db";
 import { ObjectId } from "mongodb";
 const input = z.discriminatedUnion("action", [
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
         _id: new ObjectId(data.scanId),
         userId: u._id,
         confirmed: true,
+        deletedAt: { $exists: false },
       });
       if (!scan) throw new Error("Confirm a scan before booking.");
     }
@@ -124,15 +126,17 @@ export async function POST(req: Request) {
           throw new Error("Booking history limit reached. Contact support.");
         if (!a.profile.address || !a.profile.locality)
           throw new Error("Save your collection address first.");
-        const needsQuote =
-          !data.segregated || scan!.identification.special_handling !== "no";
+        if (scan!.identification.special_handling !== "no")
+          throw new Error(
+            "This scan needs a special-handling check. Review its identification or open Help before booking.",
+          );
         if (
           a.bookings.filter(
             (b) => !["cancelled", "completed"].includes(b.status),
           ).length >= 3
         )
           throw new Error("You can have up to three pending pickups.");
-        if (!needsQuote) reserve(a, data);
+        reserve(a, data);
         if (
           data.source === "membership" &&
           a.membership &&
@@ -140,16 +144,18 @@ export async function POST(req: Request) {
             new Date(a.membership.expiresAt)
         )
           throw new Error("Choose a collection date within your active pass.");
-        const surgeFeePaise = pickupSurgePaise(
-          data.window,
-          data.weightKg,
-          data.segregated,
-        );
-        const feePaise = (data.source === "basic" ? 2000 : 0) + surgeFeePaise;
+        const pricing = pickupPrice({
+          source: data.source,
+          weightKg: data.weightKg,
+          segregated: data.segregated,
+          time: data.window,
+        });
+        const surgeFeePaise = pricing.surgePaise,
+          feePaise = pricing.totalPaise;
         const booking = {
           id: new ObjectId().toString(),
           requestId: data.requestId,
-          source: needsQuote ? "quote" : data.source,
+          source: data.source,
           membershipOrderId:
             data.source === "membership" ? a.membership?.orderId : null,
           segregated: data.segregated,
@@ -171,13 +177,11 @@ export async function POST(req: Request) {
           address: a.profile.address,
           location: a.profile.location,
           locality: a.profile.locality,
-          status: needsQuote
-            ? "quote_requested"
-            : feePaise > 0
-              ? "payment_due"
-              : "scheduled",
+          status: feePaise > 0 ? "payment_due" : "scheduled",
           feePaise,
           surgeFeePaise,
+          sortingFeePaise: pricing.sortingPaise,
+          pricing,
           createdAt: new Date().toISOString(),
           events: [{ status: "created", at: new Date().toISOString() }],
         };
