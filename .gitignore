@@ -1,0 +1,60 @@
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+
+# JavaScript dependencies and generated output
+node_modules/
+.pnpm-store/
+.next/
+.nuxt/
+.svelte-kit/
+.vercel/
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.cache/
+.tmp/
+tmp/
+
+# Python environments and generated output
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Local model weights, datasets, and experiment output
+model/data/
+model/checkpoints/
+model/outputs/
+model/runs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
