@@ -1,0 +1,23 @@
+.loader { width:120px; height:108px; flex:0 0 auto; pointer-events:none; animation:appear 180ms ease-out both; }
+.loader svg { display:block; width:100%; height:100%; overflow:visible; }
+.item { transform-origin:100px 35px; animation:drop 3.6s cubic-bezier(.45,0,.65,1) infinite both; animation-play-state:var(--drop-play,running); }
+.first { animation-delay:0s; }
+.second { animation-delay:-2.4s; }
+.third { animation-delay:-1.2s; }
+.box { transform-origin:100px 150px; animation:receive 1.2s ease-in-out infinite; animation-play-state:var(--drop-play,running); }
+.compact { position:absolute; bottom:58px; right:14px; z-index:4; width:86px; height:82px; padding:3px; border-radius:16px; background:rgba(248,250,244,.92); backdrop-filter:blur(8px); }
+@keyframes drop {
+  0% { opacity:0; transform:translateY(-24px) rotate(-16deg) scale(.85); }
+  10% { opacity:1; transform:translateY(-16px) rotate(-10deg) scale(.95); }
+  36% { opacity:1; transform:translateY(28px) rotate(8deg) scale(1); }
+  49% { opacity:1; transform:translateY(64px) rotate(-4deg) scale(.88); }
+  61%,100% { opacity:0; transform:translateY(87px) rotate(0deg) scale(.7); }
+}
+@keyframes receive { 0%,70%,100% { transform:translateY(0) scale(1); } 80% { transform:translateY(2px) scale(1.025,.97); } 90% { transform:translateY(-1px) scale(.99,1.01); } }
+@keyframes appear { from { opacity:0; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) {
+  .loader,.box,.item { animation:none; }
+  .first { opacity:1; transform:translateY(20px); }
+  .second,.third { display:none; }
+}
+@media(max-width:600px) { .loader:not(.compact) { width:94px; height:90px; } .compact { width:72px; height:70px; right:10px; } }

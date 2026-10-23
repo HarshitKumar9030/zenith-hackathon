@@ -20,6 +20,7 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import WasteDropLoader from "./waste-drop-loader";
 import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
@@ -820,11 +821,7 @@ export default function Dashboard() {
                   )}
                   {busy && (
                     <Reveal className="processing-state">
-                      <AnimatedIllustration
-                        asset="abstract-watchglass.svg"
-                        variant="processing"
-                        className="processing-art"
-                      />
+                      <WasteDropLoader />
                       <div>
                         <h3>A closer look, a clearer answer.</h3>
                         <p role="status">{progress}</p>

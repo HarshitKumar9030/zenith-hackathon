@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import WasteDropLoader from "./waste-drop-loader";
 import { Camera, ScanLine, Square, RefreshCw } from "lucide-react";
 export default function LiveCamera({
   onScan,
@@ -160,6 +161,7 @@ export default function LiveCamera({
   return (
     <section className="camera-panel">
       <div className="camera-view">
+        {running && processing && <WasteDropLoader compact />}
         <video
           ref={video}
           muted
