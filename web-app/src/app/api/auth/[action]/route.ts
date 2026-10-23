@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
+import { roleFor } from "@/lib/service";
 import { db } from "@/lib/db";
 import {
   checkOrigin,
@@ -15,7 +16,12 @@ export async function GET() {
     const user = await currentUser();
     return NextResponse.json({
       user: user
-        ? { id: String(user._id), name: user.name, email: user.email }
+        ? {
+            id: String(user._id),
+            name: user.name,
+            email: user.email,
+            role: roleFor(user),
+          }
         : null,
     });
   } catch {

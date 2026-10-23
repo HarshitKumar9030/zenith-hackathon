@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
+import { account } from "@/lib/service";
 import { db } from "@/lib/db";
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
     )
       .collection("history")
       .aggregate([
-        { $match: { userId: user._id } },
+        { $match: { userId: user._id, confirmed: true } },
         {
           $group: {
             _id: {
@@ -25,7 +26,12 @@ export async function GET() {
         },
       ])
       .toArray();
-    return NextResponse.json({ days: days.map((d) => d._id) });
+    const a = await account(user._id);
+    return NextResponse.json({
+      days: [...new Set([...a.rewardDays, ...days.map((d) => d._id)])],
+      points: a.points,
+      credits: a.credits,
+    });
   } catch {
     return NextResponse.json(
       { error: "Activity unavailable." },
