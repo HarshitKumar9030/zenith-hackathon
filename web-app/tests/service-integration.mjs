@@ -441,7 +441,7 @@ try {
       .getByRole("button", { name: "Identify waste", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "Write a description", exact: true })
+      .getByRole("tab", { name: "Write a description", exact: true })
       .click();
     await page.getByLabel("Describe your item").fill("A paper bag");
     await page

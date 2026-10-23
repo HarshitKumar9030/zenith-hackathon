@@ -1,6 +1,6 @@
 # zenith-hackathon
 
-WasteWise — an AI-powered waste identification and disposal assistant for the Zenith hackathon.
+Waste Right — a camera-assisted waste collection platform for the Zenith hackathon.
 
 ## Repository structure
 
@@ -10,7 +10,7 @@ WasteWise — an AI-powered waste identification and disposal assistant for the 
 - `data/scraper/` — image collection scripts and configuration.
 - `data/datasets/` — local image downloads and annotations (excluded from Git).
 
-Dependency manifests currently live at the repository root.
+Application dependencies and scripts live in `web-app/`.
 
 ## Image collection
 
@@ -18,7 +18,7 @@ See [scraper setup and usage](data/scraper/README.md). Collection labels are unv
 
 ## Web application
 
-WasteWise now includes a Next.js dashboard, local MongoDB authentication/history, Gemini 3.8 Flash identification/document understanding, browser OCR, guide-backed recommendations, corrections, and daily streaks. See [web app setup](web-app/README.md), [research](docs/research.md), and [verification](docs/verification.md).
+Waste Right includes resident and bilingual helper dashboards, local MongoDB authentication, multi-item camera scanning, browser OCR, confirmed checklists, collection receipts, reward points, locality leaderboards and an optional Razorpay integration. Checkout is unconfigured; local-guide controls have been removed. See [web app setup](web-app/README.md), [research](docs/research.md), and [verification](docs/verification.md).
 
 ```sh
 cd web-app

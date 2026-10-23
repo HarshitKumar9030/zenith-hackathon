@@ -1,48 +1,47 @@
-# WasteWise web app
+# Waste Right
 
-Next.js App Router + TypeScript, local MongoDB, Gemini 3.8 Flash, and browser Tesseract OCR. Borderless and shadow-free responsive dashboard with animated SVG, custom keyboard-accessible dropdowns, image/text identification, PDF/text/JSON guide import, clarifications, corrections, private history, search/filter/export, and account management.
+Phone-camera waste scanning, resident pickups and a separate Hindi/English collection-partner workspace. Next.js, TypeScript, local MongoDB, Gemini, browser Tesseract OCR, GSAP and Framer Motion. Indigo accent, no borders or shadows.
 
-## Local setup
+## Run locally
 
 ```sh
 cd web-app
 npm ci
-cp .env.example .env.local
-# Set GEMINI_API_KEY locally. Never commit it.
-# Start MongoDB on localhost:27017 (an existing local instance works).
-npm run dev
+cp .env.example .env.local # only for a fresh setup; preserve existing credentials
+npm run dev -- --port 3001
 ```
 
-Open http://localhost:3000. Create an account with a password of at least ten characters. Local signup does not require an email provider. Database defaults to the separate `wastewise` database; existing databases are not changed. MongoDB indexes are created on first connection. Configure MONGODB_URI/MONGODB_DB for another instance. Supabase is deferred by request.
+Start MongoDB separately. Set `MONGODB_URI`, `MONGODB_DB` and `GEMINI_API_KEY` privately. `GEMINI_MODEL` is configurable. The local default database is `wastewise`; existing databases are not modified. Camera and device location need HTTPS or localhost on the device being used.
 
-1. Import your locality's actual guide under Local guides. Gemini extracts candidate rules from PDF/TXT; compare source text and every rule with the original before saving. Alternatively upload reviewed JSON using the downloadable fictional format example. That example is not a real disposal authority.
-2. Select the guide, then upload a photo or write a description. Optionally read packaging text with OCR. OCR output is editable.
-3. Identify, answer any clarification, and inspect supporting source text and preparation steps. Results save automatically. Correct materials in the result or delete individual history records. Export covers the most recent 200 loaded records.
+## Accounts and workflows
 
-Without a Gemini key, account/history/JSON-guide features work and identification reports configuration missing. No mock AI answers are used. The custom classifier is not trained or called yet. Without a matching reviewed guide, disposal guidance is withheld.
+Choose **User** or **Helper** at signup. Helper accounts open a separate workspace with collection jobs, earnings and service-area pages, without resident scan/plan/reward navigation. Helpers require Operations approval to accept jobs. English/Hindi selection persists locally. Normal accounts cannot grant themselves collector or administrator privileges.
 
-## Checks
+After confirming a scan, an inline pickup form opens immediately with the saved address, tomorrow’s date and a morning slot. Available plan/credit options are loaded automatically; payment and quote requirements still apply. Users can scan several visible items, uncheck mistaken detections, correct the overall material/condition, confirm and save. Images are not retained. OCR is optional. Automatic scanning waits 15 seconds after each completed analysis, with eight automatic frames per session. Stop, navigation, hidden tabs and confirmation stop the camera. Confirmed scans remain in history; unconfirmed previews expire after 24 hours. Local-guide controls have been removed. Legacy guide endpoints remain for historical records; the app does not invent local disposal rules.
+
+Both account types have **Use my location**: an explicit browser permission request obtains and saves a single GPS fix, accuracy and timestamp. No continuous tracking or external reverse-geocoding call occurs. Users provide street address and locality separately. Booking coordinates and addresses are revealed to a helper only after assignment. Locality leaderboards use an opt-in alias, not coordinates or full addresses.
+
+Confirming a new identifiable scan earns at most one point per India calendar day. Ten points redeem one Basic pickup credit, at most twice per month. Re-confirming an old scan does not earn a new day's point.
+
+Collectors claim scheduled jobs, enter gross/container weights and send a measured receipt. Residents approve or dispute it. Operations approves collectors, issues quotes for unsegregated/special-handling collections, records actual work payments, and records buyer proceeds, direct costs and recovery payouts. Payout references are operator records, not automated bank transfers. Dashboard values come from saved activity, not sample earnings.
+
+## Pilot pricing and payments
+
+Basic: ₹20 per pickup, 2 kg, no resident recovery share. Gold: ₹600, 14 pickups × 8 kg (112 kg/month), 10% of positive net recovery. Platinum: ₹700, 24 pickups × 10 kg (240 kg/month), 15%. Gold/Platinum prices and pickup counts follow the requested model; Basic weight cap and recovery percentages are configurable pilot defaults in `src/lib/catalog.ts`. Weight caps currently apply to total measured waste; metal is not automatically exempted. Larger or unsegregated/special-handling collections require an Operations quote.
+
+Razorpay checkout is implemented but **unconfigured by request**. It does not simulate payment success. Optional private configuration: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`. Configure the webhook at `/api/payments/webhook` for `payment.captured` and `refund.processed`. Orders use server pricing and stored booking ownership. Captures require signature and amount/currency validation, with idempotent entitlement fulfillment. Monthly passes are manually renewed; no automatic recurring debit is advertised. Actual gateway checkout/refund behavior has not been tested with provider credentials.
+
+Operations requires both the email in `ADMIN_EMAILS` and `adminApproved: true` on the existing MongoDB user. The existing `harshitkumar9030@gmail.com` account has been approved locally. Other signups do not become administrators automatically. Email verification/recovery is not implemented in this local hackathon build.
+
+## Verification
 
 ```sh
 npm run typecheck
 npm test
 npm run build
+node tests/service-integration.mjs
 ```
 
-API: `POST /api/auth/signup`, `/api/auth/login`, `/api/auth/logout`; `GET /api/auth/session`; `POST /api/classify`; `GET/PATCH/DELETE /api/history`; `GET/POST /api/guides`; `POST /api/guides/extract`. Authentication uses an HttpOnly cookie. All private data queries use the session's owner ID, never a submitted owner ID.
+Integration checks start a temporary production server and use/drop a separate QA database. They exercise auth, role isolation, batch selection, location validation/privacy, concurrent reward and booking updates, collection claims/receipts, settlement records and signed synthetic payment webhooks. Playwright checks resident/helper navigation, Hindi, geolocation and mobile overflow. Real camera/AI and bank transfers require separate live-device/provider checks.
 
-Model responses use structured output plus server validation. Requests have size/field limits, upstream timeouts, auth attempt limits, 100 identifications/day/user and 10 document extractions/day/user. This is a local hackathon app: public deployment needs TLS, MongoDB access controls, email verification/recovery, broader abuse prevention and operational monitoring. Rule matching deliberately covers explicit clean/single-material and special-handling rules; more complex conditions require clarification and schema extension. Human source review is necessary for model-extracted PDF content.
-
-Research: [sources and rationale](../docs/research.md). Design reference: [concept](../docs/design/wastewise-concept.png).
-
-## Daily habit
-
-The dashboard's fire SVG streak counts distinct saved-identification days in Asia/Kolkata and shows a seven-day activity strip. Multiple scans count once; deleting history can change the streak. It measures using the assistant, not confirmed recycling. Page, control, scan, and flame animations respect reduced motion.
-
-Browser smoke check: `node tests/smoke.mjs` with the app running on port 3001, or set `TEST_BASE_URL`. It creates a QA account and fictional guide. Live verification details and remaining demo checks are in [verification](../docs/verification.md).
-
-## Motion and artwork
-
-GSAP handles scan/orbit motion and gentle movement of the supplied assets. Framer Motion handles page enter/exit, dropdown exits, and result reveals. Artwork appears with guide import (education), empty history (people), uncertain identification (question mark), and in-progress identification (hourglass). Both libraries honor reduced motion; illustration loops pause offscreen and when the tab is hidden. Run `node tests/motion.mjs` while the app serves on port 3001, or set `TEST_BASE_URL`.
-
-Sidebar navigation now uses a shared-layout spring indicator, staggered entrances, icon feedback, and a one-time SVG leaf drawing. Main sections reveal in sequence via GSAP. Keyboard focus remains visible and all spatial effects honor reduced motion.
+The scraper remains stopped and custom-model training remains deferred. See [verification](../docs/verification.md) and [research](../docs/research.md).

@@ -28,3 +28,17 @@ Playwright checked that scanner SVG transforms change over time, all contextual 
 ## Sidebar motion polish
 
 Added a shared-layout spring selection surface, sliding hover surface, staggered navigation entrances, active-icon feedback, and SVG leaf-path drawing. GSAP staggers major page sections; stats and action icons have small hover responses. Playwright verified one active indicator, correct aria-current, hover rendering, keyboard Enter navigation, rapid tab changes, mobile overflow, reduced-motion behavior, and no runtime errors. Desktop/mobile screenshots were inspected with view_image. The existing motion regression check also passed.
+
+## Waste Right service platform update
+
+Local-guide UI and one-item scanning instructions were removed. User/Helper signup persists account type; pending helpers see their dedicated dashboard but cannot claim jobs before Operations approval. Helpers have separate collection, earnings and service-area navigation, with English/Hindi page content. Indigo replaces orange. Sidebar selection uses its animated surface without the dot.
+
+The isolated MongoDB/Next integration suite covers account-type persistence, owner isolation, collector approval, once-daily points, concurrent redemption and booking idempotency, competing claims, receipt approval, settlement records, quote workflow, synthetic signed payment capture/replay/tamper checks, batch checkbox selection and invalid selection rejection, location bounds, and pre-assignment coordinate privacy. Browser checks cover separate role navigation, removed guides/dots, device location for residents/helpers, Hindi rendering and 390px overflow. Screenshots are temporary QA artifacts. No production payments are made.
+
+Checkout remains unconfigured by request. Existing administrator account approval is local and requires an environment allowlist plus a database approval flag. Physical phone-camera capture, real location accuracy, upstream multi-item Gemini quality and real Razorpay checkout are not asserted by fixture-based checks. Previously recorded guide UI tests above describe the earlier interface.
+
+### Inline scheduling verification
+
+The confirmed scan now opens an inline booking form with its scan ID attached, saved address, tomorrow's date and morning window. Existing plan allowance or a reward credit is selected when available. Users enter an estimated weight and confirm segregation; quotes and verified-payment requirements remain enforced. A controlled classification fixture was used only in the browser test; confirmation, address loading and booking used the real API and isolated MongoDB. The test booked exactly one reward pickup from the same scan screen. User/Helper selection was also exercised through the signup UI, including on mobile.
+
+Final checks passed: production build with TypeScript, 15 unit tests, the isolated API/browser integration suite, and the GSAP/Framer Motion regression script. No real Razorpay transaction or new live-camera classification was performed in this update.
