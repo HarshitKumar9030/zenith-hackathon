@@ -20,7 +20,7 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
-import WasteDropLoader from "./waste-drop-loader";
+import CapturedFrameDrop from "./captured-frame-drop";
 import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
@@ -81,6 +81,7 @@ async function api(path: string, method = "GET", body?: unknown) {
   return data;
 }
 export default function Dashboard() {
+  const [photoFlight, setPhotoFlight] = useState(false);
   const [page, setPage] = useState("Overview"),
     [user, setUser] = useState<User | null>(null),
     [auth, setAuth] = useState(false),
@@ -207,6 +208,7 @@ export default function Dashboard() {
       : text;
     setBusy(true);
     setProgress("Looking closely at your item…");
+    if (mode === "photo" && image) setPhotoFlight(true);
     setResult(null);
     try {
       const data = await api("classify", "POST", {
@@ -724,11 +726,15 @@ export default function Dashboard() {
                     >
                       {image ? (
                         <>
-                          <img
-                            className="preview"
-                            src={image}
-                            alt="Your waste item"
-                          />
+                          <div style={{ position: "relative", maxWidth: "100%", borderRadius: 12 }}>
+                            <img
+                              className="preview"
+                              src={image}
+                              alt="Your waste item"
+                              style={{ display: "block", opacity: photoFlight ? 0 : 1 }}
+                            />
+                            {photoFlight && <CapturedFrameDrop frame={image} onComplete={() => setPhotoFlight(false)} />}
+                          </div>
                           <p>{fileName}</p>
                           <div className="inline-actions">
                             <button
@@ -821,7 +827,6 @@ export default function Dashboard() {
                   )}
                   {busy && (
                     <Reveal className="processing-state">
-                      <WasteDropLoader />
                       <div>
                         <h3>A closer look, a clearer answer.</h3>
                         <p role="status">{progress}</p>

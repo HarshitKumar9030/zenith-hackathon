@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import WasteDropLoader from "./waste-drop-loader";
+import CapturedFrameDrop from "./captured-frame-drop";
+import frameStyles from "./captured-frame-drop.module.css";
 import { Camera, ScanLine, Square, RefreshCw } from "lucide-react";
 export default function LiveCamera({
   onScan,
@@ -19,6 +20,7 @@ export default function LiveCamera({
     errorCallback = useRef(onError);
   callback.current = onScan;
   errorCallback.current = onError;
+  const [capturedFrame, setCapturedFrame] = useState<string | null>(null);
   const [running, setRunning] = useState(false),
     [processing, setProcessing] = useState(false),
     [count, setCount] = useState(0),
@@ -43,6 +45,7 @@ export default function LiveCamera({
     }
     if (video.current) video.current.srcObject = null;
     setRunning(false);
+    setCapturedFrame(null);
   }
   useEffect(() => {
     if (stopSignal) stop();
@@ -86,6 +89,7 @@ export default function LiveCamera({
       canvas.height = v.videoHeight * scale;
       canvas.getContext("2d")!.drawImage(v, 0, 0, canvas.width, canvas.height);
       const captured = canvas.toDataURL("image/jpeg", 0.8);
+      setCapturedFrame(captured);
       let labelText = "";
       if (labelsRef.current) {
         const { createWorker } = await import("tesseract.js");
@@ -148,7 +152,8 @@ export default function LiveCamera({
       active.current = true;
       setRunning(true);
       setCount(0);
-      if (autoRef.current) void scan(epoch, 0);
+      // Allow time to frame the items before the first automatic capture.
+      if (autoRef.current) timer.current = setTimeout(() => void scan(epoch, 0), 2000);
     } catch (e) {
       onError(
         (e as DOMException).name === "NotAllowedError"
@@ -160,8 +165,10 @@ export default function LiveCamera({
   }
   return (
     <section className="camera-panel">
-      <div className="camera-view">
-        {running && processing && <WasteDropLoader compact />}
+      <div className={`camera-view ${capturedFrame ? frameStyles.capturing : ""}`}>
+        {running && capturedFrame && (
+          <CapturedFrameDrop key={capturedFrame} frame={capturedFrame} onComplete={() => setCapturedFrame(null)} />
+        )}
         <video
           ref={video}
           muted

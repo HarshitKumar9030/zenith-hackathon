@@ -1,0 +1,25 @@
+.scene { position:absolute; inset:0; z-index:5; pointer-events:none; overflow:hidden; border-radius:inherit; }
+.capturing :global(.camera-frame),
+.capturing :global(.camera-target),
+.capturing :global(.camera-live-caption) { visibility:hidden; }
+.photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; transform-origin:center; animation:capturedFall 2200ms cubic-bezier(.35,0,.45,1) both; }
+.rear,.front { position:absolute; width:140px; height:126px; left:calc(50% - 70px); bottom:8px; animation:boxArrives 2200ms ease-out both; }
+.rear { z-index:1; }
+.front { z-index:3; }
+@keyframes capturedFall {
+  0%,22% { transform:translateY(0) scale(1); opacity:1; border-radius:0; }
+  42%,55% { transform:translateY(-5%) rotate(-4deg) scale(.38); opacity:1; border-radius:22px; }
+  73% { transform:translateY(12%) rotate(4deg) scale(.28); opacity:1; border-radius:22px; }
+  91% { transform:translateY(calc(50% - 62px)) rotate(-3deg) scale(.10); opacity:1; border-radius:22px; }
+  100% { transform:translateY(calc(50% - 42px)) scale(.035); opacity:0; border-radius:22px; }
+}
+@keyframes boxArrives {
+  0%,22% { opacity:0; transform:translateY(30px) scale(.8); }
+  42%,90% { opacity:1; transform:translateY(0) scale(1); }
+  95% { opacity:1; transform:translateY(3px) scale(1.025,.97); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .photo { animation:none; opacity:0; }
+  .rear,.front { animation:none; }
+}
