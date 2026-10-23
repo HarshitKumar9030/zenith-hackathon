@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 export default function Dropdown({
   value,
@@ -12,6 +13,7 @@ export default function Dropdown({
   options: { value: string; label: string }[];
   label: string;
 }) {
+  const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -64,25 +66,35 @@ export default function Dropdown({
         {options.find((o) => o.value === value)?.label || label}
         <ChevronDown size={15} />
       </button>
-      {open && (
-        <div className="options" role="listbox" aria-label={label}>
-          {options.map((option) => (
-            <button
-              key={option.value}
-              role="option"
-              aria-selected={value === option.value}
-              onClick={() => {
-                onChange(option.value);
-                setOpen(false);
-                root.current?.querySelector("button")?.focus();
-              }}
-            >
-              {option.label}
-              {value === option.value && <Check size={15} />}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: reduce ? 0 : -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduce ? 0 : -4 }}
+            transition={{ duration: reduce ? 0 : 0.14 }}
+            className="options"
+            role="listbox"
+            aria-label={label}
+          >
+            {options.map((option) => (
+              <button
+                key={option.value}
+                role="option"
+                aria-selected={value === option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                  root.current?.querySelector("button")?.focus();
+                }}
+              >
+                {option.label}
+                {value === option.value && <Check size={15} />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

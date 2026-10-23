@@ -1,6 +1,57 @@
+"use client";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 export default function ScanArt({ busy = false }: { busy?: boolean }) {
+  const root = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      const context = gsap.context(() => {
+        gsap.to(".orbit", {
+          rotation: 360,
+          svgOrigin: "120 110",
+          duration: 24,
+          repeat: -1,
+          ease: "none",
+        });
+        gsap.to(".bottle", {
+          y: -5,
+          duration: 2.4,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+        if (busy)
+          gsap.fromTo(
+            ".scan-line",
+            { y: -48, opacity: 0.65 },
+            {
+              y: 48,
+              opacity: 0.65,
+              duration: 1.4,
+              repeat: -1,
+              yoyo: true,
+              ease: "sine.inOut",
+            },
+          );
+      }, root);
+      const sync = () =>
+        context
+          .getTweens()
+          .forEach((tween) =>
+            document.hidden ? tween.pause() : tween.resume(),
+          );
+      document.addEventListener("visibilitychange", sync);
+      return () => {
+        document.removeEventListener("visibilitychange", sync);
+        context.revert();
+      };
+    });
+    return () => media.revert();
+  }, [busy]);
   return (
     <svg
+      ref={root}
       className={`scan-art ${busy ? "scanning" : ""}`}
       viewBox="0 0 240 220"
       fill="none"

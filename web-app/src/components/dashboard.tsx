@@ -24,6 +24,7 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
 import { streakSummary } from "@/lib/streak";
 import type { Guide, Identification } from "@/lib/rules";
@@ -328,7 +329,7 @@ export default function Dashboard() {
   );
   function resultPanel(item: Result) {
     return (
-      <section className="result-panel">
+      <Reveal className="result-panel">
         <div className="section-heading">
           <div>
             <span className="micro">IDENTIFICATION</span>
@@ -352,6 +353,10 @@ export default function Dashboard() {
         <p>{item.identification.explanation}</p>
         {item.identification.clarification_question && (
           <div className="clarification">
+            <AnimatedIllustration
+              asset="abstract-illustration-question-mark.svg"
+              className="clarification-art"
+            />
             <h3>A quick clarification</h3>
             <p>{item.identification.clarification_question}</p>
             <input
@@ -420,7 +425,7 @@ export default function Dashboard() {
           />
           <small>Gemini 3.8 Flash · Saved to your history</small>
         </div>
-      </section>
+      </Reveal>
     );
   }
   return (
@@ -498,7 +503,7 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
-        <main key={page}>
+        <PageTransition page={page}>
           {page === "Overview" && (
             <>
               <div className="page-heading">
@@ -849,6 +854,19 @@ export default function Dashboard() {
                       />
                     </details>
                   )}
+                  {busy && (
+                    <Reveal className="processing-state">
+                      <AnimatedIllustration
+                        asset="abstract-watchglass.svg"
+                        variant="processing"
+                        className="processing-art"
+                      />
+                      <div>
+                        <h3>A closer look, a clearer answer.</h3>
+                        <p role="status">{progress}</p>
+                      </div>
+                    </Reveal>
+                  )}
                   <button
                     className="primary identify-button"
                     onClick={identify}
@@ -868,9 +886,10 @@ export default function Dashboard() {
                   </small>
                 </section>
                 <aside className="scan-notes">
-                  <span className="round-icon">
-                    <ShieldCheck size={23} />
-                  </span>
+                  <AnimatedIllustration
+                    asset="abstract-illustration-question-mark.svg"
+                    className="question-art"
+                  />
                   <h2>Clarity comes first.</h2>
                   <p>
                     Mixed packaging? Blurry photo? We’ll ask rather than guess.
@@ -949,7 +968,10 @@ export default function Dashboard() {
               </div>
               {!visible.length ? (
                 <div className="empty spacious">
-                  <Clock3 size={35} strokeWidth={1} />
+                  <AnimatedIllustration
+                    asset="abstract-animtion-another.svg"
+                    className="history-art"
+                  />
                   <h2>
                     {history.length
                       ? "No matching items."
@@ -1020,7 +1042,10 @@ export default function Dashboard() {
               </div>
               <div className="guide-layout">
                 <section className="guide-import">
-                  <BookOpen size={37} strokeWidth={1.3} />
+                  <AnimatedIllustration
+                    asset="abstract-animation-education.svg"
+                    className="education-art"
+                  />
                   <h2>Bring your disposal guide.</h2>
                   <p>
                     Import a PDF or text guide for Gemini to extract candidate
@@ -1194,7 +1219,7 @@ export default function Dashboard() {
             </span>
             <span>WasteWise · Made for everyday change</span>
           </footer>
-        </main>
+        </PageTransition>
       </div>
       <input
         ref={upload}

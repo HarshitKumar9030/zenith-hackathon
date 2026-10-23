@@ -1392,10 +1392,105 @@ main {
   }
 }
 @media (max-width: 480px) {
-  .streak-band { padding: 18px 15px; gap: 18px; min-width: 0; }
-  .streak-week { width: 100%; justify-content: space-between; gap: 4px; }
-  .streak-intro { gap: 10px; }
-  .streak-intro h3 { font-size: 12px; }
-  .streak-intro p { font-size: 10px; }
-  .day-dot { width: 24px; height: 24px; }
+  .streak-band {
+    padding: 18px 15px;
+    gap: 18px;
+    min-width: 0;
+  }
+  .streak-week {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .streak-intro {
+    gap: 10px;
+  }
+  .streak-intro h3 {
+    font-size: 12px;
+  }
+  .streak-intro p {
+    font-size: 10px;
+  }
+  .day-dot {
+    width: 24px;
+    height: 24px;
+  }
+}
+/* Motion owns these transforms; avoid competing CSS animation timelines. */
+main,
+.result-panel,
+.options,
+.scan-art .orbit,
+.scan-art .bottle,
+.scan-art.scanning .scan-line {
+  animation: none;
+}
+.illustration {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.question-art {
+  width: 126px;
+  height: 126px;
+  margin: 0 0 22px;
+}
+.education-art {
+  width: 146px;
+  height: 146px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.history-art {
+  width: 155px;
+  height: 155px;
+  margin-bottom: 20px;
+}
+.clarification-art {
+  width: 75px;
+  height: 75px;
+  float: right;
+  margin: 0 0 12px 18px;
+}
+.processing-state {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 18px;
+  background: #f6f5ef;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.processing-art {
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.processing-state h3 {
+  font-size: 12px;
+}
+.processing-state p {
+  font-size: 11px;
+  margin-top: 5px;
+}
+@media (max-width: 480px) {
+  .processing-state {
+    gap: 10px;
+    padding: 12px;
+  }
+  .processing-art {
+    width: 50px;
+    height: 50px;
+  }
+  .clarification-art {
+    width: 54px;
+    height: 54px;
+  }
 }
