@@ -1,0 +1,11 @@
+{
+  "plastic": ["discarded plastic bottles", "plastic packaging waste"],
+  "paper": ["waste paper", "discarded newspapers"],
+  "cardboard": ["cardboard waste", "discarded cardboard boxes"],
+  "glass": ["glass bottle waste", "discarded glass jars"],
+  "metal": ["discarded aluminium cans", "metal tin waste"],
+  "food_waste": ["food scraps", "fruit vegetable peel waste"],
+  "garden_waste": ["garden waste leaves", "grass clippings"],
+  "textile": ["textile waste", "discarded clothing"],
+  "composite_or_other": ["multilayer packaging waste", "beverage carton waste"]
+}

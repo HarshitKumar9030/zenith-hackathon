@@ -58,3 +58,6 @@ model/runs/
 *.ckpt
 *.onnx
 *.safetensors
+
+# Scraped datasets (images, attribution manifests, and collection summaries)
+data/datasets/
