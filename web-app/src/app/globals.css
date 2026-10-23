@@ -1946,3 +1946,154 @@ main,
     animation: none;
   }
 }
+/* Indigo accent keeps the environmental green while distinguishing actions. */
+:root {
+  --accent: #5658a5;
+  --accent-light: #eeedf9;
+}
+.primary:hover {
+  background: #44468b;
+}
+.status {
+  background: var(--accent-light);
+  color: #4c4e88;
+}
+.micro {
+  color: #6666a0;
+}
+.plan-option.featured,
+.service-notice,
+.rewards-summary > div {
+  background: var(--accent-light);
+}
+.service-notice {
+  color: #4b4d7e;
+}
+.helper-metrics {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 20px;
+}
+.helper-metrics > div {
+  padding: 25px;
+  background: #f0f2eb;
+  border-radius: 16px;
+}
+.helper-metrics strong {
+  display: block;
+  font-size: 32px;
+  margin: 12px 0;
+}
+.helper-metrics p {
+  font-size: 13px;
+  margin-top: 15px;
+}
+.helper-metrics small {
+  display: block;
+  font-size: 11px;
+}
+.helper-job .primary {
+  min-height: 50px;
+  font-size: 15px;
+}
+.helper-job input,
+.helper-job textarea {
+  font-size: 17px;
+}
+.helper-job > p svg {
+  vertical-align: middle;
+}
+.helper-dashboard[lang="hi"] {
+  font-family: Arial, "Noto Sans Devanagari", sans-serif;
+  line-height: 1.8;
+}
+.helper-dashboard[lang="hi"] h1 {
+  letter-spacing: -0.3px;
+  line-height: 1.5;
+}
+@media (max-width: 900px) {
+  .helper-metrics {
+    grid-template-columns: 1fr;
+  }
+  .helper-job .primary {
+    width: 100%;
+  }
+}
+
+.location-picker {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+.location-picker > button {
+  justify-self: start;
+}
+.location-picker small {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.location-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--accent-light);
+  font-size: 13px;
+}
+.location-result a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.helper-area {
+  max-width: 760px;
+}
+.helper-job {
+  background: #f2f5f1;
+  padding: 28px;
+  border-radius: 18px;
+}
+.detected-items {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.quick-pickup {
+  margin: 28px 0;
+  padding: 28px;
+  border-radius: 18px;
+  background: var(--accent-light);
+  scroll-margin-top: 24px;
+}
+.quick-pickup h2:focus {
+  outline: none;
+}
+.quick-pickup form {
+  display: grid;
+  gap: 16px;
+}
+.quick-pickup form > .primary {
+  justify-self: start;
+}
+.quick-address summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 16px 0;
+  line-height: 1.6;
+}
+.quick-booking-result {
+  display: grid;
+  gap: 12px;
+}
+.quick-booking-result button {
+  justify-self: start;
+}
+@media (max-width: 600px) {
+  .quick-pickup {
+    padding: 20px 16px;
+  }
+}

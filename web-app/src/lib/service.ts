@@ -9,6 +9,7 @@ export const REWARD_COST = 10,
 export function roleFor(user: Document) {
   const email = String(user.email).toLowerCase();
   if (
+    user.adminApproved === true &&
     (process.env.ADMIN_EMAILS || "")
       .split(",")
       .map((x) => x.trim().toLowerCase())
@@ -26,22 +27,38 @@ export function newAccount(userId: ObjectId) {
     rev: 0,
     points: 0,
     rewardDays: [] as string[],
+    rewardScanIds: [] as string[],
     credits: 0,
     redemptions: [] as { id: string; month: string; createdAt: string }[],
     bookings: [] as Document[],
     membership: null as Document | null,
-    profile: { address: "", locality: "", alias: "", leaderboard: false },
+    profile: {
+      address: "",
+      locality: "",
+      alias: "",
+      leaderboard: false,
+      location: null as {
+        latitude: number;
+        longitude: number;
+        accuracy: number;
+        updatedAt: string;
+      } | null,
+    },
     payments: [] as Document[],
   };
 }
 export type Account = ReturnType<typeof newAccount>;
 export async function account(userId: ObjectId) {
   const collection = (await db()).collection<Account>("service_accounts");
-  await collection.updateOne(
-    { _id: userId },
-    { $setOnInsert: newAccount(userId) },
-    { upsert: true },
-  );
+  try {
+    await collection.updateOne(
+      { _id: userId },
+      { $setOnInsert: newAccount(userId) },
+      { upsert: true },
+    );
+  } catch (e) {
+    if ((e as { code?: number }).code !== 11000) throw e;
+  }
   return (await collection.findOne({ _id: userId }))!;
 }
 // Each user's entitlements, points, bookings and payment grants share one atomic document.
@@ -134,4 +151,11 @@ export function reserve(
     m.remainingKg -= input.weightKg;
   } else if (input.weightKg > 2)
     throw new Error("Basic pickups cover up to 2 kg.");
+}
+
+export function claimScanReward(a: Account, id: string) {
+  a.rewardScanIds ??= [];
+  if (a.rewardScanIds.includes(id)) return false;
+  a.rewardScanIds.push(id);
+  return reward(a);
 }

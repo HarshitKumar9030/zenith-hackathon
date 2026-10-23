@@ -1,4 +1,5 @@
 "use client";
+import LocationPicker from "./location-picker";
 import { useEffect, useState, useCallback } from "react";
 import {
   ArrowRight,
@@ -70,6 +71,9 @@ export default function ServiceHub({
     >([]);
   const [funding, setFunding] = useState("basic"),
     [timeWindow, setTimeWindow] = useState("09:00–12:00");
+  const [ranking, setRanking] = useState<
+    { alias: string; days: number; rank: number; isYou: boolean }[]
+  >([]);
   const refresh = useCallback(async () => {
     if (!signedIn) return;
     try {
@@ -77,6 +81,8 @@ export default function ServiceHub({
       setAccount(data.account);
       setRole(data.role);
       setAvailable(data.checkoutAvailable);
+      const leaders = await serviceApi("leaderboard");
+      setRanking(leaders.entries);
       const h = await serviceApi("history");
       setScans(h.items.filter((s: { confirmed?: boolean }) => s.confirmed));
       if (["collector", "admin"].includes(data.role)) {
@@ -119,14 +125,14 @@ export default function ServiceHub({
         description:
           plan === "basic" ? "Basic waste pickup" : `${plan} one-month pass`,
         prefill: { name: order.name, email: order.email },
-        theme: { color: "#B85A26" },
+        theme: { color: "#5658A5" },
         handler: async (data: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
           razorpay_signature: string;
         }) => {
           try {
-            await serviceApi("payments/verify", {
+            const verified = await serviceApi("payments/verify", {
               orderId: data.razorpay_order_id,
               paymentId: data.razorpay_payment_id,
               signature: data.razorpay_signature,
@@ -134,7 +140,9 @@ export default function ServiceHub({
             await refresh();
             onRefresh();
             notify(
-              "Payment verified. Your service allowance has been updated.",
+              verified.outcome === "review_needed"
+                ? "Payment captured but needs Operations review before fulfillment."
+                : "Payment verified. Your service allowance has been updated.",
             );
           } catch (e) {
             notify((e as Error).message);
@@ -267,6 +275,23 @@ export default function ServiceHub({
               {new Date(a.membership.expiresAt).toLocaleDateString()}
             </div>
           )}
+          <section className="service-block section-spaced">
+            <h2>Payment receipts</h2>
+            {a?.payments.length ? (
+              a.payments.map((p) => (
+                <p key={p.orderId}>
+                  {new Date(p.createdAt).toLocaleDateString()} · {p.plan} · ₹
+                  {(p.amountPaise / 100).toFixed(2)} · {p.status} ·{" "}
+                  {p.paymentId}
+                </p>
+              ))
+            ) : (
+              <p>
+                No captured payments. Your pass activates only after gateway
+                verification.
+              </p>
+            )}
+          </section>
           <p className="service-footnote">
             Dry recyclables only. Metal counts toward limits. Organic collection
             and hazardous waste need separate arrangements. Recovery rates are
@@ -306,6 +331,28 @@ export default function ServiceHub({
             </button>
           </section>
           <div className="service-block">
+            <h2>Your locality leaderboard</h2>
+            <p>
+              {a?.profile.locality ||
+                "Save your locality under Pickups to see your community."}{" "}
+              · opt-in aliases only · ranked by distinct confirmed scan days,
+              not waste generated
+            </p>
+            {ranking.length ? (
+              ranking.map((r) => (
+                <p key={r.rank}>
+                  {r.rank}. {r.alias}
+                  {r.isYou ? " (you)" : ""} · {r.days} confirmed scan days
+                </p>
+              ))
+            ) : (
+              <p>
+                No participating aliases yet. Join under your collection
+                profile.
+              </p>
+            )}
+          </div>
+          <div className="service-block">
             <h3>Your redemption history</h3>
             {a?.redemptions.length ? (
               a.redemptions.map((r) => (
@@ -325,6 +372,7 @@ export default function ServiceHub({
           <div className="service-columns">
             <section className="service-block">
               <h2>Collection address</h2>
+              <LocationPicker />
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -595,6 +643,49 @@ export default function ServiceHub({
           </div>
         ) : (
           <>
+            <section className="rewards-summary">
+              <div>
+                <h3>Recorded collector work pay</h3>
+                <h2>
+                  ₹
+                  {(
+                    jobs.reduce(
+                      (sum, b) =>
+                        sum +
+                        Number(
+                          (b.workPay as { amountPaise?: number } | undefined)
+                            ?.amountPaise || 0,
+                        ),
+                      0,
+                    ) / 100
+                  ).toFixed(2)}
+                </h2>
+                <p>
+                  Actual payments recorded by Operations for these loaded jobs.
+                </p>
+              </div>
+              <div>
+                <h3>Accepted net recovery pool</h3>
+                <h2>
+                  ₹
+                  {(
+                    jobs.reduce(
+                      (sum, b) =>
+                        sum +
+                        Number(
+                          (b.settlement as { netPaise?: number } | undefined)
+                            ?.netPaise || 0,
+                        ),
+                      0,
+                    ) / 100
+                  ).toFixed(2)}
+                </h2>
+                <p>
+                  After recorded direct recovery costs, before resident shares
+                  and other business expenses. Not net profit.
+                </p>
+              </div>
+            </section>
             {role === "admin" && (
               <section className="service-block">
                 <h2>Approve a collection partner</h2>
@@ -618,7 +709,8 @@ export default function ServiceHub({
                 </form>
                 <p>
                   {users.length} registered accounts visible to Operations.
-                  Collector roles cannot be chosen during signup.
+                  Helpers choose their account type during signup. Operations
+                  approval is required before collecting.
                 </p>
               </section>
             )}
