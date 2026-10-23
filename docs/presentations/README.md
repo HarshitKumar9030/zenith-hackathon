@@ -1,6 +1,14 @@
 # Waste Right final pitch
 
-`Waste-Right-Final-Pitch.pptx` is the final 16-slide, standalone pitch. Text and the pricing table remain editable. The deck includes a current camera screenshot and a generated cover illustration.
+`Waste-Right-Final-Pitch-10-Slides.pptx` is the final 10-slide hackathon pitch, including the cover. Use this version for presenting. It condenses the supplied 16-slide reference into the problem, resident journey, human verification, pricing, fees and rewards, revenue, prototype readiness, illustrative economics and a 30-household pilot ask. Editable text, a native pricing table, presenter notes and slide-specific source notes are included.
+
+The 10-slide version follows the current application catalog: ₹15 Basic, ₹599 Gold and ₹699 Platinum. It reuses the supplied cover illustration and camera-off screenshot. The screenshot represents the 23 October prototype interface, not a physical-device test or every subsequent interface change. Pilot figures are proposals, not customer traction. Payment completion, receiving partners and measured operating costs remain launch requirements.
+
+Prepared 24 October 2026. All 10 slides were rendered and visually inspected. Package, geometry, slide-count, font and editable-table checks passed. A first-party import check passed. These checks do not claim native PowerPoint execution or a live collection test.
+
+## Earlier reference
+
+`Waste-Right-Final-Pitch.pptx` is the earlier 16-slide, standalone reference. Text and the pricing table remain editable. The deck includes a camera screenshot and a generated cover illustration.
 
 The pitch uses the current implemented terms: ₹15 Basic pickups, ₹599 Gold, ₹699 Platinum, helper-measured ₹5/kg sorting, ₹5–₹7 evening fees, and daily scan points. It explains the resident flow, helper operations, downstream handling, revenue and a proposed 30-household pilot.
 
