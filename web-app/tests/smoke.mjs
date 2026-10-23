@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 // Run from web-app: node tests/smoke.mjs (creates one test account and fictional guide).
 import { chromium } from "@playwright/test";
 const browser = await chromium.launch({ headless: true });
@@ -18,7 +19,7 @@ await page.getByLabel("Email address").fill(`qa-${Date.now()}@example.test`);
 await page.locator("input[name=password]").fill("test-password-12345");
 await page.getByRole("button", { name: "Create account", exact: true }).click();
 await page.waitForTimeout(1500);
-console.log("Auth closed:", !(await page.locator("dialog").isVisible()));
+assert.equal(await page.locator("dialog").isVisible(), false);
 await page.getByRole("button", { name: "Local guides", exact: true }).click();
 await page
   .locator('input[accept=".pdf,.txt,.json"]')

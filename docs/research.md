@@ -36,3 +36,7 @@ Sources: [MongoDB Node connection pooling guidance](https://www.mongodb.com/docs
 - An uncertain result asks a short question. A correction withdraws previous disposal guidance and requires reassessment.
 - The custom classifier is unavailable until trained. Gemini/OCR do not substitute for evaluated custom-model metrics.
 - Demo candidates: PET bottle, detergent bottle, yogurt tub, plastic wrapper, newspaper, receipt, paper bag, cardboard box, egg carton, glass jar, glass bottle, aluminium can, food tin, foil, banana peel, food leftovers, lined cup, milk carton, battery, and unclear/multiple-item photograph. Expected outcomes depend on the actual supplied guide; no universal disposal labels are prefilled.
+
+## Daily streak
+
+The optional habit feature counts distinct calendar days with saved identifications, using Asia/Kolkata. Multiple scans in one day count once. Yesterday's streak remains active until today ends; a missed full day resets it. The last seven days reflect actual database history across all records, not the dashboard's 200-record display limit. Deleting history can change this history-derived streak. A scan is not evidence that an item was actually recycled, so this feature does not claim diversion or environmental impact.

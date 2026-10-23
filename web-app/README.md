@@ -34,3 +34,9 @@ API: `POST /api/auth/signup`, `/api/auth/login`, `/api/auth/logout`; `GET /api/a
 Model responses use structured output plus server validation. Requests have size/field limits, upstream timeouts, auth attempt limits, 100 identifications/day/user and 10 document extractions/day/user. This is a local hackathon app: public deployment needs TLS, MongoDB access controls, email verification/recovery, broader abuse prevention and operational monitoring. Rule matching deliberately covers explicit clean/single-material and special-handling rules; more complex conditions require clarification and schema extension. Human source review is necessary for model-extracted PDF content.
 
 Research: [sources and rationale](../docs/research.md). Design reference: [concept](../docs/design/wastewise-concept.png).
+
+## Daily habit
+
+The dashboard's fire SVG streak counts distinct saved-identification days in Asia/Kolkata and shows a seven-day activity strip. Multiple scans count once; deleting history can change the streak. It measures using the assistant, not confirmed recycling. Page, control, scan, and flame animations respect reduced motion.
+
+Browser smoke check: `node tests/smoke.mjs` with the app running on port 3001, or set `TEST_BASE_URL`. It creates a QA account and fictional guide. Live verification details and remaining demo checks are in [verification](../docs/verification.md).
