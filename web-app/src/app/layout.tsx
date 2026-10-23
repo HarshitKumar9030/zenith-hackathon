@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "WasteWise — A little care. A cleaner tomorrow.",
+  title: "Waste Right — A little care. A cleaner tomorrow.",
   description:
     "Identify everyday waste, read packaging labels, and find disposal guidance grounded in your local guide.",
 };

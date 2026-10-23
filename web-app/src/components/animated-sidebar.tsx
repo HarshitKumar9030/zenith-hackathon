@@ -26,7 +26,7 @@ export default function AnimatedSidebar({
       <motion.a
         className="brand"
         href="/"
-        aria-label="WasteWise home"
+        aria-label="Waste Right home"
         initial={{ opacity: 0, y: reduce ? 0 : -7 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduce ? 0 : 0.4 }}
@@ -34,7 +34,7 @@ export default function AnimatedSidebar({
       >
         <Leaf size={30} strokeWidth={2.2} />
         <span>
-          WasteWise<span className="brand-dot">.</span>
+          Waste Right<span className="brand-dot">.</span>
         </span>
       </motion.a>
       <LayoutGroup id="sidebar-navigation">
