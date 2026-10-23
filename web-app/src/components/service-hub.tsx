@@ -1,4 +1,6 @@
 "use client";
+import { pickupTimeLabel } from "@/lib/pickup-time";
+import PickupTimeInput from "./pickup-time-input";
 import LocationPicker from "./location-picker";
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -55,6 +57,8 @@ export default function ServiceHub({
   notify: (v: string) => void;
   onRefresh: () => void;
 }) {
+  const [estimatedWeight, setEstimatedWeight] = useState(0),
+    [segregated, setSegregated] = useState(false);
   const [a, setAccount] = useState<Account | null>(null),
     [role, setRole] = useState("resident"),
     [available, setAvailable] = useState(false),
@@ -70,7 +74,7 @@ export default function ServiceHub({
       }[]
     >([]);
   const [funding, setFunding] = useState("basic"),
-    [timeWindow, setTimeWindow] = useState("09:00–12:00");
+    [timeWindow, setTimeWindow] = useState("09:00");
   const [ranking, setRanking] = useState<
     { alias: string; days: number; rank: number; isYou: boolean }[]
   >([]);
@@ -475,6 +479,7 @@ export default function ServiceHub({
                   Estimated weight in kg
                   <input
                     name="weightKg"
+                    onChange={(e) => setEstimatedWeight(Number(e.target.value))}
                     type="number"
                     min="0.1"
                     max="10"
@@ -496,21 +501,19 @@ export default function ServiceHub({
                     ).toLocaleDateString("en-CA")}
                   />
                 </label>
-                <label className="field">
-                  Time window
-                  <Dropdown
-                    label="Collection time window"
-                    value={timeWindow}
-                    onChange={setTimeWindow}
-                    options={["09:00–12:00", "14:00–17:00"].map((value) => ({
-                      value,
-                      label: value,
-                    }))}
-                  />
-                </label>
+                <PickupTimeInput
+                  value={timeWindow}
+                  onChange={setTimeWindow}
+                  weightKg={estimatedWeight}
+                  segregated={segregated}
+                />
                 <label className="check-row">
-                  <input type="checkbox" name="segregated" />I have separated
-                  the accepted materials
+                  <input
+                    type="checkbox"
+                    name="segregated"
+                    onChange={(e) => setSegregated(e.target.checked)}
+                  />
+                  I have separated the accepted materials
                 </label>
                 <button className="primary" disabled={busy || !scanId}>
                   <CalendarDays size={16} />
@@ -539,9 +542,15 @@ export default function ServiceHub({
                 </span>
               </div>
               <p>
-                {b.date} · {b.window} · estimated {b.estimatedKg} kg ·{" "}
-                {b.source}
+                {b.date} · {pickupTimeLabel(b.window)} · estimated{" "}
+                {b.estimatedKg} kg · {b.source}
               </p>
+              {b.surgeFeePaise > 0 && (
+                <p>
+                  Evening surcharge: ₹{b.surgeFeePaise / 100} · Included in
+                  total collection fee
+                </p>
+              )}
               {b.receipt && (
                 <div className="receipt">
                   <h3>Measured receipt</h3>

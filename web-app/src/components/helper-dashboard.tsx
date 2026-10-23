@@ -1,4 +1,5 @@
 "use client";
+import { pickupTimeLabel } from "@/lib/pickup-time";
 import LocationPicker from "./location-picker";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -408,7 +409,7 @@ export default function HelperDashboard({
                   lang === "hi" ? "hi-IN" : "en-IN",
                   { weekday: "long", day: "numeric", month: "long" },
                 )}{" "}
-                · {b.window}
+                · {pickupTimeLabel(b.window)}
               </p>
               {b.address && (
                 <p>

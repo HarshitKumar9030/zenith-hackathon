@@ -42,3 +42,7 @@ Checkout remains unconfigured by request. Existing administrator account approva
 The confirmed scan now opens an inline booking form with its scan ID attached, saved address, tomorrow's date and morning window. Existing plan allowance or a reward credit is selected when available. Users enter an estimated weight and confirm segregation; quotes and verified-payment requirements remain enforced. A controlled classification fixture was used only in the browser test; confirmation, address loading and booking used the real API and isolated MongoDB. The test booked exactly one reward pickup from the same scan screen. User/Helper selection was also exercised through the signup UI, including on mobile.
 
 Final checks passed: production build with TypeScript, 15 unit tests, the isolated API/browser integration suite, and the GSAP/Framer Motion regression script. No real Razorpay transaction or new live-camera classification was performed in this update.
+
+### Flexible pickup hours
+
+Replaced fixed windows with minute-level time selection in India time: 7 am–2 pm (2 pm excluded), a blocked 2–5 pm break, then 5–7 pm (7 pm included). Evening pricing is ₹5 + ₹1 above 2 kg + ₹1 for unsegregated waste, capped at ₹7; the UI shows the factors and the server persists the computed fee. Surcharge payments apply to plan/reward pickups too, so they remain payment-due until capture. Quoted total fees cannot omit the surcharge. Tests cover service/break boundaries, exact minutes, all surcharge amounts, Basic/reward payment states and rejected underpriced quotes.

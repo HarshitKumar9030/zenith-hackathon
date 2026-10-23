@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, Check, Loader2, MapPin } from "lucide-react";
+import { pickupTimeLabel } from "@/lib/pickup-time";
+import PickupTimeInput from "./pickup-time-input";
 import Dropdown from "./dropdown";
 import LocationPicker from "./location-picker";
 import { serviceApi } from "./service-hub";
@@ -15,9 +17,11 @@ export default function QuickPickup({
   onRecords: () => void;
   notify: (text: string) => void;
 }) {
+  const [estimatedWeight, setEstimatedWeight] = useState(0),
+    [segregated, setSegregated] = useState(false);
   const [account, setAccount] = useState<Account | null>(null),
     [funding, setFunding] = useState("basic"),
-    [window, setWindow] = useState("09:00–12:00"),
+    [window, setWindow] = useState("09:00"),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [booking, setBooking] = useState<Account["bookings"][number] | null>(null);
@@ -128,8 +132,15 @@ export default function QuickPickup({
                   : "Your collection record"}
           </h3>
           <p>
-            {booking.date} · {booking.window} · {booking.estimatedKg} kg
+            {booking.date} · {pickupTimeLabel(booking.window)} ·{" "}
+            {booking.estimatedKg} kg
           </p>
+          {booking.surgeFeePaise > 0 && (
+            <p>
+              Evening surcharge: ₹{booking.surgeFeePaise / 100} · Total payable:
+              ₹{booking.feePaise / 100}
+            </p>
+          )}
           <p>
             {booking.status === "payment_due"
               ? "Checkout is currently unavailable. This pickup will be scheduled only after verified payment."
@@ -188,18 +199,12 @@ export default function QuickPickup({
                 max={day(30)}
               />
             </label>
-            <div className="field">
-              <label>Time window</label>
-              <Dropdown
-                label="Quick pickup time"
-                value={window}
-                onChange={setWindow}
-                options={[
-                  { value: "09:00–12:00", label: "Morning · 9 am–12 pm" },
-                  { value: "14:00–17:00", label: "Afternoon · 2–5 pm" },
-                ]}
-              />
-            </div>
+            <PickupTimeInput
+              value={window}
+              onChange={setWindow}
+              weightKg={estimatedWeight}
+              segregated={segregated}
+            />
           </div>
           <div className="service-columns">
             <div className="field">
@@ -234,6 +239,7 @@ export default function QuickPickup({
               Estimated weight (kg)
               <input
                 name="weightKg"
+                onChange={(e) => setEstimatedWeight(Number(e.target.value))}
                 type="number"
                 inputMode="decimal"
                 min="0.1"
@@ -245,8 +251,12 @@ export default function QuickPickup({
             </label>
           </div>
           <label className="check-row">
-            <input type="checkbox" name="segregated" />I have separated the
-            materials for collection
+            <input
+              type="checkbox"
+              name="segregated"
+              onChange={(e) => setSegregated(e.target.checked)}
+            />
+            I have separated the materials for collection
           </label>
           <small>
             Unsegregated or special-handling waste requires a quote. Basic
