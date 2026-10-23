@@ -1,4 +1,5 @@
 "use client";
+import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import LocationPicker from "./location-picker";
 import { useCallback, useEffect, useState } from "react";
@@ -168,6 +169,7 @@ export default function HelperDashboard({
     alias: "",
     leaderboard: false,
   });
+  const [receiptMoment, setReceiptMoment] = useState<{ id: string; revision: number } | null>(null);
   const t = copy[lang];
   useEffect(() => {
     if (localStorage.getItem("waste-right-helper-language") === "hi")
@@ -190,11 +192,12 @@ export default function HelperDashboard({
   useEffect(() => {
     void refresh();
   }, [refresh]);
-  async function act(data: unknown) {
+  async function act(data: { action: string; [key: string]: unknown }) {
     setBusy(true);
     setError("");
     try {
       await serviceApi("operations", data);
+      if (data.action === "weigh") setReceiptMoment((previous) => ({ id: String(data.id), revision: (previous?.revision || 0) + 1 }));
       await refresh();
       notify(t.saved);
     } catch {
@@ -506,6 +509,7 @@ export default function HelperDashboard({
                   </button>
                 </form>
               )}
+              {receiptMoment?.id === b.id && <ActionMoment key={receiptMoment.revision} kind="receipt" label={lang === "hi" ? "रसीद भेज दी गई। ग्राहक की मंज़ूरी बाकी है।" : "Receipt sent. Waiting for resident approval."} />}
               {b.receipt && (
                 <div className="receipt">
                   <h3>

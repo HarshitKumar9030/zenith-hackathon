@@ -1,4 +1,5 @@
 "use client";
+import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import PickupTimeInput from "./pickup-time-input";
 import LocationPicker from "./location-picker";
@@ -75,6 +76,7 @@ export default function ServiceHub({
     >([]);
   const [funding, setFunding] = useState("basic"),
     [timeWindow, setTimeWindow] = useState("09:00");
+  const [rewardMoment, setRewardMoment] = useState(0);
   const [ranking, setRanking] = useState<
     { alias: string; days: number; rank: number; isYou: boolean }[]
   >([]);
@@ -101,10 +103,11 @@ export default function ServiceHub({
   useEffect(() => {
     void refresh();
   }, [refresh]);
-  async function action(path: string, data: unknown) {
+  async function action(path: string, data: unknown, celebrate = false) {
     setBusy(true);
     try {
       const response = await serviceApi(path, data);
+      if (celebrate) setRewardMoment((n) => n + 1);
       if (response.account) setAccount(response.account);
       await refresh();
       onRefresh();
@@ -328,11 +331,12 @@ export default function ServiceHub({
             <button
               className="primary"
               disabled={busy || (a?.points || 0) < 10}
-              onClick={() => action("service", { action: "redeem" })}
+              onClick={() => action("service", { action: "redeem" }, true)}
             >
               <Gift size={17} />
               Redeem 10 points
             </button>
+            {rewardMoment > 0 && <ActionMoment key={rewardMoment} kind="reward" label="Points redeemed. One pickup credit added." />}
           </section>
           <div className="service-block">
             <h2>Your locality leaderboard</h2>

@@ -1,0 +1,47 @@
+.moment { display:flex; flex-wrap:wrap; align-items:center; gap:12px; max-width:100%; margin:8px 0; }
+.art { display:block; flex:0 0 auto; width:156px; height:128px; overflow:visible; }
+.label { flex:1 1 140px; max-width:260px; margin:0; color:#526b59; font-size:14px; line-height:1.5; animation:copyIn 500ms 300ms ease both; }
+.base { animation:baseIn 600ms cubic-bezier(.2,.8,.3,1) both; transform-origin:110px 150px; }
+.calendar { animation:calendarDrop 2400ms cubic-bezier(.3,0,.25,1) both; transform-origin:110px 80px; }
+.ticket { animation:ticketIn 2200ms cubic-bezier(.2,.8,.3,1) both; transform-origin:110px 110px; }
+.coin { animation:coinDrop 1600ms cubic-bezier(.35,0,.4,1) both; transform-origin:center; transform-box:fill-box; }
+.coin0 { animation-delay:100ms; }.coin1 { animation-delay:300ms; }.coin2 { animation-delay:500ms; }
+.bag { animation:bagLand 1800ms cubic-bezier(.3,0,.3,1) both; transform-origin:100px 128px; }
+.receiptPaper { animation:receiptOut 1800ms ease both; transform-origin:155px 120px; }
+.check { animation:checkIn 500ms 1700ms cubic-bezier(.2,.8,.3,1) both; transform-origin:177px 46px; }
+@keyframes baseIn { from { opacity:0; transform:translateY(10px) scale(.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes calendarDrop {
+  0%,20% { opacity:0; transform:translateY(-24px) rotate(-8deg) scale(.85); }
+  35%,50% { opacity:1; transform:translateY(0) rotate(-4deg) scale(.85); }
+  80% { opacity:1; transform:translateY(48px) rotate(3deg) scale(.45); }
+  100% { opacity:0; transform:translateY(65px) scale(.15); }
+}
+@keyframes ticketIn {
+  0%,15% { opacity:0; transform:translateY(12px) rotate(-5deg) scale(.9); }
+  35%,75% { opacity:1; transform:translateY(0) rotate(0) scale(1); }
+  85% { transform:translateY(3px) scale(1.025,.97); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes coinDrop {
+  0%,15% { opacity:0; transform:translateY(-18px) rotateY(0); }
+  30%,45% { opacity:1; transform:translateY(0) rotateY(180deg); }
+  85% { opacity:1; transform:translateY(58px) rotateY(360deg) scale(.55); }
+  100% { opacity:0; transform:translateY(62px) rotateY(360deg) scale(.2); }
+}
+@keyframes bagLand {
+  0%,20% { opacity:0; transform:translateY(-24px) rotate(-7deg); }
+  55% { opacity:1; transform:translateY(0) rotate(0) scale(1); }
+  65% { transform:translateY(3px) scale(1.05,.94); }
+  80%,100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes receiptOut {
+  0%,50% { opacity:0; transform:translateY(22px) rotate(-8deg) scale(.8); }
+  80%,100% { opacity:1; transform:translateY(0) rotate(0) scale(1); }
+}
+@keyframes checkIn { from { opacity:0; transform:scale(.5); } to { opacity:1; transform:scale(1); } }
+@keyframes copyIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:480px) { .art { width:124px; height:102px; }.moment { gap:8px; }.label { font-size:13px; } }
+@media(prefers-reduced-motion:reduce) {
+  .moment * { animation:none; }
+  .calendar,.coin { opacity:0; }
+}

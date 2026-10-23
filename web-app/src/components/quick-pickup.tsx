@@ -1,4 +1,5 @@
 "use client";
+import ActionMoment from "./action-moment";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, Check, Loader2, MapPin } from "lucide-react";
 import { pickupTimeLabel } from "@/lib/pickup-time";
@@ -25,6 +26,7 @@ export default function QuickPickup({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [booking, setBooking] = useState<Account["bookings"][number] | null>(null);
+  const [bookingMotion, setBookingMotion] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null),
     requestId = useRef("");
   const day = (offset: number) =>
@@ -96,6 +98,7 @@ export default function QuickPickup({
         segregated: f.get("segregated") === "on",
       });
       setBooking(response.result);
+      setBookingMotion(true);
       notify(
         response.result.status === "scheduled"
           ? "Pickup requested for your chosen time."
@@ -121,7 +124,7 @@ export default function QuickPickup({
       </h2>
       {booking ? (
         <div className="quick-booking-result">
-          <Check size={24} />
+          {bookingMotion ? <ActionMoment kind="pickup" /> : <Check size={24} />}
           <h3>
             {booking.status === "scheduled"
               ? "Pickup requested"
