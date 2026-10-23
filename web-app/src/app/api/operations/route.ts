@@ -38,6 +38,8 @@ export async function GET() {
         .map((b: Record<string, unknown>) => ({
           ...b,
           residentId: String(a._id),
+          location:
+            admin || b.collectorId === String(u._id) ? b.location : undefined,
           address:
             admin || b.collectorId === String(u._id) ? b.address : undefined,
         })),
@@ -48,7 +50,14 @@ export async function GET() {
           .find(
             {},
             {
-              projection: { name: 1, email: 1, role: 1, collectorApproved: 1 },
+              projection: {
+                name: 1,
+                email: 1,
+                role: 1,
+                collectorApproved: 1,
+                accountType: 1,
+                collectorRequested: 1,
+              },
             },
           )
           .limit(100)
@@ -131,11 +140,14 @@ export async function POST(req: Request) {
       )
         .collection("users")
         .updateOne(
-          { email: data.email.toLowerCase() },
+          {
+            email: data.email.toLowerCase(),
+            $or: [{ accountType: "helper" }, { role: "collector" }],
+          },
           { $set: { role: "collector", collectorApproved: true } },
         );
       if (!result.matchedCount)
-        throw new Error("The collector must create an account first.");
+        throw new Error("The helper must sign up with a Helper account first.");
       return NextResponse.json({ ok: true });
     }
     await changeAccount(new ObjectId(data.residentId), (a) => {

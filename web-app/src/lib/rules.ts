@@ -1,18 +1,29 @@
 import { z } from "zod";
+const materialSchema = z.enum([
+  "plastic",
+  "paper",
+  "cardboard",
+  "glass",
+  "metal",
+  "food_waste",
+  "garden_waste",
+  "textile",
+  "composite_or_other",
+  "unknown",
+]);
 export const identificationSchema = z.object({
   object_name: z.string().max(200),
-  material: z.enum([
-    "plastic",
-    "paper",
-    "cardboard",
-    "glass",
-    "metal",
-    "food_waste",
-    "garden_waste",
-    "textile",
-    "composite_or_other",
-    "unknown",
-  ]),
+  detected_items: z
+    .array(
+      z.object({
+        name: z.string().min(1).max(200),
+        material: materialSchema,
+        special_handling: z.enum(["yes", "no", "unknown"]),
+      }),
+    )
+    .max(30)
+    .optional(),
+  material: materialSchema,
   physical_state: z.enum(["wet", "dry", "unknown"]),
   contaminated: z.enum(["yes", "no", "unknown"]),
   mixed_material: z.boolean(),

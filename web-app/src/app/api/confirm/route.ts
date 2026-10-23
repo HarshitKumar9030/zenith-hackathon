@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { currentUser, checkOrigin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { identificationSchema, recommend, type Guide } from "@/lib/rules";
-import { changeAccount, reward } from "@/lib/service";
+import { changeAccount, claimScanReward } from "@/lib/service";
 export async function POST(req: Request) {
   try {
     checkOrigin(req);
@@ -19,6 +19,11 @@ export async function POST(req: Request) {
         mixed_material: z.boolean(),
         special_handling: identificationSchema.shape.special_handling,
         reviewed: z.literal(true),
+        selectedItems: z
+          .array(z.number().int().min(0).max(29))
+          .min(1)
+          .max(30)
+          .optional(),
       })
       .parse(await req.json());
     const database = await db();
@@ -26,8 +31,25 @@ export async function POST(req: Request) {
       .collection("history")
       .findOne({ _id: new ObjectId(data.id), userId: u._id });
     if (!record) throw new Error("Scan not found.");
+    const detected = record.identification.detected_items;
+    if (
+      data.selectedItems &&
+      (!detected ||
+        data.selectedItems.some((i) => i >= detected.length) ||
+        new Set(data.selectedItems).size !== data.selectedItems.length)
+    )
+      throw new Error("Invalid item selection.");
     const identification = identificationSchema.parse({
       ...record.identification,
+      ...(data.selectedItems
+        ? {
+            detected_items: data.selectedItems.map((i) => detected[i]),
+            object_name: data.selectedItems
+              .map((i) => detected[i].name)
+              .join(", ")
+              .slice(0, 200),
+          }
+        : {}),
       material: data.material,
       contaminated: data.contaminated,
       mixed_material: data.mixed_material,
@@ -51,6 +73,11 @@ export async function POST(req: Request) {
             record.originalIdentification || record.identification,
           identification,
           recommendation,
+          rewardEligibleAt:
+            record.rewardEligibleAt ||
+            (!record.confirmed && identification.material !== "unknown"
+              ? new Date()
+              : null),
           confirmed: true,
           preview: false,
           confirmedAt: record.confirmedAt || new Date(),
@@ -59,9 +86,11 @@ export async function POST(req: Request) {
       },
     );
     const awarded =
-      !record.confirmed &&
+      (!record.confirmed || record.rewardEligibleAt) &&
       identification.material !== "unknown" &&
-      (await changeAccount(u._id, (a) => reward(a)));
+      (await changeAccount(u._id, (a) =>
+        claimScanReward(a, String(record._id)),
+      ));
     return NextResponse.json({
       item: { ...record, identification, recommendation, confirmed: true },
       awarded: Boolean(awarded),

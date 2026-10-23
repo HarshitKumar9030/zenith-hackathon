@@ -21,6 +21,10 @@ export async function GET() {
             name: user.name,
             email: user.email,
             role: roleFor(user),
+            accountType:
+              user.accountType === "helper" || user.role === "collector"
+                ? "helper"
+                : "user",
           }
         : null,
     });
@@ -56,6 +60,7 @@ export async function POST(
         email: z.email().max(254),
         password: z.string().min(10).max(128),
         name: z.string().min(1).max(80).optional(),
+        accountType: z.enum(["user", "helper"]).default("user"),
       })
       .parse(await request.json());
     const email = data.email.toLowerCase();
@@ -79,6 +84,11 @@ export async function POST(
         email,
         name: data.name || email.split("@")[0],
         password: await passwordHash(data.password),
+        accountType: data.accountType,
+        collectorRequested: data.accountType === "helper",
+        ...(data.accountType === "helper"
+          ? { collectorRequestedAt: new Date() }
+          : {}),
         createdAt: new Date(),
       });
       await createSession(user.insertedId);

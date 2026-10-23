@@ -19,6 +19,16 @@ const input = z.discriminatedUnion("action", [
     alias: z.string().trim().max(40),
     leaderboard: z.boolean(),
   }),
+  z.object({
+    action: z.literal("location"),
+    location: z
+      .object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+        accuracy: z.number().nonnegative().max(100000),
+      })
+      .nullable(),
+  }),
   z.object({ action: z.literal("redeem") }),
   z.object({
     action: z.literal("book"),
@@ -80,8 +90,15 @@ export async function POST(req: Request) {
       if (!scan) throw new Error("Confirm a scan before booking.");
     }
     const result = await changeAccount(u._id, (a) => {
+      if (data.action === "location") {
+        a.profile.location = data.location
+          ? { ...data.location, updatedAt: new Date().toISOString() }
+          : null;
+        return { ok: true };
+      }
       if (data.action === "profile") {
         a.profile = {
+          ...a.profile,
           address: data.address,
           locality: data.locality,
           alias: data.alias,
@@ -134,6 +151,7 @@ export async function POST(req: Request) {
           date: data.date,
           window: data.window,
           address: a.profile.address,
+          location: a.profile.location,
           locality: a.profile.locality,
           status: needsQuote
             ? "quote_requested"
