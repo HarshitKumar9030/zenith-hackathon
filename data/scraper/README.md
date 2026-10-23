@@ -1,6 +1,6 @@
 # WasteWise image collector
 
-Collects image candidates for the nine material classes in the project brief using the Wikimedia Commons API. No API key is needed. Requires Python 3.11+.
+Collects image candidates for six material classes: plastic, paper, cardboard, glass, metal, and food waste using the Wikimedia Commons API. No API key is needed. Requires Python 3.11+.
 
 ## Run from the repository root
 
@@ -9,7 +9,7 @@ python3 -m venv data/scraper/.venv
 data/scraper/.venv/bin/python -m pip install -r data/scraper/requirements.txt
 # Small smoke run first
 data/scraper/.venv/bin/python data/scraper/scrape.py --classes plastic --per-class 3
-# Collect all nine classes (total target, not additional images per run)
+# Collect all six active classes (total target, not additional images per run)
 data/scraper/.venv/bin/python data/scraper/scrape.py --per-class 200
 ```
 
@@ -61,3 +61,7 @@ data/scraper/.venv/bin/python -u data/scraper/scrape.py --resume-targets data/da
 ```
 
 This preserves the original per-class targets and cumulative collection count. Do not use `--new-total` to resume an existing collection. Higher worker counts may run into network bandwidth or source rate limits; inspect failures in the log when tuning.
+
+## Current hackathon scope
+
+Collection stops at food waste. Garden waste, textile, and composite/other are excluded from the active queries to reduce collection time. These cases are planned for Gemini/OCR handling; that integration is not implemented by this scraper. Existing images remain intact. The reduced run retains the original targets for the six active classes rather than redistributing the former 8,000-image goal: 990 plastic, 998 paper, and 889 each for cardboard, glass, metal, and food waste (5,544 total including earlier downloads). Search exhaustion can leave a shortfall.
