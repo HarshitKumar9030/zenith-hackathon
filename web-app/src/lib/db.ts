@@ -19,8 +19,12 @@ export async function db() {
       .collection("auth_attempts")
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     database.collection("history").createIndex({ userId: 1, createdAt: -1 }),
-    database.collection("history").createIndex({expiresAt:1},{expireAfterSeconds:0}),
-    database.collection("payment_orders").createIndex({orderId:1},{unique:true}),
+    database
+      .collection("history")
+      .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+    database
+      .collection("payment_orders")
+      .createIndex({ orderId: 1 }, { unique: true }),
     database.collection("guides").createIndex({ userId: 1 }),
   ]).catch((error) => {
     globalDb.indexes = undefined;

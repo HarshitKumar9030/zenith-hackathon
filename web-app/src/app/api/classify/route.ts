@@ -151,8 +151,8 @@ export async function POST(request: Request) {
     );
     const record = {
       preview: input.preview,
-      expiresAt: new Date(Date.now()+86400000),
-      confirmed:false,
+      expiresAt: new Date(Date.now() + 86400000),
+      confirmed: false,
       userId: user._id,
       identification,
       recommendation,
