@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { identificationSchema, recommend, type Guide } from "@/lib/rules";
 export const maxDuration = 60;
 const inputSchema = z.object({
+  preview: z.boolean().default(true),
   text: z.string().max(4000).default(""),
   ocr: z.string().max(8000).default(""),
   image: z.string().max(8000000).optional(),
@@ -149,6 +150,9 @@ export async function POST(request: Request) {
       guide as unknown as Guide | null,
     );
     const record = {
+      preview: input.preview,
+      expiresAt: new Date(Date.now()+86400000),
+      confirmed:false,
       userId: user._id,
       identification,
       recommendation,

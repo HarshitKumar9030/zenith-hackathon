@@ -17,7 +17,7 @@ export async function GET() {
         await db()
       )
         .collection("history")
-        .find({ userId: user._id })
+        .find({ userId: user._id, preview: {$ne:true} })
         .sort({ createdAt: -1 })
         .limit(200)
         .toArray(),
