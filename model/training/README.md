@@ -33,3 +33,11 @@ Outputs: `best.pt`, `last.pt`, `history.json`, `evaluation.json`, `test_predicti
 ## Colab MCP setup on this workstation
 
 Google's official [Colab MCP server](https://github.com/googlecolab/colab-mcp) is registered as `colab`. Installed source revision: `b9ab3899e0f1fa493390b1fd6d54aa2e464ecdf1`. A local compatibility fix shields its initializer from the 60-second consent timeout cancelling future connections. The scratch URL selects the browser account associated with this project's Drive files. Original package files are preserved beside those fixes. No authentication checks, token protection or allowed-origin restrictions are removed. Google account consent remains a user action.
+
+## Inspect a checkpoint
+
+```sh
+model/.venv/bin/python model/training/predict.py /path/to/best.pt /path/to/image.jpg --min-score 0.5
+```
+
+Use only checkpoints produced by this pipeline. The cutoff above is an inspection example, not a calibrated deployment threshold. Output contains material candidates, boxes and raw scores; every candidate requires confirmation. An empty result or `needs_review` recommends fallback. This does not estimate weight or determine disposal rules.
