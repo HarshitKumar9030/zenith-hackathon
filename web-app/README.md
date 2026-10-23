@@ -44,3 +44,5 @@ Browser smoke check: `node tests/smoke.mjs` with the app running on port 3001, o
 ## Motion and artwork
 
 GSAP handles scan/orbit motion and gentle movement of the supplied assets. Framer Motion handles page enter/exit, dropdown exits, and result reveals. Artwork appears with guide import (education), empty history (people), uncertain identification (question mark), and in-progress identification (hourglass). Both libraries honor reduced motion; illustration loops pause offscreen and when the tab is hidden. Run `node tests/motion.mjs` while the app serves on port 3001, or set `TEST_BASE_URL`.
+
+Sidebar navigation now uses a shared-layout spring indicator, staggered entrances, icon feedback, and a one-time SVG leaf drawing. Main sections reveal in sequence via GSAP. Keyboard focus remains visible and all spatial effects honor reduced motion.

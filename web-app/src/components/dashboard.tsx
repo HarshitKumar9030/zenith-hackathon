@@ -9,14 +9,12 @@ import {
   ChevronRight,
   Clock3,
   FileText,
-  Home,
   Leaf,
   Loader2,
   LogOut,
   MapPin,
   ScanLine,
   Search,
-  Settings,
   ShieldCheck,
   Trash2,
   Upload,
@@ -24,6 +22,7 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import AnimatedSidebar from "./animated-sidebar";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
 import { streakSummary } from "@/lib/streak";
@@ -313,13 +312,6 @@ export default function Dashboard() {
   const supported = history.filter(
     (h) => h.recommendation.status === "supported",
   ).length;
-  const nav = [
-    { label: "Overview", icon: Home },
-    { label: "Identify waste", icon: ScanLine },
-    { label: "My history", icon: Clock3 },
-    { label: "Local guides", icon: BookOpen },
-    { label: "Settings", icon: Settings },
-  ];
   const visible = history.filter(
     (item) =>
       `${item.identification.object_name} ${item.correction?.material || item.identification.material}`
@@ -430,51 +422,13 @@ export default function Dashboard() {
   }
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="WasteWise home">
-          <Leaf size={30} strokeWidth={2.2} />
-          <span>
-            WasteWise<span className="brand-dot">.</span>
-          </span>
-        </a>
-        <nav aria-label="Main navigation">
-          {nav.map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              className={page === label ? "nav-item active" : "nav-item"}
-              onClick={() => {
-                setPage(label);
-                setResult(null);
-              }}
-            >
-              <Icon size={19} />
-              {label}
-              {page === label && <span className="nav-dot" />}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
-            <path
-              d="M50 86V47M50 64C21 68 18 45 18 34c22-1 34 9 32 30ZM50 48C49 21 64 13 85 14c0 23-11 38-35 34Z"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path
-              d="m50 64-20-19m20 3 23-23"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-          </svg>
-          <p>
-            Small actions.
-            <br />
-            Lasting change.
-          </p>
-          <span className="tiny-line" />
-          <small>Made for a better everyday.</small>
-        </div>
-      </aside>
+      <AnimatedSidebar
+        page={page}
+        onNavigate={(next) => {
+          setPage(next);
+          setResult(null);
+        }}
+      />
       <div className="main-shell">
         <header className="topbar">
           <span>{page}</span>

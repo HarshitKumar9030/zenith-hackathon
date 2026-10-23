@@ -1494,3 +1494,89 @@ main,
     height: 54px;
   }
 }
+/* Shared-layout sidebar surfaces move independently of labels and hit targets. */
+.animated-sidebar .nav-item {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  transform: none;
+}
+.animated-sidebar .nav-item:hover {
+  background: transparent;
+  transform: none;
+}
+.nav-surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 12px;
+  pointer-events: none;
+}
+.active-surface {
+  background: #e1ebd4;
+}
+.hover-surface {
+  background: #e9ede4;
+}
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-label {
+  position: relative;
+}
+.stat {
+  border-radius: 12px;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+.stat:hover {
+  background: #f6f8f1;
+  transform: translateY(-3px);
+}
+.stat-icon {
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+.stat:hover .stat-icon {
+  transform: rotate(-7deg);
+  background: #e6efdb;
+}
+.primary svg,
+.text-button svg {
+  transition: transform 0.22s ease;
+}
+.primary:hover svg:last-child,
+.text-button:hover svg:last-child {
+  transform: translateX(3px);
+}
+.history-row:hover .item-icon {
+  transform: rotate(-5deg);
+}
+.item-icon {
+  transition: transform 0.22s ease;
+}
+@media (max-width: 780px) {
+  .nav-label {
+    display: none;
+  }
+  .animated-sidebar .nav-item {
+    min-height: 52px;
+  }
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat:hover,
+  .stat:hover .stat-icon,
+  .primary:hover svg:last-child,
+  .text-button:hover svg:last-child,
+  .history-row:hover .item-icon {
+    transform: none;
+  }
+}

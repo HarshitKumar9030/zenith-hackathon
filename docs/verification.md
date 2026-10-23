@@ -24,3 +24,7 @@ Final streak layout check found and fixed narrow-screen overflow by reducing sev
 ## GSAP and Framer Motion update
 
 Playwright checked that scanner SVG transforms change over time, all contextual SVG illustrations load, page navigation completes, dropdown exit animation preserves Escape behavior, and mobile layout has no horizontal overflow. Changing reduced motion at runtime stopped scanner transforms; no browser runtime errors were captured. Local-guides desktop and mobile screenshots were inspected with view_image. The supplied artwork is used intact; three supplied SVGs contain embedded raster imagery, so animation applies to their wrappers rather than inventing internal vector layers. `node tests/motion.mjs` repeats these checks against the local dev server.
+
+## Sidebar motion polish
+
+Added a shared-layout spring selection surface, sliding hover surface, staggered navigation entrances, active-icon feedback, and SVG leaf-path drawing. GSAP staggers major page sections; stats and action icons have small hover responses. Playwright verified one active indicator, correct aria-current, hover rendering, keyboard Enter navigation, rapid tab changes, mobile overflow, reduced-motion behavior, and no runtime errors. Desktop/mobile screenshots were inspected with view_image. The existing motion regression check also passed.
