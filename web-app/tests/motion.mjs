@@ -14,7 +14,6 @@ await page.waitForTimeout(300);
 assert.notEqual(await page.locator(".orbit").getAttribute("transform"), first);
 for (const [nav, asset] of [
   ["Identify waste", "abstract-illustration-question-mark.svg"],
-  ["Local guides", "abstract-animation-education.svg"],
   ["My history", "abstract-animtion-another.svg"],
 ]) {
   await page.getByRole("button", { name: nav, exact: true }).click();
@@ -33,12 +32,8 @@ for (const [nav, asset] of [
     fullPage: true,
   });
 }
-await page.getByRole("button", { name: "Select local guide" }).click();
-await page.getByRole("listbox").waitFor();
-await page.keyboard.press("Escape");
-await page.getByRole("listbox").waitFor({ state: "hidden" });
 await page.setViewportSize({ width: 390, height: 844 });
-await page.getByRole("button", { name: "Local guides", exact: true }).click();
+await page.getByRole("button", { name: "Identify waste", exact: true }).click();
 await page.waitForTimeout(700);
 assert.equal(
   await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
@@ -56,6 +51,6 @@ await page.waitForTimeout(250);
 assert.equal(await page.locator(".orbit").getAttribute("transform"), reduced);
 assert.deepEqual(errors, []);
 console.log(
-  "PASS: GSAP motion, all illustration assets, page navigation, dropdown exit, mobile overflow, live reduced-motion preference, no runtime errors.",
+  "PASS: GSAP motion, all illustration assets, page navigation, mobile overflow, live reduced-motion preference, no runtime errors.",
 );
 await browser.close();

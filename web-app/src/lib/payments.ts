@@ -63,7 +63,13 @@ export async function applyCapture(
         const p = PLANS[order.plan as Plan];
         if (!p) throw new Error("Unknown plan.");
         const expiry = new Date();
+        const day = expiry.getUTCDate();
+        expiry.setUTCDate(1);
         expiry.setUTCMonth(expiry.getUTCMonth() + 1);
+        const last = new Date(
+          Date.UTC(expiry.getUTCFullYear(), expiry.getUTCMonth() + 1, 0),
+        ).getUTCDate();
+        expiry.setUTCDate(Math.min(day, last));
         a.membership = {
           plan: order.plan,
           orderId,
@@ -77,15 +83,16 @@ export async function applyCapture(
     a.payments.push(receipt);
     return receipt.status;
   });
-  await database.collection("payment_orders").updateOne(
-    { _id: order._id },
-    {
-      $set: {
-        status: outcome === "review_needed" ? "review_needed" : "captured",
-        paymentId,
-        capturedAt: new Date(),
+  if (outcome !== "duplicate")
+    await database.collection("payment_orders").updateOne(
+      { _id: order._id },
+      {
+        $set: {
+          status: outcome === "review_needed" ? "review_needed" : "captured",
+          paymentId,
+          capturedAt: new Date(),
+        },
       },
-    },
-  );
+    );
   return outcome;
 }
