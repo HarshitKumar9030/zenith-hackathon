@@ -40,3 +40,7 @@ Research: [sources and rationale](../docs/research.md). Design reference: [conce
 The dashboard's fire SVG streak counts distinct saved-identification days in Asia/Kolkata and shows a seven-day activity strip. Multiple scans count once; deleting history can change the streak. It measures using the assistant, not confirmed recycling. Page, control, scan, and flame animations respect reduced motion.
 
 Browser smoke check: `node tests/smoke.mjs` with the app running on port 3001, or set `TEST_BASE_URL`. It creates a QA account and fictional guide. Live verification details and remaining demo checks are in [verification](../docs/verification.md).
+
+## Motion and artwork
+
+GSAP handles scan/orbit motion and gentle movement of the supplied assets. Framer Motion handles page enter/exit, dropdown exits, and result reveals. Artwork appears with guide import (education), empty history (people), uncertain identification (question mark), and in-progress identification (hourglass). Both libraries honor reduced motion; illustration loops pause offscreen and when the tab is hidden. Run `node tests/motion.mjs` while the app serves on port 3001, or set `TEST_BASE_URL`.

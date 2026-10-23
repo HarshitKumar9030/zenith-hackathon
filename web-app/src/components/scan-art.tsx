@@ -38,7 +38,7 @@ export default function ScanArt({ busy = false }: { busy?: boolean }) {
       const sync = () =>
         context
           .getTweens()
-          .forEach((tween) =>
+          .forEach((tween: gsap.core.Tween) =>
             document.hidden ? tween.pause() : tween.resume(),
           );
       document.addEventListener("visibilitychange", sync);

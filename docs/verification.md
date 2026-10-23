@@ -20,3 +20,7 @@ Reference: `docs/design/wastewise-concept.png`, generated with built-in ImageGen
 No benchmark or model accuracy claims are made. Identification latency is recorded per request. AI-generated guide extraction still requires comparing against the original document before use. Tests used fictional guides and separate QA accounts, not real disposal authorities or user photos.
 
 Final streak layout check found and fixed narrow-screen overflow by reducing seven-day spacing at 480px and below. Rechecked final desktop/mobile screenshots with view_image: no horizontal overflow remains, dropdown keyboard behavior still works, and the supplied fire asset renders correctly.
+
+## GSAP and Framer Motion update
+
+Playwright checked that scanner SVG transforms change over time, all contextual SVG illustrations load, page navigation completes, dropdown exit animation preserves Escape behavior, and mobile layout has no horizontal overflow. Changing reduced motion at runtime stopped scanner transforms; no browser runtime errors were captured. Local-guides desktop and mobile screenshots were inspected with view_image. The supplied artwork is used intact; three supplied SVGs contain embedded raster imagery, so animation applies to their wrappers rather than inventing internal vector layers. `node tests/motion.mjs` repeats these checks against the local dev server.

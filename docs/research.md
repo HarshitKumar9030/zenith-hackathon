@@ -40,3 +40,9 @@ Sources: [MongoDB Node connection pooling guidance](https://www.mongodb.com/docs
 ## Daily streak
 
 The optional habit feature counts distinct calendar days with saved identifications, using Asia/Kolkata. Multiple scans in one day count once. Yesterday's streak remains active until today ends; a missed full day resets it. The last seven days reflect actual database history across all records, not the dashboard's 200-record display limit. Deleting history can change this history-derived streak. A scan is not evidence that an item was actually recycled, so this feature does not claim diversion or environmental impact.
+
+## Animation implementation
+
+GSAP drives the scanner's SVG transforms and the supplied illustration wrappers; it does not modify the artwork files. `gsap.context` scopes animations and reverts them on cleanup. `matchMedia` responds to reduced-motion changes; illustration loops pause offscreen or when the document is hidden. Framer Motion supplies keyed page enter/exit transitions, dropdown exits, and result reveals with explicit reduced-motion handling. Existing CSS animations on those same elements are disabled to avoid competing transforms.
+
+Sources: [GSAP context and React cleanup](https://gsap.com/docs/v3/GSAP/gsap.context%28%29/), [Motion AnimatePresence](https://motion.dev/docs/react-animate-presence), [Motion reduced-motion hook](https://motion.dev/docs/react-use-reduced-motion).
