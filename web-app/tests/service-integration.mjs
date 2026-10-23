@@ -184,9 +184,70 @@ try {
     scanId: String(scan.insertedId),
     weightKg: 1,
     date: new Date(Date.now() + 2 * 86400000).toLocaleDateString("en-CA"),
-    window: "09:00–12:00",
+    window: "09:00",
     segregated: true,
   };
+  for (const invalid of ["06:59", "14:00", "16:59", "19:01", "09:00–12:00"])
+    assert.equal(
+      (
+        await resident.req("service", {
+          ...booking,
+          requestId: randomUUID(),
+          window: invalid,
+        })
+      ).status,
+      400,
+    );
+  const evening = await resident.req("service", {
+    ...booking,
+    requestId: randomUUID(),
+    source: "basic",
+    window: "17:35",
+  });
+  assert.equal(evening.data.result.surgeFeePaise, 500);
+  assert.equal(evening.data.result.feePaise, 2500);
+  assert.equal(evening.data.result.status, "payment_due");
+  await resident.req("service", {
+    action: "cancel",
+    id: evening.data.result.id,
+  });
+  const eveningReward = await resident.req("service", {
+    ...booking,
+    requestId: randomUUID(),
+    source: "reward",
+    window: "18:15",
+  });
+  assert.equal(eveningReward.data.result.feePaise, 500);
+  assert.equal(eveningReward.data.result.status, "payment_due");
+  await resident.req("service", {
+    action: "cancel",
+    id: eveningReward.data.result.id,
+  });
+  const eveningQuote = await resident.req("service", {
+    ...booking,
+    requestId: randomUUID(),
+    weightKg: 3,
+    segregated: false,
+    window: "18:37",
+  });
+  assert.equal(eveningQuote.data.result.surgeFeePaise, 700);
+  assert.equal(eveningQuote.data.result.status, "quote_requested");
+  assert.equal(
+    (
+      await admin.req("operations", {
+        action: "quote",
+        residentId: resident.id,
+        id: eveningQuote.data.result.id,
+        feePaise: 600,
+        terms: "Below surcharge should fail",
+      })
+    ).status,
+    400,
+  );
+  await resident.req("service", {
+    action: "cancel",
+    id: eveningQuote.data.result.id,
+  });
   const booked = await Promise.all([
     resident.req("service", booking),
     resident.req("service", booking),
@@ -459,6 +520,16 @@ try {
       .getByRole("heading", { name: "Schedule this pickup", exact: true })
       .waitFor();
     const quick = page.getByRole("region", { name: "Schedule this scan" });
+    await quick.getByLabel("Pickup time", { exact: true }).fill("14:30");
+    assert.equal(
+      await quick
+        .getByLabel("Pickup time", { exact: true })
+        .evaluate((e) => e.checkValidity()),
+      false,
+    );
+    await quick.getByLabel("Pickup time", { exact: true }).fill("17:35");
+    await quick.getByText("5–7 pm · ₹6 extra", { exact: false }).waitFor();
+    await quick.getByLabel("Pickup time", { exact: true }).fill("09:37");
     await quick.getByLabel("Estimated weight (kg)").fill("1");
     await quick
       .getByLabel("I have separated the materials for collection")

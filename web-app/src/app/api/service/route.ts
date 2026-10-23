@@ -9,6 +9,11 @@ import {
   reserve,
   roleFor,
 } from "@/lib/service";
+import {
+  validPickupTime,
+  surgeTime,
+  pickupSurgePaise,
+} from "@/lib/pickup-time";
 import { db } from "@/lib/db";
 import { ObjectId } from "mongodb";
 const input = z.discriminatedUnion("action", [
@@ -37,7 +42,12 @@ const input = z.discriminatedUnion("action", [
     scanId: z.string().regex(/^[a-f\d]{24}$/i),
     weightKg: z.number().positive().max(10),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    window: z.enum(["09:00–12:00", "14:00–17:00"]),
+    window: z
+      .string()
+      .refine(
+        validPickupTime,
+        "Choose 7 am–2 pm or 5 pm–7 pm. No pickups during the 2–5 pm break.",
+      ),
     segregated: z.boolean(),
   }),
   z.object({ action: z.literal("cancel"), id: z.string() }),
@@ -130,6 +140,12 @@ export async function POST(req: Request) {
             new Date(a.membership.expiresAt)
         )
           throw new Error("Choose a collection date within your active pass.");
+        const surgeFeePaise = pickupSurgePaise(
+          data.window,
+          data.weightKg,
+          data.segregated,
+        );
+        const feePaise = (data.source === "basic" ? 2000 : 0) + surgeFeePaise;
         const booking = {
           id: new ObjectId().toString(),
           requestId: data.requestId,
@@ -150,15 +166,18 @@ export async function POST(req: Request) {
           estimatedKg: data.weightKg,
           date: data.date,
           window: data.window,
+          timezone: "Asia/Kolkata",
+          surge: surgeTime(data.window),
           address: a.profile.address,
           location: a.profile.location,
           locality: a.profile.locality,
           status: needsQuote
             ? "quote_requested"
-            : data.source === "basic"
+            : feePaise > 0
               ? "payment_due"
               : "scheduled",
-          feePaise: data.source === "basic" ? 2000 : 0,
+          feePaise,
+          surgeFeePaise,
           createdAt: new Date().toISOString(),
           events: [{ status: "created", at: new Date().toISOString() }],
         };

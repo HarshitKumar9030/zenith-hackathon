@@ -168,9 +168,23 @@ async function changeForRefund(
     if (!p) return;
     p.refundAmountPaise = amount;
     p.status = amount >= p.amountPaise ? "refunded" : "partially_refunded";
-    if (a.membership?.orderId === orderId) a.membership = null;
+    if (amount >= p.amountPaise && a.membership?.orderId === orderId)
+      a.membership = null;
     const b = a.bookings.find((b) => b.paymentId === p.paymentId);
-    if (b && ["scheduled", "payment_due"].includes(b.status))
+    if (
+      amount >= p.amountPaise &&
+      b &&
+      ["scheduled", "payment_due"].includes(b.status)
+    ) {
+      if (b.source === "reward") a.credits++;
+      if (
+        b.source === "membership" &&
+        a.membership?.orderId === b.membershipOrderId
+      ) {
+        a.membership!.remainingPickups++;
+        a.membership!.remainingKg += b.estimatedKg;
+      }
       b.status = "cancelled";
+    }
   });
 }

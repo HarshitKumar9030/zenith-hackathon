@@ -135,17 +135,13 @@ export async function POST(req: Request) {
     const admin = roleFor(u) === "admin";
     if (data.action === "approve_collector") {
       if (!admin) throw new Error("Administrator access required.");
-      const result = await (
-        await db()
-      )
-        .collection("users")
-        .updateOne(
-          {
-            email: data.email.toLowerCase(),
-            $or: [{ accountType: "helper" }, { role: "collector" }],
-          },
-          { $set: { role: "collector", collectorApproved: true } },
-        );
+      const result = await (await db()).collection("users").updateOne(
+        {
+          email: data.email.toLowerCase(),
+          $or: [{ accountType: "helper" }, { role: "collector" }],
+        },
+        { $set: { role: "collector", collectorApproved: true } },
+      );
       if (!result.matchedCount)
         throw new Error("The helper must sign up with a Helper account first.");
       return NextResponse.json({ ok: true });
@@ -204,6 +200,10 @@ export async function POST(req: Request) {
       } else {
         if (!admin) throw new Error("Administrator access required.");
         if (data.action === "quote") {
+          if (data.feePaise < (b.surgeFeePaise || 0))
+            throw new Error(
+              "The total quote must include the evening surcharge.",
+            );
           if (b.status !== "quote_requested")
             throw new Error("This request is not waiting for a quote.");
           b.feePaise = data.feePaise;
