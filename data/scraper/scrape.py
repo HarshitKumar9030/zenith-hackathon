@@ -144,11 +144,13 @@ def collect(args):
     manifest = args.output / "annotations.jsonl"
     records = [json.loads(line) for line in manifest.read_text().splitlines() if line.strip()] if manifest.exists() else []
     missing = [r["file_path"] for r in records if not (args.output / r["file_path"]).is_file()]
-    if missing:
+    if missing and not getattr(args, "skip_missing", False):
         raise ValueError(f"Manifest references missing images; restore or repair first: {missing[:3]}")
     hashes = {r["image_id"] for r in records}
     urls = {r["source_url"] for r in records}
-    counts = Counter(r["material"] for r in records)
+    counts = Counter(r["material"] for r in records if (args.output / r["file_path"]).is_file())
+    if missing:
+        LOG.warning("Excluding %s missing files from counts; their hashes and URLs remain blocked", len(missing))
     baseline = counts.copy()
     new_total = getattr(args, "new_total", None)
     # Allocate exactly the requested new total evenly across selected classes.
@@ -238,6 +240,7 @@ def main():
     parser.add_argument("--queries", type=Path, default=Path(__file__).with_name("queries.json"))
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "datasets")
     parser.add_argument("--classes", nargs="+")
+    parser.add_argument("--skip-missing", action="store_true", help="Exclude missing files from counts while retaining duplicate exclusions")
     parser.add_argument("--new-total", type=int, help="Collect this many NEW images, excluding all existing records")
     parser.add_argument("--resume-targets", type=Path, help="Resume exact class targets from a saved dataset manifest")
     parser.add_argument("--download-delay", type=float, default=0, help="Delay per image download; API delay is separate")

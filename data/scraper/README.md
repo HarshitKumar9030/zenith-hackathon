@@ -65,3 +65,5 @@ This preserves the original per-class targets and cumulative collection count. D
 ## Current hackathon scope
 
 Collection stops at food waste. Garden waste, textile, and composite/other are excluded from the active queries to reduce collection time. These cases are planned for Gemini/OCR handling; that integration is not implemented by this scraper. Existing images remain intact. The reduced run retains the original targets for the six active classes rather than redistributing the former 8,000-image goal: 990 plastic, 998 paper, and 889 each for cardboard, glass, metal, and food waste (5,544 total including earlier downloads). Search exhaustion can leave a shortfall.
+
+`--skip-missing` permits continuing after local image files were removed. Missing records remain in the annotation manifest as duplicate exclusions, but do not count toward collection targets. Filter records for file existence before training.
