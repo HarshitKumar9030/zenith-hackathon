@@ -18,7 +18,6 @@ import {
   Search,
   Settings,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
   X,
@@ -26,6 +25,7 @@ import {
 } from "lucide-react";
 import ScanArt from "./scan-art";
 import Dropdown from "./dropdown";
+import { streakSummary } from "@/lib/streak";
 import type { Guide, Identification } from "@/lib/rules";
 type User = { id: string; name: string; email: string };
 type Result = {
@@ -90,13 +90,20 @@ export default function Dashboard() {
     [filter, setFilter] = useState("all"),
     [guideDraft, setGuideDraft] = useState(""),
     [authBusy, setAuthBusy] = useState(false);
+  const [activityDays, setActivityDays] = useState<string[]>([]);
+  const streak = streakSummary(activityDays);
   const upload = useRef<HTMLInputElement>(null),
     camera = useRef<HTMLInputElement>(null),
     guideUpload = useRef<HTMLInputElement>(null),
     dialog = useRef<HTMLDialogElement>(null);
   const refresh = useCallback(async () => {
     try {
-      const [h, g] = await Promise.all([api("history"), api("guides")]);
+      const [h, g, a] = await Promise.all([
+        api("history"),
+        api("guides"),
+        api("activity"),
+      ]);
+      setActivityDays(a.days);
       setHistory(h.items);
       setGuides(g.guides);
       setGuideId((current) => current || g.guides[0]?._id || "");
@@ -151,6 +158,7 @@ export default function Dashboard() {
       bitmap.close();
       setImage(canvas.toDataURL("image/jpeg", 0.88));
       setFileName(file.name);
+      setMode("photo");
       setOcr("");
       setResult(null);
       setPage("Identify waste");
@@ -236,6 +244,7 @@ export default function Dashboard() {
       await api("auth/logout", "POST");
       setUser(null);
       setHistory([]);
+      setActivityDays([]);
       setGuides([]);
       setGuideId("");
       setResult(null);
@@ -489,7 +498,7 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
-        <main>
+        <main key={page}>
           {page === "Overview" && (
             <>
               <div className="page-heading">
@@ -575,6 +584,55 @@ export default function Dashboard() {
                   ))}
                 </section>
               </div>
+              <section
+                className="streak-band"
+                aria-label="Daily identification streak"
+              >
+                <div className="streak-intro">
+                  <img
+                    className={streak.streak ? "fire-icon lit" : "fire-icon"}
+                    src="/assets/fire.svg"
+                    alt=""
+                    width="35"
+                    height="40"
+                  />
+                  <div>
+                    <h3>
+                      {streak.streak} day{streak.streak === 1 ? "" : "s"} of
+                      showing up
+                    </h3>
+                    <p>
+                      {streak.todayActive
+                        ? "You made time for a thoughtful choice today."
+                        : "Identify one item today to keep the habit growing."}
+                    </p>
+                  </div>
+                </div>
+                <div className="streak-week" aria-label="Last seven days">
+                  {streak.week.map((day) => (
+                    <div key={day.date} className="streak-day">
+                      <span>
+                        {new Intl.DateTimeFormat("en", {
+                          weekday: "narrow",
+                          timeZone: "UTC",
+                        }).format(new Date(day.date + "T12:00:00Z"))}
+                      </span>
+                      <span
+                        className={`day-dot ${day.active ? "done" : ""} ${day.today ? "today" : ""}`}
+                        aria-label={`${day.date}: ${day.active ? "item identified" : "no saved identification"}`}
+                      >
+                        {day.active ? (
+                          <Check size={13} />
+                        ) : day.today ? (
+                          "·"
+                        ) : (
+                          ""
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
               <div className="stats">
                 {[
                   {
@@ -799,7 +857,7 @@ export default function Dashboard() {
                     {busy ? (
                       <Loader2 className="spin" size={17} />
                     ) : (
-                      <Sparkles size={17} />
+                      <ScanLine size={17} />
                     )}{" "}
                     {busy ? progress : "Identify my item"}{" "}
                     {!busy && <ArrowRight size={17} />}
