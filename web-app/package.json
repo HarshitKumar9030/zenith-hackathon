@@ -10,20 +10,22 @@
     "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
+    "framer-motion": "^14.6.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^0.468.0",
+    "mongodb": "^6.20.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "lucide-react": "^0.468.0",
     "tesseract.js": "^6.0.0",
-    "zod": "^4.0.0",
-    "mongodb": "^6.20.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
+    "@playwright/test": "^1.56.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "tsx": "^4.20.0",
-    "@playwright/test": "^1.56.0"
+    "typescript": "^5.9.0"
   }
 }
