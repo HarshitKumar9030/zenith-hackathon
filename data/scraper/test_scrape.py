@@ -72,3 +72,41 @@ class DownloadTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class BatchTests(unittest.TestCase):
+    def test_new_total_excludes_existing_and_duplicate_pixels(self):
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "old.jpg").write_bytes(b"existing")
+            old = dict(image_id="old", source_url="old-url", material="plastic", file_path="old.jpg")
+            (root / "annotations.jsonl").write_text(json.dumps(old) + "\n")
+            (root / "queries.json").write_text(json.dumps({"plastic": ["household"]}))
+            args = SimpleNamespace(queries=root / "queries.json", output=root,
+                classes=None, per_class=200, new_total=2, workers=4,
+                candidates_per_query=10, delay=0, min_size=224, user_agent="test")
+            def results(*unused):
+                for i, digest in enumerate(["old", "new1", "new1", "new2", "extra"]):
+                    yield ({"pageid": i, "title": str(i)},
+                           {"url": str(i), "size": 1, "mime": "image/jpeg",
+                            "extmetadata": {"LicenseShortName": {"value": "CC0"}}},
+                           (b"image", digest), None)
+            with patch.object(scrape, "parallel_candidates", side_effect=results):
+                self.assertEqual(scrape.collect(args), 0)
+            records = [json.loads(line) for line in (root / "annotations.jsonl").read_text().splitlines()]
+            self.assertEqual([r["image_id"] for r in records], ["old", "new1", "new2"])
+            summary = json.loads((root / "dataset_manifest.json").read_text())
+            self.assertEqual(summary["added_this_run"], 2)
+
+    def test_parallel_fetch_skips_known_urls(self):
+        args = SimpleNamespace(candidates_per_query=10, delay=0, workers=3,
+                               user_agent="test", min_size=224)
+        def source(*unused):
+            for i in [0, 1, 1, 2]:
+                yield {"pageid": i}, {"url": str(i), "mime": "image/jpeg", "size": 1,
+                                      "extmetadata": {"LicenseShortName": {"value": "CC0"}}}
+        with patch.object(scrape, "candidates", side_effect=source), patch.object(
+                scrape, "download", return_value=(b"image", "hash")) as fetch:
+            results = list(scrape.parallel_candidates(None, "query", args, {"0"}))
+            self.assertEqual(fetch.call_count, 2)
+            self.assertEqual({r[1]["url"] for r in results}, {"1", "2"})

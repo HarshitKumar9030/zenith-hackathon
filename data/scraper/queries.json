@@ -1,11 +1,90 @@
 {
-  "plastic": ["discarded plastic bottles", "plastic packaging waste"],
-  "paper": ["waste paper", "discarded newspapers"],
-  "cardboard": ["cardboard waste", "discarded cardboard boxes"],
-  "glass": ["glass bottle waste", "discarded glass jars"],
-  "metal": ["discarded aluminium cans", "metal tin waste"],
-  "food_waste": ["food scraps", "fruit vegetable peel waste"],
-  "garden_waste": ["garden waste leaves", "grass clippings"],
-  "textile": ["textile waste", "discarded clothing"],
-  "composite_or_other": ["multilayer packaging waste", "beverage carton waste"]
+  "plastic": [
+    "household plastic waste",
+    "discarded plastic bottles",
+    "plastic food containers",
+    "plastic packaging waste",
+    "shampoo bottles",
+    "detergent bottles",
+    "plastic bags waste",
+    "yogurt pots",
+    "plastic bottle caps"
+  ],
+  "paper": [
+    "household waste paper",
+    "discarded newspapers",
+    "paper recycling",
+    "paper bags waste",
+    "used envelopes",
+    "paper receipts",
+    "shredded paper",
+    "waste paper"
+  ],
+  "cardboard": [
+    "household cardboard waste",
+    "cardboard boxes recycling",
+    "corrugated cardboard waste",
+    "cereal boxes",
+    "egg cartons cardboard",
+    "cardboard packaging",
+    "discarded cardboard boxes"
+  ],
+  "glass": [
+    "household glass bottles recycling",
+    "empty glass jars",
+    "discarded glass bottles",
+    "glass bottle waste",
+    "broken glass household",
+    "jam jars",
+    "glass recycling"
+  ],
+  "metal": [
+    "household metal waste",
+    "empty food cans",
+    "discarded aluminium cans",
+    "tin cans recycling",
+    "metal bottle caps",
+    "aluminium foil waste",
+    "metal tin waste"
+  ],
+  "food_waste": [
+    "household food waste",
+    "kitchen scraps",
+    "fruit peels",
+    "vegetable peels",
+    "food leftovers",
+    "spoiled food",
+    "banana peels",
+    "eggshells waste",
+    "food scraps",
+    "coffee grounds"
+  ],
+  "garden_waste": [
+    "household garden waste",
+    "dry leaves pile",
+    "grass clippings",
+    "plant trimmings",
+    "garden pruning waste",
+    "fallen leaves compost",
+    "garden waste leaves"
+  ],
+  "textile": [
+    "household textile waste",
+    "discarded clothing",
+    "old clothes recycling",
+    "fabric scraps",
+    "torn clothes",
+    "used cotton rags",
+    "textile waste"
+  ],
+  "composite_or_other": [
+    "household composite packaging waste",
+    "beverage cartons recycling",
+    "milk cartons waste",
+    "multilayer packaging waste",
+    "food wrappers waste",
+    "toothpaste tubes waste",
+    "plastic lined paper cups",
+    "tetra pak waste"
+  ]
 }
