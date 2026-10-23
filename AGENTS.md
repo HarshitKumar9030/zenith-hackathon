@@ -1,6 +1,6 @@
 # Repository instructions
 
-- This repository contains Relay for the Zenith hackathon.
+- This repository contains WasteWise (initially named Relay) for the Zenith hackathon.
 - Keep application code in `web-app/`, optional model work in `model/`, and documentation in `docs/`.
 - Keep documentation current as implementation and setup change.
 - Commit completed work regularly with descriptive commit messages.
