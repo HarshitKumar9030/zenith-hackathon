@@ -41,7 +41,7 @@ const input = z.discriminatedUnion("action", [
     requestId: z.uuid(),
     source: z.enum(["reward", "membership", "basic"]),
     scanId: z.string().regex(/^[a-f\d]{24}$/i),
-    weightKg: z.number().positive().max(10),
+    weightKg: z.number().nonnegative().max(10).optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     window: z
       .string()
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
           ).length >= 3
         )
           throw new Error("You can have up to three pending pickups.");
-        reserve(a, data);
+        reserve(a, { ...data, weightKg: 0 });
         if (
           data.source === "membership" &&
           a.membership &&
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
           throw new Error("Choose a collection date within your active pass.");
         const pricing = pickupPrice({
           source: data.source,
-          weightKg: data.weightKg,
+          weightKg: null,
           segregated: data.segregated,
           time: data.window,
         });
@@ -169,7 +169,9 @@ export async function POST(req: Request) {
               : 0,
           item: scan!.identification.object_name,
           material: scan!.identification.material,
-          estimatedKg: data.weightKg,
+          estimatedKg: 0,
+          weightPending: true,
+          pricingVersion: "helper-weighed-v1",
           date: data.date,
           window: data.window,
           timezone: "Asia/Kolkata",
@@ -215,11 +217,22 @@ export async function POST(req: Request) {
       if (data.action === "accept_receipt") {
         if (b.status !== "receipt_pending")
           throw new Error("No receipt is waiting for approval.");
-        b.status = "completed";
+        b.balanceDuePaise = Math.max(
+          0,
+          (b.receipt.additionalDuePaise || 0) - (b.finalPaidPaise || 0),
+        );
+        b.status =
+          b.balanceDuePaise > 0 ? "payment_due_after_collection" : "completed";
         b.acceptedAt = new Date().toISOString();
       }
       if (data.action === "dispute") {
-        if (!["receipt_pending", "completed"].includes(b.status))
+        if (
+          ![
+            "receipt_pending",
+            "payment_due_after_collection",
+            "completed",
+          ].includes(b.status)
+        )
           throw new Error("A measured receipt is required first.");
         b.status = "disputed";
         b.dispute = { reason: data.reason, at: new Date().toISOString() };

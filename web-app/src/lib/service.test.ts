@@ -30,6 +30,14 @@ test("cannot spend an absent reward or overbook an allowance", () => {
   assert.throws(() => reserve(a, { source: "membership", weightKg: 3 }));
   reserve(a, { source: "membership", weightKg: 2 });
   assert.equal(a.membership.remainingPickups, 0);
+  const empty = newAccount(new ObjectId());
+  empty.membership = {
+    plan: "gold",
+    remainingPickups: 2,
+    remainingKg: 0,
+    expiresAt: "2099-01-01",
+  };
+  assert.throws(() => reserve(empty, { source: "membership", weightKg: 0 }));
   assert.throws(() => reserve(a, { source: "membership", weightKg: 1 }));
 });
 test("collector roles require approval; requested role is not sufficient", () => {

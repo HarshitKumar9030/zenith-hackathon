@@ -1,31 +1,37 @@
 import { pickupSurgePaise, validPickupTime } from "./pickup-time";
+import { PLANS } from "./catalog";
 export const SORTING_PER_KG_PAISE = 500;
-/** Waste Right's configured collection fees, not commodity resale estimates. */
+/** No resident weight estimate: null means the helper has not weighed the waste yet. */
 export function pickupPrice(input: {
   source: string;
-  weightKg: number;
+  weightKg?: number | null;
   segregated: boolean;
   time: string;
 }) {
-  const valid =
+  const measured =
+    typeof input.weightKg === "number" &&
     Number.isFinite(input.weightKg) &&
-    input.weightKg > 0 &&
-    validPickupTime(input.time);
-  const collectionPaise = input.source === "basic" ? 2000 : 0;
+    input.weightKg > 0;
+  const valid =
+    validPickupTime(input.time) && (input.weightKg == null || measured);
+  const collectionPaise =
+    input.source === "basic" ? PLANS.basic.price * 100 : 0;
   const sortingPaise =
-    input.segregated || !valid
+    input.segregated || !measured
       ? 0
-      : Math.ceil(input.weightKg * SORTING_PER_KG_PAISE);
+      : Math.ceil(input.weightKg! * SORTING_PER_KG_PAISE);
   const surgePaise = pickupSurgePaise(
     input.time,
-    input.weightKg,
+    measured ? input.weightKg! : 0,
     input.segregated,
   );
   return {
     valid,
+    measured,
     collectionPaise,
     sortingPaise,
     surgePaise,
     totalPaise: collectionPaise + sortingPaise + surgePaise,
+    sortingPending: !input.segregated && !measured,
   };
 }

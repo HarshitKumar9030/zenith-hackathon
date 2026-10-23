@@ -143,6 +143,7 @@ export function reserve(
     if (
       !plan ||
       m.remainingPickups < 1 ||
+      m.remainingKg <= 0 ||
       m.remainingKg < input.weightKg ||
       input.weightKg > plan.perPickupKg
     )

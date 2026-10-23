@@ -1,7 +1,7 @@
 export const PLANS = {
   basic: {
     name: "Basic",
-    price: 20,
+    price: 15,
     pickups: 1,
     perPickupKg: 2,
     monthlyKg: 2,
@@ -9,7 +9,7 @@ export const PLANS = {
   },
   gold: {
     name: "Gold",
-    price: 600,
+    price: 599,
     pickups: 14,
     perPickupKg: 8,
     monthlyKg: 112,
@@ -17,7 +17,7 @@ export const PLANS = {
   },
   platinum: {
     name: "Platinum",
-    price: 700,
+    price: 699,
     pickups: 24,
     perPickupKg: 10,
     monthlyKg: 240,
