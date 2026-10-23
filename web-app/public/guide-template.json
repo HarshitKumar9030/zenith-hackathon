@@ -1,0 +1,7 @@
+{
+  "name": "EXAMPLE ONLY — replace with your supplied guide",
+  "municipality": "Example campus (not an actual authority)",
+  "version": "demo-1",
+  "text": "DEMONSTRATION ONLY. For this fictional campus, clean single-material cardboard goes in the example paper collection. Flatten the box.",
+  "rules": [{"id":"demo-cardboard","material":"cardboard","category":"example paper collection","condition":"clean_single_material","passage":"For this fictional campus, clean single-material cardboard goes in the example paper collection. Flatten the box.","section":"Example section 1","steps":["Flatten the box."]}]
+}
