@@ -1,0 +1,13 @@
+/* Individual rotate composes with existing GSAP/Framer translate transforms. */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  :is(.landing-visual,.landing-steps article,.landing-tier-art,.helper-illustration,.upload-hero) {
+    rotate: var(--depth-rotate, 0 1 0 0deg);
+    transition: rotate 260ms cubic-bezier(.2,.75,.25,1);
+    transform-style: preserve-3d;
+  }
+  :is(.landing-visual,.landing-steps article,.landing-tier-art,.helper-illustration,.upload-hero):hover { will-change: rotate; }
+}
+.depth-glyph-float { animation: depth-glyph-float 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes depth-glyph-float { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-9px) rotate(3deg); } }
+@media(prefers-reduced-motion:reduce) { .depth-glyph-float { animation: none; } }
+@media(max-width:600px) { .depth-glyph-float { animation: none; } }
