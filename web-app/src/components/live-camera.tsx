@@ -6,7 +6,7 @@ export default function LiveCamera({
   onError,
   stopSignal = 0,
 }: {
-  onScan: (image: string) => Promise<void>;
+  onScan: (image: string, ocr?: string) => Promise<void>;
   onError: (message: string) => void;
   stopSignal?: number;
 }) {
@@ -22,6 +22,10 @@ export default function LiveCamera({
     [processing, setProcessing] = useState(false),
     [count, setCount] = useState(0),
     [auto, setAuto] = useState(true);
+  const [readLabels, setReadLabels] = useState(false);
+  const labelsRef = useRef(readLabels);
+  labelsRef.current = readLabels;
+  const workerRef = useRef<import("tesseract.js").Worker | null>(null);
   const autoRef = useRef(auto);
   autoRef.current = auto;
   const active = useRef(false);
@@ -32,6 +36,10 @@ export default function LiveCamera({
     if (timer.current) clearTimeout(timer.current);
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
+    if (workerRef.current) {
+      void workerRef.current.terminate();
+      workerRef.current = null;
+    }
     if (video.current) video.current.srcObject = null;
     setRunning(false);
   }
@@ -49,6 +57,10 @@ export default function LiveCamera({
       active.current = false;
       if (timer.current) clearTimeout(timer.current);
       stream.current?.getTracks().forEach((t) => t.stop());
+      if (workerRef.current) {
+        void workerRef.current.terminate();
+        workerRef.current = null;
+      }
     };
   }, []);
   async function scan(epoch: number, n: number) {
@@ -72,7 +84,23 @@ export default function LiveCamera({
       canvas.width = v.videoWidth * scale;
       canvas.height = v.videoHeight * scale;
       canvas.getContext("2d")!.drawImage(v, 0, 0, canvas.width, canvas.height);
-      await callback.current(canvas.toDataURL("image/jpeg", 0.8));
+      const captured = canvas.toDataURL("image/jpeg", 0.8);
+      let labelText = "";
+      if (labelsRef.current) {
+        const { createWorker } = await import("tesseract.js");
+        if (!workerRef.current) {
+          const worker = await createWorker("eng");
+          if (!active.current || epoch !== generation.current) {
+            await worker.terminate();
+            return;
+          }
+          workerRef.current = worker;
+        }
+        const recognized = await workerRef.current.recognize(captured);
+        labelText = recognized.data.text.slice(0, 8000);
+      }
+      if (!active.current || epoch !== generation.current) return;
+      await callback.current(captured, labelText);
       if (epoch === generation.current) setCount(n + 1);
     } catch (e) {
       errorCallback.current((e as Error).message);
@@ -143,7 +171,7 @@ export default function LiveCamera({
           <div className="camera-empty">
             <Camera size={42} strokeWidth={1.3} />
             <h2>Point. Scan. Confirm.</h2>
-            <p>Use your phone’s rear camera. One item at a time.</p>
+            <p>Use your phone’s rear camera. Keep the waste clearly in view.</p>
           </div>
         )}
         {running && (
@@ -185,9 +213,23 @@ export default function LiveCamera({
         <input
           type="checkbox"
           checked={auto}
-          onChange={(e) => setAuto(e.target.checked)}
+          onChange={(e) => {
+            setAuto(e.target.checked);
+            autoRef.current = e.target.checked;
+            if (!e.target.checked && timer.current) clearTimeout(timer.current);
+            if (e.target.checked && active.current && !inFlight.current)
+              void scan(generation.current, count);
+          }}
         />
         Analyse automatically every 15 seconds (up to 8 frames per session)
+      </label>
+      <label className="check-row">
+        <input
+          type="checkbox"
+          checked={readLabels}
+          onChange={(e) => setReadLabels(e.target.checked)}
+        />
+        Read packaging labels with browser OCR (English)
       </label>
       <small>
         {running

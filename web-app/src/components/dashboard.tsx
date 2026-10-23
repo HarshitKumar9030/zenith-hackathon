@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowRight,
-  BookOpen,
   Camera,
   Check,
   ChevronRight,
@@ -12,7 +11,6 @@ import {
   Leaf,
   Loader2,
   LogOut,
-  MapPin,
   ScanLine,
   Search,
   ShieldCheck,
@@ -22,6 +20,8 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import QuickPickup from "./quick-pickup";
+import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
 import ConfirmationChecklist from "./confirmation-checklist";
@@ -29,8 +29,14 @@ import AnimatedSidebar from "./animated-sidebar";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
 import { streakSummary } from "@/lib/streak";
-import type { Guide, Identification } from "@/lib/rules";
-type User = { id: string; name: string; email: string; role?: string };
+import type { Identification } from "@/lib/rules";
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  accountType?: "user" | "helper";
+};
 type Result = {
   confirmed?: boolean;
   _id: string;
@@ -78,12 +84,11 @@ export default function Dashboard() {
     [user, setUser] = useState<User | null>(null),
     [auth, setAuth] = useState(false),
     [signup, setSignup] = useState(false),
+    [accountType, setAccountType] = useState("user"),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [progress, setProgress] = useState(""),
     [history, setHistory] = useState<Result[]>([]),
-    [guides, setGuides] = useState<Guide[]>([]),
-    [guideId, setGuideId] = useState(""),
     [mode, setMode] = useState("camera"),
     [text, setText] = useState(""),
     [image, setImage] = useState(""),
@@ -92,7 +97,6 @@ export default function Dashboard() {
     [result, setResult] = useState<Result | null>(null),
     [search, setSearch] = useState(""),
     [filter, setFilter] = useState("all"),
-    [guideDraft, setGuideDraft] = useState(""),
     [authBusy, setAuthBusy] = useState(false);
   const [liveStop, setLiveStop] = useState(0);
   const scanEpoch = useRef(0);
@@ -102,19 +106,12 @@ export default function Dashboard() {
   const streak = streakSummary(activityDays);
   const upload = useRef<HTMLInputElement>(null),
     camera = useRef<HTMLInputElement>(null),
-    guideUpload = useRef<HTMLInputElement>(null),
     dialog = useRef<HTMLDialogElement>(null);
   const refresh = useCallback(async () => {
     try {
-      const [h, g, a] = await Promise.all([
-        api("history"),
-        api("guides"),
-        api("activity"),
-      ]);
+      const [h, a] = await Promise.all([api("history"), api("activity")]);
       setActivityDays(a.days);
       setHistory(h.items);
-      setGuides(g.guides);
-      setGuideId((current) => current || g.guides[0]?._id || "");
     } catch (e) {
       setMessage((e as Error).message);
     }
@@ -123,6 +120,7 @@ export default function Dashboard() {
     api("auth/session")
       .then((data) => {
         setUser(data.user);
+        if (data.user?.accountType === "helper") setPage("Helper dashboard");
         if (data.user) void refresh();
       })
       .catch((e) => setMessage(e.message));
@@ -137,9 +135,6 @@ export default function Dashboard() {
     const timer = setTimeout(() => setMessage(""), 9000);
     return () => clearTimeout(timer);
   }, [message]);
-  useEffect(() => {
-    setResult(null);
-  }, [guideId]);
   async function pick(file?: File) {
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -217,7 +212,6 @@ export default function Dashboard() {
         text: description.slice(0, 4000),
         ocr,
         image: mode === "photo" ? image : undefined,
-        guideId: guideId || undefined,
       });
       setResult(data);
       void refresh();
@@ -228,7 +222,7 @@ export default function Dashboard() {
       setProgress("");
     }
   }
-  async function scanLive(frame: string) {
+  async function scanLive(frame: string, labelText = "") {
     if (!user) {
       setAuth(true);
       throw new Error("Sign in before starting a live identification.");
@@ -238,8 +232,7 @@ export default function Dashboard() {
       image: frame,
       preview: true,
       text,
-      ocr,
-      guideId: guideId || undefined,
+      ocr: labelText,
     });
     if (currentPage.current === "Identify waste" && epoch === scanEpoch.current)
       setResult(data);
@@ -249,12 +242,14 @@ export default function Dashboard() {
     setAuthBusy(true);
     const form = new FormData(event.currentTarget);
     try {
-      const data = await api(
-        `auth/${signup ? "signup" : "login"}`,
-        "POST",
-        Object.fromEntries(form),
-      );
+      const data = await api(`auth/${signup ? "signup" : "login"}`, "POST", {
+        ...Object.fromEntries(form),
+        ...(signup ? { accountType } : {}),
+      });
       setUser(data.user);
+      setPage(
+        data.user.accountType === "helper" ? "Helper dashboard" : "Overview",
+      );
       setAuth(false);
       await refresh();
     } catch (e) {
@@ -269,56 +264,8 @@ export default function Dashboard() {
       setUser(null);
       setHistory([]);
       setActivityDays([]);
-      setGuides([]);
-      setGuideId("");
       setResult(null);
       setPage("Overview");
-    } catch (e) {
-      setMessage((e as Error).message);
-    }
-  }
-  async function importGuide(file?: File) {
-    if (!file) return;
-    if (!user) {
-      setAuth(true);
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setMessage("Use a guide smaller than 8 MB.");
-      return;
-    }
-    setBusy(true);
-    setProgress("Reading your local guide…");
-    try {
-      if (file.name.endsWith(".json"))
-        setGuideDraft(JSON.stringify(JSON.parse(await file.text()), null, 2));
-      else {
-        const data = new FormData();
-        data.set("file", file);
-        const response = await fetch("/api/guides/extract", {
-          method: "POST",
-          body: data,
-        });
-        const parsed = await response.json();
-        if (!response.ok) throw new Error(parsed.error);
-        setGuideDraft(JSON.stringify(parsed.guide, null, 2));
-      }
-      setMessage(
-        "Review the extracted source text and rules against your original guide before saving.",
-      );
-    } catch (e) {
-      setMessage((e as Error).message);
-    } finally {
-      setBusy(false);
-      setProgress("");
-    }
-  }
-  async function saveGuide() {
-    try {
-      await api("guides", "POST", JSON.parse(guideDraft));
-      setGuideDraft("");
-      await refresh();
-      setMessage("Guide saved. It is now available for identification.");
     } catch (e) {
       setMessage((e as Error).message);
     }
@@ -333,15 +280,19 @@ export default function Dashboard() {
     link.click();
     URL.revokeObjectURL(link.href);
   }
-  const supported = history.filter(
-    (h) => h.recommendation.status === "supported",
-  ).length;
+  const confirmedCount = history.filter((h) => h.confirmed).length;
+  const needsReview = (h: Result) =>
+    Boolean(
+      h.identification.clarification_question ||
+      h.identification.material === "unknown",
+    );
   const visible = history.filter(
     (item) =>
       `${item.identification.object_name} ${item.correction?.material || item.identification.material}`
         .toLowerCase()
         .includes(search.toLowerCase()) &&
-      (filter === "all" || item.recommendation.status === filter),
+      (filter === "all" ||
+        (filter === "confirmed" ? item.confirmed : needsReview(item))),
   );
   function resultPanel(item: Result) {
     return (
@@ -351,25 +302,31 @@ export default function Dashboard() {
             <span className="micro">IDENTIFICATION</span>
             <h2>{item.identification.object_name}</h2>
           </div>
-          <span
-            className={`status ${item.recommendation.status === "supported" ? "good" : ""}`}
-          >
-            {item.recommendation.status === "supported"
-              ? "Guide matched"
-              : "Needs review"}
+          <span className={`status ${item.confirmed ? "good" : ""}`}>
+            {item.confirmed ? "Confirmed" : "Review checklist"}
           </span>
         </div>
         <ConfirmationChecklist
-          key={item._id}
+          key={item._id + JSON.stringify(item.identification.detected_items)}
           id={item._id}
           identification={item.identification}
           confirmed={item.confirmed}
           notify={setMessage}
           onConfirmed={(value) => {
+            scanEpoch.current++;
+            setLiveStop((v) => v + 1);
             setResult(value as Result);
             void refresh();
           }}
         />
+        {item.confirmed && (
+          <QuickPickup
+            key={item._id}
+            scanId={item._id}
+            onRecords={() => setPage("Pickups")}
+            notify={setMessage}
+          />
+        )}
         <div className="attribute-row">
           <span>
             {title(item.correction?.material || item.identification.material)}
@@ -396,31 +353,33 @@ export default function Dashboard() {
             </button>
           </div>
         )}
-        <div className="recommendation">
-          <ShieldCheck size={24} />
-          <div>
-            <h3>
-              {item.recommendation.category || "Guidance needs more evidence"}
-            </h3>
-            <p>{item.recommendation.message}</p>
-            {item.recommendation.steps.length > 0 && (
-              <ol>
-                {item.recommendation.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            )}
-            {item.recommendation.rule && (
-              <>
-                <blockquote>“{item.recommendation.rule.passage}”</blockquote>
-                <small>
-                  {item.guideName} · {item.municipality} · {item.guideVersion} ·{" "}
-                  {item.recommendation.rule.section}
-                </small>
-              </>
-            )}
+        {item.recommendation.rule && (
+          <div className="recommendation">
+            <ShieldCheck size={24} />
+            <div>
+              <h3>
+                {item.recommendation.category || "Guidance needs more evidence"}
+              </h3>
+              <p>{item.recommendation.message}</p>
+              {item.recommendation.steps.length > 0 && (
+                <ol>
+                  {item.recommendation.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              )}
+              {item.recommendation.rule && (
+                <>
+                  <blockquote>“{item.recommendation.rule.passage}”</blockquote>
+                  <small>
+                    {item.guideName} · {item.municipality} · {item.guideVersion}{" "}
+                    · {item.recommendation.rule.section}
+                  </small>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className="result-footer">
           <Dropdown
             label="Correct material"
@@ -438,7 +397,7 @@ export default function Dashboard() {
                     steps: [],
                     rule: null,
                     message:
-                      "Identification corrected. Run identification again to reassess the guide.",
+                      "Identification corrected. Review the updated collection checklist.",
                   },
                 });
                 void refresh();
@@ -461,6 +420,7 @@ export default function Dashboard() {
     <div className="app-shell">
       <AnimatedSidebar
         role={user?.role}
+        accountType={user?.accountType}
         page={page}
         onNavigate={(next) => {
           setPage(next);
@@ -471,21 +431,9 @@ export default function Dashboard() {
         <header className="topbar">
           <span>{page}</span>
           <div className="top-actions">
-            <MapPin size={16} />
-            <Dropdown
-              label="Select local guide"
-              value={guideId}
-              onChange={setGuideId}
-              options={[
-                { value: "", label: "Local guide not selected" },
-                ...guides.map((g) => ({
-                  value: g._id!,
-                  label: g.municipality,
-                })),
-              ]}
-            />
             <button
               className="account"
+              aria-label={user ? `Account: ${user.name}` : "Sign in"}
               onClick={() => (user ? setPage("Settings") : setAuth(true))}
             >
               <span className="avatar">
@@ -503,10 +451,7 @@ export default function Dashboard() {
                   A little care.
                   <br className="mobile-break" /> A cleaner tomorrow.
                 </h1>
-                <p>
-                  Know your waste. Find the right next step, one everyday item
-                  at a time.
-                </p>
+                <p>Know your waste. Scan, confirm and arrange collection.</p>
               </div>
               <div className="overview-grid">
                 <section
@@ -568,9 +513,9 @@ export default function Dashboard() {
                     },
                     {
                       n: "03",
-                      Icon: BookOpen,
-                      name: "Follow your local guide",
-                      copy: "See the source rule and supported preparation steps.",
+                      Icon: Check,
+                      name: "Confirm and arrange collection",
+                      copy: "Review what was detected, then book a pickup.",
                     },
                   ].map(({ n, Icon, name, copy }) => (
                     <div className="step" key={n}>
@@ -604,7 +549,7 @@ export default function Dashboard() {
                     <p>
                       {streak.todayActive
                         ? "You made time for a thoughtful choice today."
-                        : "Identify one item today to keep the habit growing."}
+                        : "Scan your waste today to keep the habit growing."}
                     </p>
                   </div>
                 </div>
@@ -653,18 +598,18 @@ export default function Dashboard() {
               <div className="stats">
                 {[
                   {
-                    name: "Items identified",
+                    name: "Scans saved",
                     value: history.length,
                     Icon: Leaf,
                   },
                   {
-                    name: "Guide-backed results",
-                    value: supported,
+                    name: "Confirmed scans",
+                    value: confirmedCount,
                     Icon: ShieldCheck,
                   },
                   {
                     name: "Needs a closer look",
-                    value: history.length - supported,
+                    value: history.filter(needsReview).length,
                     Icon: ScanLine,
                   },
                 ].map(({ name, value, Icon }) => (
@@ -806,7 +751,7 @@ export default function Dashboard() {
                           <ScanArt busy={busy} />
                           <h2>A clearer photo. A better answer.</h2>
                           <p>
-                            One item, good lighting, and its packaging label if
+                            Clear lighting and visible packaging labels if
                             visible.
                           </p>
                           <div className="inline-actions">
@@ -918,19 +863,6 @@ export default function Dashboard() {
                     Mixed packaging? Blurry photo? We’ll ask rather than guess.
                   </p>
                   <div className="note">
-                    <h3>Local rules matter</h3>
-                    <p>
-                      Select a supplied guide to get a disposal recommendation
-                      with its exact source passage.
-                    </p>
-                    <button
-                      className="text-button"
-                      onClick={() => setPage("Local guides")}
-                    >
-                      Manage your guide <ArrowRight size={14} />
-                    </button>
-                  </div>
-                  <div className="note">
                     <h3>You know your item best</h3>
                     <p>
                       You can correct the material and answer a clarification at
@@ -984,8 +916,8 @@ export default function Dashboard() {
                   onChange={setFilter}
                   options={[
                     { value: "all", label: "All items" },
-                    { value: "supported", label: "Guide matched" },
-                    { value: "unsupported", label: "Needs review" },
+                    { value: "confirmed", label: "Confirmed" },
+                    { value: "unclear", label: "Needs clarification" },
                   ]}
                 />
               </div>
@@ -1057,125 +989,6 @@ export default function Dashboard() {
               {result && resultPanel(result)}
             </>
           )}
-          {page === "Local guides" && (
-            <>
-              <div className="page-heading">
-                <h1>Good guidance starts locally.</h1>
-                <p>One campus. One locality. The rules that apply to you.</p>
-              </div>
-              <div className="guide-layout">
-                <section className="guide-import">
-                  <AnimatedIllustration
-                    asset="abstract-animation-education.svg"
-                    className="education-art"
-                  />
-                  <h2>Bring your disposal guide.</h2>
-                  <p>
-                    Import a PDF or text guide for Gemini to extract candidate
-                    rules, or upload reviewed JSON. Review every passage against
-                    the original before saving.
-                  </p>
-                  <button
-                    className="primary"
-                    disabled={busy}
-                    onClick={() => guideUpload.current?.click()}
-                  >
-                    {busy ? (
-                      <Loader2 className="spin" size={17} />
-                    ) : (
-                      <Upload size={17} />
-                    )}{" "}
-                    {busy ? progress : "Upload a local guide"}
-                  </button>
-                  <small>
-                    PDF or TXT up to 8 MB · reviewed JSON up to 200 KB
-                  </small>
-                  <a
-                    className="text-button"
-                    href="/guide-template.json"
-                    download
-                  >
-                    Download JSON format <ArrowDownToLine size={14} />
-                  </a>
-                </section>
-                <section>
-                  <h2>Your guide library</h2>
-                  {guides.length ? (
-                    guides.map((g) => (
-                      <div className="guide-entry" key={g._id}>
-                        <span className="micro">
-                          {g.municipality} · {g.version}
-                        </span>
-                        <h3>{g.name}</h3>
-                        <p>{g.rules.length} reviewed rules</p>
-                        <button
-                          className="secondary"
-                          onClick={() => {
-                            setGuideId(g._id!);
-                            setMessage(
-                              "Guide selected for new identifications.",
-                            );
-                          }}
-                        >
-                          {guideId === g._id ? (
-                            <Check size={16} />
-                          ) : (
-                            <BookOpen size={16} />
-                          )}{" "}
-                          {guideId === g._id
-                            ? "Selected guide"
-                            : "Use this guide"}
-                        </button>
-                        <details>
-                          <summary>Inspect source passages</summary>
-                          {g.rules.map((r) => (
-                            <div className="source-rule" key={r.id}>
-                              <strong>
-                                {title(r.material)} → {r.category}
-                              </strong>
-                              <blockquote>{r.passage}</blockquote>
-                              <small>
-                                {r.section} · {r.condition}
-                              </small>
-                            </div>
-                          ))}
-                        </details>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty">
-                      <MapPin size={29} strokeWidth={1.2} />
-                      <h3>No guide yet.</h3>
-                      <p>
-                        Until a guide supports it, disposal advice stays
-                        unverified.
-                      </p>
-                    </div>
-                  )}
-                </section>
-              </div>
-              {guideDraft && (
-                <section className="guide-review">
-                  <h2>Review extracted rules</h2>
-                  <p>
-                    Check the municipality, document version, conditions, and
-                    every exact passage. Preparation steps must be copied
-                    verbatim from their passage. Save only after comparing with
-                    the original document.
-                  </p>
-                  <textarea
-                    aria-label="Review guide JSON"
-                    value={guideDraft}
-                    onChange={(e) => setGuideDraft(e.target.value)}
-                    rows={18}
-                  />
-                  <button className="primary" onClick={saveGuide}>
-                    <Check size={16} />I reviewed the source · Save guide
-                  </button>
-                </section>
-              )}
-            </>
-          )}
           {[
             "Plans",
             "Pickups",
@@ -1191,6 +1004,17 @@ export default function Dashboard() {
               onRefresh={() => void refresh()}
             />
           )}
+          {["Helper dashboard", "Helper earnings", "Service area"].includes(
+            page,
+          ) &&
+            user?.accountType === "helper" && (
+              <HelperDashboard
+                view={page}
+                signedIn={Boolean(user)}
+                onSignIn={() => setAuth(true)}
+                notify={setMessage}
+              />
+            )}
           {page === "Settings" && (
             <>
               <div className="page-heading">
@@ -1205,7 +1029,7 @@ export default function Dashboard() {
                   <p>
                     {user
                       ? user.email
-                      : "Sign in to save your history and local guide."}
+                      : "Sign in to save your scans and pickups."}
                   </p>
                   <button
                     className="secondary"
@@ -1218,10 +1042,10 @@ export default function Dashboard() {
                 <section className="settings-block">
                   <h2>Private by design</h2>
                   <p>
-                    History and guides belong to your account. Photos are not
-                    stored. OCR runs in your browser; language assets download
-                    on first use. Image and description content is sent to
-                    Google when you identify an item.
+                    History belongs to your account. Photos are not stored. OCR
+                    runs in your browser; language assets download on first use.
+                    Image and description content is sent to Google when you
+                    identify an item.
                   </p>
                 </section>
                 <section className="settings-block">
@@ -1234,19 +1058,6 @@ export default function Dashboard() {
                     untrained classifier predictions or invented accuracy scores
                     are shown.
                   </p>
-                </section>
-                <section className="settings-block">
-                  <h2>Your local guide</h2>
-                  <p>
-                    {guides.find((g) => g._id === guideId)?.name ||
-                      "No guide selected. Recommendations require a supplied guide."}
-                  </p>
-                  <button
-                    className="text-button"
-                    onClick={() => setPage("Local guides")}
-                  >
-                    Manage guides <ArrowRight size={15} />
-                  </button>
                 </section>
               </div>
             </>
@@ -1277,16 +1088,6 @@ export default function Dashboard() {
         hidden
         onChange={(e) => {
           void pick(e.target.files?.[0]);
-          e.target.value = "";
-        }}
-      />
-      <input
-        ref={guideUpload}
-        type="file"
-        accept=".pdf,.txt,.json"
-        hidden
-        onChange={(e) => {
-          void importGuide(e.target.files?.[0]);
           e.target.value = "";
         }}
       />
@@ -1325,6 +1126,25 @@ export default function Dashboard() {
               Your name
               <input name="name" required autoComplete="name" maxLength={80} />
             </label>
+          )}
+          {signup && (
+            <div className="field">
+              <label>Account type</label>
+              <Dropdown
+                label="Account type"
+                value={accountType}
+                onChange={setAccountType}
+                options={[
+                  { value: "user", label: "User" },
+                  { value: "helper", label: "Helper" },
+                ]}
+              />
+              <small>
+                {accountType === "helper"
+                  ? "Your helper dashboard opens after signup. Operations approval is required to accept collections."
+                  : "Scan waste, book pickups and earn rewards."}
+              </small>
+            </div>
           )}
           <label className="field">
             Email address

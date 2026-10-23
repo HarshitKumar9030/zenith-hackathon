@@ -57,6 +57,7 @@ export default function Dropdown({
       }}
     >
       <button
+        type="button"
         className="select-trigger"
         aria-label={label}
         aria-haspopup="listbox"
@@ -79,6 +80,7 @@ export default function Dropdown({
           >
             {options.map((option) => (
               <button
+                type="button"
                 key={option.value}
                 role="option"
                 aria-selected={value === option.value}

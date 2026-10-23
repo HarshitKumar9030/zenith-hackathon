@@ -5,7 +5,6 @@ import {
   Home,
   ScanLine,
   Clock3,
-  BookOpen,
   Settings,
   Leaf,
   CalendarDays,
@@ -13,12 +12,13 @@ import {
   CreditCard,
   Truck,
   ShieldCheck,
+  Wallet,
+  MapPin,
 } from "lucide-react";
 const items = [
   { label: "Overview", Icon: Home },
   { label: "Identify waste", Icon: ScanLine },
   { label: "My history", Icon: Clock3 },
-  { label: "Local guides", Icon: BookOpen },
   { label: "Plans", Icon: CreditCard },
   { label: "Pickups", Icon: CalendarDays },
   { label: "Rewards", Icon: Gift },
@@ -27,10 +27,12 @@ const items = [
 export default function AnimatedSidebar({
   page,
   role,
+  accountType,
   onNavigate,
 }: {
   page: string;
   role?: string;
+  accountType?: string;
   onNavigate: (page: string) => void;
 }) {
   const reduce = useReducedMotion();
@@ -71,10 +73,14 @@ export default function AnimatedSidebar({
           onMouseLeave={() => setHovered(null)}
         >
           {[
-            ...items,
-            ...(["collector", "admin"].includes(role || "")
-              ? [{ label: "Collection route", Icon: Truck }]
-              : []),
+            ...(accountType === "helper"
+              ? [
+                  { label: "Helper dashboard", Icon: Truck },
+                  { label: "Helper earnings", Icon: Wallet },
+                  { label: "Service area", Icon: MapPin },
+                  { label: "Settings", Icon: Settings },
+                ]
+              : items),
             ...(role === "admin"
               ? [{ label: "Operations", Icon: ShieldCheck }]
               : []),
@@ -123,14 +129,6 @@ export default function AnimatedSidebar({
                 <Icon size={19} />
               </motion.span>
               <span className="nav-label">{label}</span>
-              {page === label && (
-                <motion.span
-                  className="nav-dot"
-                  initial={{ scale: reduce ? 1 : 0 }}
-                  animate={{ scale: 1 }}
-                  transition={spring}
-                />
-              )}
             </motion.button>
           ))}
         </motion.nav>
