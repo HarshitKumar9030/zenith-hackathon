@@ -19,7 +19,7 @@ test("instant prices itemise sorting and evening fees for all funding sources", 
 
 test("Gold and Platinum allowance pickups include sorting before and after weighing", () => {
   for (const weightKg of [null, 1.5, 8, 10]) {
-    const price = pickupPrice({ source: "membership", weightKg, segregated: false, time: "09:00" });
+    const price = pickupPrice({ source: "membership", includedKg: 10, weightKg, segregated: false, time: "09:00" });
     assert.equal(price.sortingIncluded, true);
     assert.equal(price.sortingPending, false);
     assert.equal(price.sortingPaise, 0);
@@ -69,7 +69,8 @@ test("residents book without weight and sorting is added only after helper measu
     time: "09:00",
   });
   assert.equal(after.sortingPaise, 1200);
-  assert.equal(after.totalPaise, 2200);
+  assert.equal(after.excessPaise, 120);
+  assert.equal(after.totalPaise, 2320);
   assert.equal(
     pickupPrice({
       source: "basic",
@@ -79,4 +80,14 @@ test("residents book without weight and sorting is added only after helper measu
     }).totalPaise,
     1000,
   );
+});
+
+test('excess weight costs three rupees per measured kg for Basic, reward and both tiers',()=>{
+ for(const [source,includedKg] of [['basic',2],['reward',2],['membership',8],['membership',10]] as const){
+  const base={source,includedKg,segregated:true,time:'09:00'};
+  assert.equal(pickupPrice({...base,weightKg:includedKg}).excessPaise,0);
+  assert.equal(pickupPrice({...base,weightKg:includedKg+1}).excessPaise,300);
+  assert.equal(pickupPrice({...base,weightKg:includedKg+.5}).excessPaise,150);
+  assert.equal(pickupPrice({...base,weightKg:null}).excessPaise,0);
+ }
 });

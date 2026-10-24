@@ -149,7 +149,6 @@ export function reserve(
 ) {
   if (input.source === "reward") {
     if (a.credits < 1) throw new Error("No pickup credits available.");
-    if (input.weightKg > 2) throw new Error("Reward pickups cover up to 2 kg.");
     a.credits--;
     return;
   }
@@ -162,14 +161,12 @@ export function reserve(
       !plan ||
       m.remainingPickups < 1 ||
       m.remainingKg <= 0 ||
-      m.remainingKg < input.weightKg ||
-      input.weightKg > plan.perPickupKg
+      m.remainingKg < Math.min(input.weightKg, plan.perPickupKg)
     )
       throw new Error("This pickup exceeds your remaining plan allowance.");
     m.remainingPickups--;
-    m.remainingKg -= input.weightKg;
-  } else if (input.weightKg > 2)
-    throw new Error("Basic pickups cover up to 2 kg.");
+    m.remainingKg -= Math.min(input.weightKg, plan.perPickupKg);
+  }
 }
 
 export function claimScanReward(a: Account, id: string) {

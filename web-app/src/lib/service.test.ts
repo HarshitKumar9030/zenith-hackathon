@@ -57,3 +57,10 @@ test("collector roles require approval; requested role is not sufficient", () =>
     "collector",
   );
 });
+
+test('paid excess weight does not consume extra pickups or included monthly kilos',()=>{
+ const a=newAccount(new ObjectId());a.credits=1;
+ reserve(a,{source:'basic',weightKg:3});reserve(a,{source:'reward',weightKg:3});assert.equal(a.credits,0);
+ a.membership={plan:'gold',remainingPickups:2,remainingKg:16,expiresAt:'2099-01-01'};
+ reserve(a,{source:'membership',weightKg:9});assert.equal(a.membership.remainingKg,8);assert.equal(a.membership.remainingPickups,1);
+});
