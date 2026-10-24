@@ -21,12 +21,19 @@ import {
 } from "lucide-react";
 import ScanArt from "./scan-art";
 import CapturedFrameDrop from "./captured-frame-drop";
+import { motion, useReducedMotion } from "framer-motion";
+import DescriptionDetailsForm, {
+  emptyDetails,
+  type DescriptionDetails,
+} from "./description-details";
+import HistoryList from "./history-list";
+import HistoryTabs, { type HistoryView } from "./history-tabs";
+import HelpTour from "./help-tour";
+import type { Account } from "@/lib/service";
 import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
-import HistoryList from "./history-list";
-import HistoryTabs, { type HistoryView } from "./history-tabs";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
@@ -59,18 +66,6 @@ export type Result = {
   latencyMs: number;
   correction?: { material: string };
 };
-const materials = [
-  "plastic",
-  "paper",
-  "cardboard",
-  "glass",
-  "metal",
-  "food_waste",
-  "garden_waste",
-  "textile",
-  "composite_or_other",
-  "unknown",
-];
 const title = (value: string) => value.replaceAll("_", " ");
 async function api(path: string, method = "GET", body?: unknown) {
   const response = await fetch(`/api/${path}`, {
@@ -85,6 +80,7 @@ async function api(path: string, method = "GET", body?: unknown) {
 }
 export default function Dashboard() {
   const [photoFlight, setPhotoFlight] = useState(false);
+  const reduceMotion = useReducedMotion();
   const [page, setPage] = useState("Overview"),
     [user, setUser] = useState<User | null>(null),
     [auth, setAuth] = useState(false),
@@ -100,9 +96,11 @@ export default function Dashboard() {
     [ocr, setOcr] = useState(""),
     [fileName, setFileName] = useState(""),
     [result, setResult] = useState<Result | null>(null),
-    [search, setSearch] = useState(""),
-    [filter, setFilter] = useState("all"),
     [authBusy, setAuthBusy] = useState(false);
+  const [descriptionDetails, setDescriptionDetails] =
+    useState<DescriptionDetails>(emptyDetails);
+  const [pickupScanId, setPickupScanId] = useState<string | undefined>();
+  const [serviceAccount, setServiceAccount] = useState<Account | null>(null);
   const [liveStop, setLiveStop] = useState(0);
   const [historyView, setHistoryView] = useState<HistoryView>("scans");
   const scanEpoch = useRef(0);
@@ -115,7 +113,12 @@ export default function Dashboard() {
     dialog = useRef<HTMLDialogElement>(null);
   const refresh = useCallback(async () => {
     try {
-      const [h, a] = await Promise.all([api("history"), api("activity")]);
+      const [h, a, s] = await Promise.all([
+        api("history"),
+        api("activity"),
+        api("service"),
+      ]);
+      setServiceAccount(s.account);
       setActivityDays(a.days);
       setHistory(h.items);
     } catch (e) {
@@ -126,7 +129,13 @@ export default function Dashboard() {
     api("auth/session")
       .then((data) => {
         setUser(data.user);
+        const query = new URLSearchParams(window.location.search);
+        const requested = query.get("view");
         if (data.user?.accountType === "helper") { const helperView = new URLSearchParams(window.location.search).get("view"); setPage(helperView && ["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(helperView) ? helperView : "Helper dashboard"); }
+        else if (requested && ["Overview", "Identify waste", "My history", "Plans", "Pickups", "Rewards", "Settings"].includes(requested)) setPage(requested);
+        if (!data.user && query.get("join") === "helper") {
+          setSignup(true); setAccountType("helper"); setAuth(true);
+        }
         if (data.user) void refresh();
       })
       .catch((e) => setMessage(e.message));
@@ -216,7 +225,8 @@ export default function Dashboard() {
     setResult(null);
     try {
       const data = await api("classify", "POST", {
-        text: description.slice(0, 4000),
+        text: description.slice(0,4000),
+        observedDetails: mode === "text" ? descriptionDetails : undefined,
         ocr,
         image: mode === "photo" ? image : undefined,
       });
@@ -269,6 +279,7 @@ export default function Dashboard() {
     try {
       await api("auth/logout", "POST");
       setUser(null);
+      setServiceAccount(null);
       setHistory([]);
       setActivityDays([]);
       setResult(null);
@@ -293,14 +304,6 @@ export default function Dashboard() {
       h.identification.clarification_question ||
       h.identification.material === "unknown",
     );
-  const visible = history.filter(
-    (item) =>
-      `${item.identification.object_name} ${item.correction?.material || item.identification.material}`
-        .toLowerCase()
-        .includes(search.toLowerCase()) &&
-      (filter === "all" ||
-        (filter === "confirmed" ? item.confirmed : needsReview(item))),
-  );
   function resultPanel(item: Result) {
     return (
       <Reveal className="result-panel">
@@ -319,6 +322,19 @@ export default function Dashboard() {
           identification={item.identification}
           confirmed={item.confirmed}
           notify={setMessage}
+          onSchedule={
+            page === "My history"
+              ? () => {
+                  setPickupScanId(item._id);
+                  setPage("Pickups");
+                  setResult(null);
+                }
+              : undefined
+          }
+          onRemoved={() => {
+            setResult(null);
+            void refresh();
+          }}
           onConfirmed={(value) => {
             scanEpoch.current++;
             setLiveStop((v) => v + 1);
@@ -326,111 +342,99 @@ export default function Dashboard() {
             void refresh();
           }}
         />
-        {item.confirmed && (
+        {item.confirmed && page === "Identify waste" && (
           <QuickPickup
-            key={item._id}
+            key={item._id + item.identification.object_name}
             scanId={item._id}
             onRecords={() => { setHistoryView("collections"); setPage("My history"); }}
             notify={setMessage}
+            onPlans={() => setPage("Plans")}
+            onBooked={() => void refresh()}
           />
         )}
-        <div className="attribute-row">
-          <span>
-            {title(item.correction?.material || item.identification.material)}
-          </span>
-          <span>{item.identification.physical_state}</span>
-          <span>Special handling: {item.identification.special_handling}</span>
-        </div>
-        <p>{item.identification.explanation}</p>
-        {item.identification.clarification_question && (
-          <div className="clarification">
-            <AnimatedIllustration
-              asset="abstract-illustration-question-mark.svg"
-              className="clarification-art"
-            />
-            <h3>A quick clarification</h3>
-            <p>{item.identification.clarification_question}</p>
-            <input
-              aria-label="Clarification answer"
-              placeholder="Tell us what you can see…"
-              onChange={(e) => setText(e.target.value)}
-            />
-            <button className="primary" disabled={busy} onClick={identify}>
-              Reassess with my answer <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
-        {item.recommendation.rule && (
-          <div className="recommendation">
-            <ShieldCheck size={24} />
-            <div>
-              <h3>
-                {item.recommendation.category || "Guidance needs more evidence"}
-              </h3>
-              <p>{item.recommendation.message}</p>
-              {item.recommendation.steps.length > 0 && (
-                <ol>
-                  {item.recommendation.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-              )}
-              {item.recommendation.rule && (
-                <>
-                  <blockquote>“{item.recommendation.rule.passage}”</blockquote>
-                  <small>
-                    {item.guideName} · {item.municipality} · {item.guideVersion}{" "}
-                    · {item.recommendation.rule.section}
-                  </small>
-                </>
-              )}
+        {!item.confirmed && (
+          <>
+            <div className="attribute-row">
+              <span>
+                {title(
+                  item.correction?.material || item.identification.material,
+                )}
+              </span>
+              <span>{item.identification.physical_state}</span>
+              <span>
+                Special handling: {item.identification.special_handling}
+              </span>
             </div>
-          </div>
+            <p>{item.identification.explanation}</p>
+            {item.identification.clarification_question && (
+              <div className="clarification">
+                <AnimatedIllustration
+                  asset="abstract-illustration-question-mark.svg"
+                  className="clarification-art"
+                />
+                <h3>A quick clarification</h3>
+                <p>{item.identification.clarification_question}</p>
+                <input
+                  aria-label="Clarification answer"
+                  placeholder="Tell us what you can see…"
+                  onChange={(e) => setText(e.target.value)}
+                />
+                <button className="primary" disabled={busy} onClick={identify}>
+                  Reassess with my answer <ArrowRight size={16} />
+                </button>
+              </div>
+            )}
+            {item.recommendation.rule && (
+              <div className="recommendation">
+                <ShieldCheck size={24} />
+                <div>
+                  <h3>
+                    {item.recommendation.category ||
+                      "Guidance needs more evidence"}
+                  </h3>
+                  <p>{item.recommendation.message}</p>
+                  {item.recommendation.steps.length > 0 && (
+                    <ol>
+                      {item.recommendation.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  )}
+                  {item.recommendation.rule && (
+                    <>
+                      <blockquote>
+                        “{item.recommendation.rule.passage}”
+                      </blockquote>
+                      <small>
+                        {item.guideName} · {item.municipality} ·{" "}
+                        {item.guideVersion} · {item.recommendation.rule.section}
+                      </small>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
-        <div className="result-footer">
-          <Dropdown
-            label="Correct material"
-            value={item.correction?.material || item.identification.material}
-            options={materials.map((m) => ({ value: m, label: title(m) }))}
-            onChange={async (material) => {
-              try {
-                await api("history", "PATCH", { id: item._id, material });
-                setResult({
-                  ...item,
-                  correction: { material },
-                  recommendation: {
-                    status: "unsupported",
-                    category: null,
-                    steps: [],
-                    rule: null,
-                    message:
-                      "Identification corrected. Review the updated collection checklist.",
-                  },
-                });
-                void refresh();
-                setMessage(
-                  "Correction saved. Previous disposal guidance has been withdrawn.",
-                );
-              } catch (e) {
-                setMessage((e as Error).message);
-              }
-            }}
-          />
-          <small>
-            Gemini 3.8 Flash · Confirm the checklist to save and earn points
-          </small>
-        </div>
       </Reveal>
     );
   }
   return (
     <div className="app-shell">
       <AnimatedSidebar
-        signedIn={Boolean(user)}
         role={user?.role}
+        signedIn={Boolean(user)}
+        membership={
+          serviceAccount?.membership as {
+            plan: string;
+            remainingPickups: number;
+            remainingKg: number;
+          } | null
+        }
         accountType={user?.accountType}
         page={page}
         onNavigate={(next) => {
+          setPickupScanId(undefined);
           setPage(next);
           setResult(null);
         }}
@@ -439,6 +443,11 @@ export default function Dashboard() {
         <header className="topbar">
           <span>{page}</span>
           <div className="top-actions">
+            <HelpTour
+              helper={user?.accountType === "helper"}
+              onNavigate={setPage}
+              blocked={auth}
+            />
             <button
               className="account"
               aria-label={user ? `Account: ${user.name}` : "Sign in"}
@@ -646,7 +655,7 @@ export default function Dashboard() {
                 {history.length ? (
                   history.slice(0, 3).map((item) => (
                     <button
-                      className="history-row"
+                      className="history-row mt-2"
                       key={item._id}
                       onClick={() => {
                         setResult(item);
@@ -661,7 +670,7 @@ export default function Dashboard() {
                         <small>{title(item.identification.material)}</small>
                       </span>
                       <span className="status">
-                        {item.recommendation.category || "Needs review"}
+                        {item.confirmed ? "Confirmed" : "Review needed"}
                       </span>
                       <ChevronRight size={16} />
                     </button>
@@ -710,13 +719,21 @@ export default function Dashboard() {
                           setResult(null);
                         }}
                       >
+                        {mode === id && (
+                          <motion.span
+                            className="input-tab-highlight"
+                            layoutId="input-method-active"
+                            transition={{ duration: reduceMotion ? 0 : 0.22 }}
+                          />
+                        )}
                         <Icon size={17} />
-                        {label}
+                        <span>{label}</span>
                       </button>
                     ))}
                   </div>
                   {mode === "camera" ? (
                     <LiveCamera
+                      onDescribe={() => setMode("text")}
                       stopSignal={liveStop}
                       onScan={scanLive}
                       onError={setMessage}
@@ -793,6 +810,7 @@ export default function Dashboard() {
                     <label className="field">
                       Describe your item
                       <textarea
+                        aria-label="Describe your item"
                         value={text}
                         maxLength={4000}
                         onChange={(e) => setText(e.target.value)}
@@ -804,6 +822,12 @@ export default function Dashboard() {
                         symbols.
                       </small>
                     </label>
+                  )}
+                  {mode === "text" && text.trim() && (
+                    <DescriptionDetailsForm
+                      value={descriptionDetails}
+                      onChange={setDescriptionDetails}
+                    />
                   )}
                   {mode === "photo" && (
                     <label className="field">
@@ -857,33 +881,15 @@ export default function Dashboard() {
                     </button>
                   )}
                   <small className="privacy-note">
-                    Camera frames are sent to Gemini during active scanning.
-                    Images are not saved or used for training.
+                    Frames are analysed while your camera is running. Images are
+                    not saved or used for training.
                   </small>
                 </section>
-                <aside className="scan-notes">
-                  <AnimatedIllustration
-                    asset="abstract-illustration-question-mark.svg"
-                    className="question-art"
-                  />
-                  <h2>Clarity comes first.</h2>
-                  <p>
-                    Mixed packaging? Blurry photo? We’ll ask rather than guess.
-                  </p>
-                  <div className="note">
-                    <h3>You know your item best</h3>
-                    <p>
-                      You can correct the material and answer a clarification at
-                      any time.
-                    </p>
-                  </div>
-                  <div className="note">
-                    <h3>About this identification</h3>
-                    <p>
-                      Gemini handles visual identification. OCR reads visible
-                      labels. Our custom material model is awaiting training.
-                    </p>
-                  </div>
+                <aside className="scan-notes scanner-guide">
+                  <span className="scanner-guide-label">A little guidance</span>
+                  <h2>A clear view.<br/>A simpler pickup.</h2>
+                  <ol className="scan-guide-steps"><li><span>1</span><div><h3>Show the whole collection</h3><p>Keep items visible, with labels facing the camera. Good lighting helps.</p></div></li><li><span>2</span><div><h3>Review what we find</h3><p>Remove mistaken items or correct materials. You have the final say.</p></div></li><li><span>3</span><div><h3>Choose a pickup</h3><p>Confirm your items, choose a time and check the fee. Your helper weighs at collection.</p></div></li></ol>
+                  <div className="scanner-guide-note"><Leaf size={21}/><p>Mixed packaging or an unclear image? Add a description or scan from another angle.</p></div>
                 </aside>
               </div>
               {result && resultPanel(result)}
@@ -907,6 +913,7 @@ export default function Dashboard() {
             <ServiceHub
               page={page}
               onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }}
+              initialScanId={pickupScanId}
               signedIn={Boolean(user)}
               onSignIn={() => setAuth(true)}
               notify={setMessage}
@@ -958,14 +965,11 @@ export default function Dashboard() {
                   </p>
                 </section>
                 <section className="settings-block">
-                  <h2>Model readiness</h2>
-                  <span className="status">
-                    Custom model · Awaiting training
-                  </span>
+                  <h2>Your confirmation matters</h2>
+                  <span className="status">You have the final say</span>
                   <p>
-                    Gemini 3.8 Flash is the current identification provider. No
-                    untrained classifier predictions or invented accuracy scores
-                    are shown.
+                    Review the suggested materials before booking. You can
+                    change the identification or remove an incorrect item.
                   </p>
                 </section>
               </div>

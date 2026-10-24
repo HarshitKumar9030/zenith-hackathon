@@ -38,7 +38,11 @@ export default function AnimatedSidebar({
   accountType?: string;
   onNavigate: (page: string) => void;
   signedIn?: boolean;
-  membership?: {plan:string;remainingPickups:number;remainingKg:number}|null;
+  membership?: {
+    plan: string;
+    remainingPickups: number;
+    remainingKg: number;
+  } | null;
 }) {
   const reduce = useReducedMotion();
   const [hovered, setHovered] = useState<string | null>(null);

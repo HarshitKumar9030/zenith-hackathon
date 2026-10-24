@@ -4,9 +4,10 @@ import OperationsWorkspace from "./operations-workspace";
 import RewardsDashboard from "./rewards-dashboard";
 import PaymentReceipts from "./payment-receipts";
 import recordStyles from "./collection-records.module.css";
+import TierBadge from "./tier-badge";
 import { pickupTimeLabel } from "@/lib/pickup-time";
-import PickupTimeInput from "./pickup-time-input";
-import LocationPicker from "./location-picker";
+import WorkflowArt from "./workflow-art";
+import QuickPickup from "./quick-pickup";
 import { useEffect, useState, useCallback } from "react";
 import {
   ArrowRight,
@@ -23,16 +24,8 @@ import {
 import Dropdown from "./dropdown";
 import { PLANS } from "@/lib/catalog";
 import type { Account } from "@/lib/service";
-export async function serviceApi(path: string, body?: unknown) {
-  const response = await fetch(`/api/${path}`, {
-    method: body ? "POST" : "GET",
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const value = await response.json();
-  if (!response.ok) throw new Error(value.error || "Request failed.");
-  return value;
-}
+import { serviceApi } from "@/lib/client-api";
+export { serviceApi } from "@/lib/client-api";
 declare global {
   interface Window {
     Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
@@ -56,6 +49,7 @@ export default function ServiceHub({
   notify,
   onRefresh,
   onNavigate,
+  initialScanId,
 }: {
   page: string;
   signedIn: boolean;
@@ -63,25 +57,14 @@ export default function ServiceHub({
   notify: (v: string) => void;
   onRefresh: () => void;
   onNavigate?: (page: string) => void;
+  initialScanId?: string;
 }) {
-  const [estimatedWeight, setEstimatedWeight] = useState(0),
-    [segregated, setSegregated] = useState(false);
   const [a, setAccount] = useState<Account | null>(null),
     [role, setRole] = useState("resident"),
     [available, setAvailable] = useState(false),
     [busy, setBusy] = useState(false),
     [jobs, setJobs] = useState<Record<string, unknown>[]>([]),
-    [users, setUsers] = useState<Record<string, unknown>[]>([]),
-    [scanId, setScanId] = useState(""),
-    [scans, setScans] = useState<
-      {
-        _id: string;
-        identification: { object_name: string };
-        confirmed?: boolean;
-      }[]
-    >([]);
-  const [funding, setFunding] = useState("basic"),
-    [timeWindow, setTimeWindow] = useState("09:00");
+    [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [rewardMoment, setRewardMoment] = useState(0);
   const [ranking, setRanking] = useState<
     { alias: string; days: number; rank: number; isYou: boolean }[]
@@ -93,11 +76,14 @@ export default function ServiceHub({
       setAccount(data.account);
       setRole(data.role);
       setAvailable(data.checkoutAvailable);
-      const leaders = await serviceApi("leaderboard");
-      setRanking(leaders.entries);
-      const h = await serviceApi("history");
-      setScans(h.items.filter((s: { confirmed?: boolean }) => s.confirmed));
-      if (["collector", "admin"].includes(data.role)) {
+      if (page === "Rewards") {
+        const leaders = await serviceApi("leaderboard");
+        setRanking(leaders.entries);
+      }
+      if (
+        ["collector", "admin"].includes(data.role) &&
+        ["Operations", "Collection route"].includes(page)
+      ) {
         const op = await serviceApi("operations");
         setJobs(op.jobs);
         setUsers(op.users);
@@ -105,7 +91,7 @@ export default function ServiceHub({
     } catch (e) {
       notify((e as Error).message);
     }
-  }, [signedIn, notify]);
+  }, [signedIn, notify, page]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -175,8 +161,8 @@ export default function ServiceHub({
       "Choose a one-month pass or pay for a small pickup. No automatic renewal.",
     ],
     Pickups: [
-      "Your next handover.",
-      "Confirm a scan, save your address, and choose a collection window.",
+      "Book a pickup.",
+      "Choose your items and time. Your price is calculated automatically.",
     ],
     Rewards: ["Good habits. Useful rewards.", "Scan, confirm, and turn your points into a pickup."],
     "My history": ["My history.", "Your scans, collection receipts and disputes in one place."],
@@ -236,7 +222,7 @@ export default function ServiceHub({
                 <span className="micro">
                   {key === "basic" ? "PAY PER PICKUP" : "ONE-MONTH PASS"}
                 </span>
-                <h2>{p.name}</h2>
+                <h2 className="plan-heading">{key !== "basic" && <TierBadge tier={key as "gold" | "platinum"} size={46}/>} {p.name}</h2>
                 <div className="plan-price">
                   ₹{p.price}
                   <small> / {key === "basic" ? "pickup" : "month"}</small>
@@ -272,8 +258,8 @@ export default function ServiceHub({
           </div>
           {!available && (
             <div className="service-notice">
-              Checkout is awaiting Razorpay configuration. No payment is
-              simulated and no pass activates without verified payment.
+              Online payments are not available yet. Paid plans activate only
+              after payment is verified.
             </div>
           )}
           {a?.membership && (
@@ -293,164 +279,24 @@ export default function ServiceHub({
       {page === "Rewards" && <RewardsDashboard account={a} ranking={ranking} busy={busy} onRedeem={() => void action("service", { action: "redeem" }, true)} onNavigate={(next) => onNavigate?.(next)} celebration={rewardMoment} />}
       {page === "Pickups" && (
         <>
-          <div className="service-columns">
-            <section className="service-block">
-              <h2>Collection address</h2>
-              <LocationPicker />
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const f = new FormData(e.currentTarget);
-                  void action("service", {
-                    action: "profile",
-                    address: f.get("address"),
-                    locality: f.get("locality"),
-                    alias: f.get("alias"),
-                    leaderboard: f.get("leaderboard") === "on",
-                  });
-                }}
-                key={a?.rev}
-              >
-                <label className="field">
-                  Address
-                  <textarea
-                    name="address"
-                    required
-                    minLength={8}
-                    maxLength={500}
-                    defaultValue={a?.profile.address}
-                    rows={3}
-                  />
-                </label>
-                <label className="field">
-                  Locality / campus
-                  <input
-                    name="locality"
-                    required
-                    minLength={2}
-                    maxLength={100}
-                    defaultValue={a?.profile.locality}
-                  />
-                </label>
-                <label className="field">
-                  Public alias (optional)
-                  <input
-                    name="alias"
-                    maxLength={40}
-                    defaultValue={a?.profile.alias}
-                  />
-                </label>
-                <label className="check-row">
-                  <input
-                    type="checkbox"
-                    name="leaderboard"
-                    defaultChecked={a?.profile.leaderboard}
-                  />
-                  Join the locality leaderboard with my alias
-                </label>
-                <button className="secondary" disabled={busy}>
-                  <MapPin size={16} />
-                  Save address
-                </button>
-              </form>
-            </section>
-            <section className="service-block">
-              <h2>Schedule a pickup</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const f = new FormData(e.currentTarget);
-                  void action("service", {
-                    action: "book",
-                    requestId: crypto.randomUUID(),
-                    source: funding,
-                    scanId,
-                    weightKg: Number(f.get("weightKg")),
-                    date: f.get("date"),
-                    window: timeWindow,
-                    segregated: f.get("segregated") === "on",
-                  });
-                }}
-              >
-                <label className="field">Confirmed item</label>
-                <Dropdown
-                  label="Choose a confirmed scan"
-                  value={scanId}
-                  onChange={setScanId}
-                  options={scans.map((s) => ({
-                    value: s._id,
-                    label: s.identification.object_name,
-                  }))}
-                />
-                <label className="field">
-                  Use
-                  <Dropdown
-                    label="Pickup funding"
-                    value={funding}
-                    onChange={setFunding}
-                    options={[
-                      { value: "basic", label: "Basic · ₹20, up to 2 kg" },
-                      { value: "reward", label: "Reward pickup credit" },
-                      { value: "membership", label: "Paid plan allowance" },
-                    ]}
-                  />
-                </label>
-                <label className="field">
-                  Estimated weight in kg
-                  <input
-                    name="weightKg"
-                    onChange={(e) => setEstimatedWeight(Number(e.target.value))}
-                    type="number"
-                    min="0.1"
-                    max="10"
-                    step="0.1"
-                    required
-                  />
-                </label>
-                <label className="field">
-                  Collection date
-                  <input
-                    name="date"
-                    type="date"
-                    required
-                    min={new Date(Date.now() + 86400000).toLocaleDateString(
-                      "en-CA",
-                    )}
-                    max={new Date(
-                      Date.now() + 30 * 86400000,
-                    ).toLocaleDateString("en-CA")}
-                  />
-                </label>
-                <PickupTimeInput
-                  value={timeWindow}
-                  onChange={setTimeWindow}
-                  weightKg={estimatedWeight}
-                  segregated={segregated}
-                />
-                <label className="check-row">
-                  <input
-                    type="checkbox"
-                    name="segregated"
-                    onChange={(e) => setSegregated(e.target.checked)}
-                  />
-                  I have separated the accepted materials
-                </label>
-                <button className="primary" disabled={busy || !scanId}>
-                  <CalendarDays size={16} />
-                  Request pickup
-                </button>
-                <small>
-                  Unsegregated or specialist waste requires an Operations quote.
-                  A request is subject to collector availability.
-                </small>
-              </form>
-            </section>
-          </div>
+          <QuickPickup
+            notify={notify}
+            initialScanId={initialScanId}
+            onScan={() => onNavigate?.("Identify waste")}
+            onRecords={() => onNavigate?.("My history")}
+            onBooked={() => {
+              void refresh();
+              onRefresh();
+            }}
+            onPlans={() => onNavigate?.("Plans")}
+          />
         </>
       )}
       {page === "My history" && (
         <>
-          <h2 className="section-spaced">Receipts &amp; disputes</h2>
+          <h2 id="collection-records" className="section-spaced">
+            Receipts &amp; disputes
+          </h2>
           {!bookings.length && (
             <div className="empty">
               <Truck size={30} />
@@ -467,8 +313,11 @@ export default function ServiceHub({
                 </span>
               </div>
               <p>
-                {b.date} · {pickupTimeLabel(b.window)} · estimated{" "}
-                {b.estimatedKg} kg · {b.source}
+                {b.date} · {pickupTimeLabel(b.window)} ·{" "}
+                {b.receipt
+                  ? `${b.receipt.netKg} kg measured`
+                  : "Helper weighs at collection"}{" "}
+                · {b.source}
               </p>
               </summary>
               {b.surgeFeePaise > 0 && (
@@ -480,7 +329,6 @@ export default function ServiceHub({
               {b.receipt && (
                 <div className="receipt">
                   <h3>Measured receipt</h3>
-                  {b.receipt.excessFeePaise > 0 && <p>Extra weight: {b.receipt.excessKg} kg × ₹3 = ₹{(b.receipt.excessFeePaise / 100).toFixed(2)}</p>}
                   <p>
                     Gross {b.receipt.grossKg} kg − tare {b.receipt.tareKg} kg ={" "}
                     {b.receipt.netKg} kg net
@@ -488,6 +336,18 @@ export default function ServiceHub({
                   <p>
                     {b.receipt.material} · {b.receipt.notes}
                   </p>
+                  {b.receipt.additionalDuePaise > 0 && (
+                    <p>
+                      Sorting ₹{(b.receipt.sortingFeePaise / 100).toFixed(2)}
+                      {b.receipt.excessFeePaise > 0 ? ` + extra weight ₹${(b.receipt.excessFeePaise / 100).toFixed(2)} (${b.receipt.excessKg} kg × ₹3)` : ""}
+                      {b.receipt.surgeAdjustmentPaise > 0
+                        ? ` + evening adjustment ₹${b.receipt.surgeAdjustmentPaise / 100}`
+                        : ""}{" "}
+                      · Additional amount ₹
+                      {(b.receipt.additionalDuePaise / 100).toFixed(2)}. Review
+                      and accept before payment.
+                    </p>
+                  )}
                 </div>
               )}
               {b.settlement && (
@@ -501,14 +361,24 @@ export default function ServiceHub({
               )}
               {b.dispute && <p className={recordStyles.review}>Issue reported: {b.dispute.reason}{b.status === "disputed" ? " · Operations review pending." : ""}</p>}
               <div className="inline-actions">
-                {["payment_due", "quote_ready"].includes(b.status) && (
+                {[
+                  "payment_due",
+                  "quote_ready",
+                  "payment_due_after_collection",
+                ].includes(b.status) && (
                   <button
                     className="primary"
                     disabled={busy || !available}
                     onClick={() => checkout("basic", b.id)}
                   >
                     {b.status === "quote_ready" ? "Accept quote & pay" : "Pay"}{" "}
-                    ₹{(b.feePaise / 100).toFixed(2)} securely
+                    ₹
+                    {(
+                      (b.status === "payment_due_after_collection"
+                        ? b.balanceDuePaise
+                        : b.feePaise) / 100
+                    ).toFixed(2)}{" "}
+                    securely
                   </button>
                 )}
                 {[
@@ -540,7 +410,11 @@ export default function ServiceHub({
                   </button>
                 )}
               </div>
-              {["receipt_pending", "completed"].includes(b.status) && (
+              {[
+                "receipt_pending",
+                "payment_due_after_collection",
+                "completed",
+              ].includes(b.status) && (
                 <details className={recordStyles.dispute}><summary>Report a weighing or material issue</summary>
                 <form
                   className="inline-form"

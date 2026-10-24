@@ -1,8 +1,8 @@
 "use client";
-import HelperCollections from "./helper-collections";
-import HelperInsights from "./helper-insights";
 import helperStyles from "./helper-insights.module.css";
 import { helperCompensation } from "@/lib/helper-pay";
+import HelperCollections from "./helper-collections";
+import HelperInsights from "./helper-insights";
 import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import LocationPicker from "./location-picker";
@@ -35,6 +35,7 @@ const copy = {
     assigned: "Assigned",
     scheduled: "Available",
     receipt_pending: "Waiting for resident",
+    payment_due_after_collection: "Receipt accepted · payment pending",
     completed: "Completed",
     disputed: "Under review",
     cancelled: "Cancelled",
@@ -93,6 +94,7 @@ const copy = {
     assigned: "आपको सौंपा गया",
     scheduled: "उपलब्ध",
     receipt_pending: "ग्राहक की मंज़ूरी बाकी",
+    payment_due_after_collection: "रसीद मंज़ूर · भुगतान बाकी",
     completed: "पूरा हुआ",
     disputed: "समीक्षा जारी",
     cancelled: "रद्द",
@@ -147,6 +149,7 @@ type Job = {
   address?: string;
   location?: { latitude: number; longitude: number };
   estimatedKg: number;
+  weightPending?: boolean;
   collectorId?: string;
   receipt?: { netKg: number; material: string; notes: string; sortingIncluded?: boolean; sortingReferencePaise?: number; sortingFeePaise?: number };
   settlement?: { netPaise?: number };
@@ -433,7 +436,13 @@ export default function HelperDashboard({
                 </a>
               )}
               <p>
-                {t.estimated}: {b.estimatedKg} {t.kg}
+                {b.receipt
+                  ? `${t.net}: ${b.receipt.netKg} ${t.kg}`
+                  : b.weightPending
+                    ? lang === "hi"
+                      ? "संग्रह के समय वजन दर्ज करें"
+                      : "Weigh this collection at handover"
+                    : `${t.estimated}: ${b.estimatedKg} ${t.kg}`}
               </p>
               {view === "Helper collections" && b.status === "scheduled" && (
                 <button
