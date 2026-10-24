@@ -16,9 +16,20 @@ export function accountLink(action: string, token: string) {
 
 export async function sendAccountEmail(to: string, purpose: string, link: string) {
   if (!emailConfigured()) throw new Error("Email delivery is not configured.");
+  const transport = createEmailTransport();
+  const title = purpose === "reset" ? "Reset your password" : purpose === "verify" ? "Verify your email" : "Sign in to Waste Right";
+  await transport.sendMail({
+    from: { name: "Waste Right", address: process.env.SMTP_FROM! },
+    to,
+    subject: `${title} — Waste Right`,
+    text: `${title}\n\nOpen this link to continue:\n${link}\n\nThis link expires in 15 minutes and works only once. If you did not request this email, ignore it.\n\nWaste Right`,
+  });
+}
+
+export function createEmailTransport() {
   const port = Number(process.env.SMTP_PORT || 587);
   const secure = process.env.SMTP_SECURE === "true" || port === 465;
-  const transport = nodemailer.createTransport({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port,
     secure,
@@ -27,12 +38,5 @@ export async function sendAccountEmail(to: string, purpose: string, link: string
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
-  });
-  const title = purpose === "reset" ? "Reset your password" : purpose === "verify" ? "Verify your email" : "Sign in to Waste Right";
-  await transport.sendMail({
-    from: { name: "Waste Right", address: process.env.SMTP_FROM! },
-    to,
-    subject: `${title} — Waste Right`,
-    text: `${title}\n\nOpen this link to continue:\n${link}\n\nThis link expires in 15 minutes and works only once. If you did not request this email, ignore it.\n\nWaste Right`,
   });
 }

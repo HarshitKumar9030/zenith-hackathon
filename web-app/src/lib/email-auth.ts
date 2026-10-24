@@ -36,5 +36,5 @@ export async function consumeEmailToken(token: string, purpose: EmailPurpose, pa
   if (purpose === "reset") {
     await database.collection("sessions").deleteMany({ userId: user._id });
     await database.collection("email_tokens").deleteMany({ userId: user._id });
-  } else await createSession(user._id);
+  } else await createSession(user._id, purpose === "verify" ? "Email verification" : "Email sign-in link");
 }

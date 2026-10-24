@@ -1,6 +1,9 @@
 import { randomBytes, createHash, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { after } from "next/server";
+import {emailConfigured} from "./email";
+import {signInDetails,sendSignInNotification} from "./signin-notification";
 import { db } from "./db";
 const derive = promisify(scrypt);
 export const hashToken = (value: string) =>
@@ -32,11 +35,12 @@ export async function currentUser() {
     .collection("users")
     .findOne({ _id: session.userId }, { projection: { password: 0 } });
 }
-export async function createSession(userId: unknown) {
+export async function createSession(userId: unknown, method = "Password") {
   const token = randomBytes(32).toString("hex");
   await (await db()).collection("sessions").insertOne({
     _id: hashToken(token) as never,
     userId,
+    notification: {status: emailConfigured() ? "pending" : "unconfigured"},
     expiresAt: new Date(Date.now() + 7 * 86400000),
   });
   (await cookies()).set("ww_session", token, {
@@ -46,6 +50,23 @@ export async function createSession(userId: unknown) {
     path: "/",
     maxAge: 7 * 86400,
   });
+  if(emailConfigured()){
+    const details=signInDetails(await headers(),method);
+    after(async()=>{
+      const sessions=(await db()).collection("sessions");
+      const claimed=await sessions.findOneAndUpdate({_id:hashToken(token) as never,"notification.status":"pending"},{$set:{"notification.status":"sending"}});
+      if(!claimed)return;
+      try{
+        const user=await (await db()).collection("users").findOne({_id:userId as never},{projection:{email:1,name:1}});
+        if(!user?.email)throw new Error("Notification recipient unavailable");
+        await sendSignInNotification(user.email,user.name||"",details);
+        await sessions.updateOne({_id:hashToken(token) as never},{$set:{notification:{status:"sent",at:new Date()}}});
+      }catch{
+        await sessions.updateOne({_id:hashToken(token) as never},{$set:{notification:{status:"failed",at:new Date()}}});
+        console.error("Sign-in notification delivery failed.");
+      }
+    });
+  }
 }
 export function checkOrigin(request: Request) {
   const origin = request.headers.get("origin");

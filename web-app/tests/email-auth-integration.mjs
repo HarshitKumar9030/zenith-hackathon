@@ -20,12 +20,15 @@ const base = `http://localhost:${port}`;
 const hash = s => createHash("sha256").update(s).digest("hex");
 async function request(action, body, cookie) {
   const response = await fetch(`${base}/api/auth/${action}`, {
-    method: body ? "POST" : "GET", headers: { Origin: base, ...(body ? { "Content-Type": "application/json" } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined,
+    method: body ? "POST" : "GET", headers: { Origin: base, ...(body ? { "Content-Type": "application/json" } : {}), "user-agent":"WasteRightQA/1.0 Chrome/140 Windows", "x-forwarded-for":"203.0.113.25", ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined,
   });
   return { response, data: await response.json() };
 }
+const decodeMail=raw=>raw.replace(/=\r\n/g, "").replace(/=([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+function notifications(){return messages.map(decodeMail).filter(raw=>raw.includes("New sign-in to your Waste Right account"));}
+async function waitForNotifications(n){for(let i=0;i<80;i++){if(notifications().length>=n)return;await new Promise(r=>setTimeout(r,100));}throw new Error("Expected sign-in notification was not received");}
 function tokenFromLastEmail() {
-  const raw = messages.at(-1).replace(/=\r\n/g, "").replace(/=([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  const raw = [...messages].reverse().map(decodeMail).find(raw=>raw.includes("/account#")) || "";
   const link = raw.match(/http:\/\/localhost:\d+\/account#[^\s]+/)?.[0];
   assert.ok(link, "SMTP message contains the account link");
   return new URLSearchParams(new URL(link).hash.slice(1)).get("token");
@@ -52,7 +55,7 @@ try {
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   await client.connect();
   const db = client.db(databaseName);
-  app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--port", String(port)], { env: { ...process.env, MONGODB_DB: databaseName, NODE_EXTRA_CA_CERTS: join(dir, "cert.pem"), SMTP_HOST: "localhost", SMTP_SECURE: "true", SMTP_PORT: String(server.address().port), SMTP_USER: "test@example.test", SMTP_PASSWORD: "local-test-password", SMTP_FROM: "test@example.test", APP_URL: base, NODE_ENV: "production" }, stdio: "ignore" });
+  app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--port", String(port)], { env: { ...process.env, MONGODB_DB: databaseName, NODE_EXTRA_CA_CERTS: join(dir, "cert.pem"), SMTP_HOST: "localhost", SMTP_SECURE: "true", SMTP_PORT: String(server.address().port), SMTP_USER: "test@example.test", SMTP_PASSWORD: "local-test-password", SMTP_FROM: "test@example.test", APP_URL: base, AUTH_TRUSTED_PROXY_HOPS:"1", VERCEL:"", NODE_ENV: "production" }, stdio: "ignore" });
   // The test server uses implicit TLS on its dynamically assigned port.
   // SMTP_SECURE explicitly enables implicit TLS for a nonstandard test port.
   for (let i = 0; i < 80; i++) { try { if ((await fetch(base + "/api/auth/session")).ok) break; } catch {} await new Promise(r => setTimeout(r, 250)); if (i === 79) throw Error("QA app did not start"); }
@@ -67,6 +70,8 @@ try {
   assert.equal((await request("reset", { token, password })).response.status, 400, "Wrong purpose cannot consume verification");
   result = await request("verify", { token }); assert.equal(result.response.status, 200);
   const cookie = result.response.headers.get("set-cookie").split(";")[0];
+  await waitForNotifications(1);
+  assert.match(notifications()[0],/203\.0\.113\.25/);assert.match(notifications()[0],/Email verification/);
   assert.equal((await request("verify", { token })).response.status, 400, "Replay rejected");
   assert.ok((await request("session", undefined, cookie)).data.user);
   const absent = await request("forgot-password", { email: "absent@example.test" });
@@ -79,13 +84,18 @@ try {
   assert.equal((await request("session", undefined, cookie)).data.user, null, "Reset revokes old sessions");
   assert.equal((await request("login", { email, password })).response.status, 401);
   assert.equal((await request("login", { email, password: newPassword })).response.status, 200);
+  await waitForNotifications(2);
   await request("send-signin", { email }); token = tokenFromLastEmail();
   await db.collection("email_tokens").updateOne({ _id: hash(token) }, { $set: { expiresAt: new Date(0) } });
   assert.equal((await request("signin", { token })).response.status, 400, "Expiry enforced without waiting for TTL cleanup");
   await request("send-signin", { email }); token = tokenFromLastEmail();
   assert.equal((await request("signin", { token })).response.status, 200);
+  await waitForNotifications(3);
+  assert.equal(notifications().length,3,"Exactly one notice for each verification, password and email-link session");
+  assert.equal((await request("signin", { token })).response.status,400);
+  assert.equal(notifications().length,3,"Rejected replay does not send another notice");
   assert.equal((await request("send-signin", { email })).response.status, 429);
-  console.log("PASS: local TLS SMTP delivery, verification, sign-in, purpose isolation, expiry, replay/race rejection, password reset, session revocation and request limits.");
+  console.log("PASS: local TLS SMTP delivery, verification, sign-in, purpose isolation, expiry, replay/race rejection, password reset, session revocation request limits and one sign-in notice per new session.");
 } finally {
   app?.kill("SIGTERM");
   if (app) await new Promise(resolve => app.once("exit", resolve));
