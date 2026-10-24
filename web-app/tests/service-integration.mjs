@@ -25,6 +25,7 @@ const server = spawn(
     env: {
       ...process.env,
       NODE_ENV: "production",
+      SMTP_PASSWORD: "", // Service QA never sends real email.
       MONGODB_DB: testDb,
       ADMIN_EMAILS: adminEmail,
       RAZORPAY_WEBHOOK_SECRET: secret,
