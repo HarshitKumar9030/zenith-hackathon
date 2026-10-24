@@ -39,6 +39,8 @@ import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
+import AuthDialogContent, {type AuthMode,type AuthFeedback} from "./auth-dialog-content";
+import authStyles from "./auth-screens.module.css";
 import { streakSummary } from "@/lib/streak";
 import type { Identification } from "@/lib/rules";
 type User = {
@@ -80,6 +82,7 @@ async function api(path: string, method = "GET", body?: unknown) {
 }
 export default function Dashboard() {
   const [photoFlight, setPhotoFlight] = useState(false);
+  const [authFeedback,setAuthFeedback]=useState<AuthFeedback>(null);
   const reduceMotion = useReducedMotion();
   const [page, setPage] = useState("Overview"),
     [user, setUser] = useState<User | null>(null),
@@ -134,6 +137,10 @@ export default function Dashboard() {
         const requested = query.get("view");
         if (data.user?.accountType === "helper") { const helperView = new URLSearchParams(window.location.search).get("view"); setPage(helperView && ["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(helperView) ? helperView : "Helper dashboard"); }
         else if (requested && ["Overview", "Identify waste", "My history", "Plans", "Pickups", "Rewards", "Settings"].includes(requested)) setPage(requested);
+        const requestedAuth=query.get("auth");
+        if(!data.user && requestedAuth && ["login","signup","forgot-password","send-signin","resend-verification"].includes(requestedAuth)){
+          setSignup(requestedAuth === "signup");setEmailAction(["login","signup"].includes(requestedAuth)?"":requestedAuth);setAuth(true);
+        }
         if (!data.user && query.get("join") === "helper") {
           setSignup(true); setAccountType("helper"); setAuth(true);
         }
@@ -143,6 +150,7 @@ export default function Dashboard() {
   }, [refresh]);
   useEffect(() => {
     if (auth) {
+      setAuthFeedback(null);
       dialog.current?.showModal();
     } else dialog.current?.close();
   }, [auth]);
@@ -257,18 +265,19 @@ export default function Dashboard() {
   }
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setAuthBusy(true);
+    if(authBusy)return;
+    setAuthBusy(true);setAuthFeedback(null);
     const form = new FormData(event.currentTarget);
     try {
       if (emailAction) {
         const data = await api(`auth/${emailAction}`, "POST", { email: form.get("email") });
-        setMessage(data.message); return;
+        setAuthFeedback({type:"success",text:data.message}); return;
       }
       const data = await api(`auth/${signup ? "signup" : "login"}`, "POST", {
         ...Object.fromEntries(form),
         ...(signup ? { accountType } : {}),
       });
-      if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setMessage(data.message); return; }
+      if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setAuthFeedback({type:"success",text:data.message}); return; }
       setUser(data.user);
       setPage(
         data.user.accountType === "helper" ? "Helper dashboard" : "Overview",
@@ -276,7 +285,7 @@ export default function Dashboard() {
       setAuth(false);
       await refresh();
     } catch (e) {
-      setMessage((e as Error).message);
+      setAuthFeedback({type:"error",text:e instanceof TypeError?"Could not connect. Check your connection and try again.":(e as Error).message});
     } finally {
       setAuthBusy(false);
     }
@@ -1012,100 +1021,28 @@ export default function Dashboard() {
       />
       <dialog
         ref={dialog}
-        className="auth-modal"
+        className={authStyles.modal}
+        aria-labelledby="auth-dialog-title"
+        aria-describedby="auth-dialog-description"
         onCancel={() => setAuth(false)}
         onClick={(e) => {
           if (e.target === dialog.current) setAuth(false);
         }}
       >
         <button
-          className="close icon-button"
-          aria-label="Close sign in"
+          className={authStyles.close}
+          type="button"
+          aria-label="Close account dialog"
           onClick={() => setAuth(false)}
         >
           <X size={20} />
         </button>
-        <span className="round-icon">
-          <Leaf size={27} />
-        </span>
-        <h2>{emailAction === "forgot-password" ? "Reset your password" : emailAction === "send-signin" ? "Email sign-in link" : emailAction === "resend-verification" ? "Verify your email" : signup ? "A fresh start." : "Welcome back."}</h2>
-        <p>
-          {signup
-            ? "Make room for better everyday choices."
-            : "Your everyday choices, all in one place."}
-        </p>
-        {message && (
-          <p role="alert" className="auth-error">
-            {message}
-          </p>
-        )}
-        <form onSubmit={authenticate}>
-          {signup && !emailAction && (
-            <label className="field">
-              Your name
-              <input name="name" required autoComplete="name" maxLength={80} />
-            </label>
-          )}
-          {signup && !emailAction && (
-            <div className="field">
-              <label>Account type</label>
-              <Dropdown
-                label="Account type"
-                value={accountType}
-                onChange={setAccountType}
-                options={[
-                  { value: "user", label: "User" },
-                  { value: "helper", label: "Helper" },
-                ]}
-              />
-              <small>
-                {accountType === "helper"
-                  ? "Your helper dashboard opens after signup. Operations approval is required to accept collections."
-                  : "Scan waste, book pickups and earn rewards."}
-              </small>
-            </div>
-          )}
-          <label className="field">
-            Email address
-            <input
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              maxLength={254}
-            />
-          </label>
-          {!emailAction && <label className="field">
-            Password
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={10}
-              maxLength={128}
-              autoComplete={signup ? "new-password" : "current-password"}
-            />
-            <small>At least 10 characters.</small>
-          </label>}
-          <button className="primary" disabled={authBusy}>
-            {authBusy ? (
-              <Loader2 className="spin" size={16} />
-            ) : (
-              <ArrowRight size={16} />
-            )}{" "}
-            {emailAction ? "Send email" : signup ? "Create account" : "Sign in"}
-          </button>
-        </form>
-        {!signup && !emailAction && <div>
-          <button type="button" className="text-button" onClick={() => { setEmailAction("forgot-password"); setMessage(""); }}>Forgot password?</button>
-          <button type="button" className="text-button" onClick={() => { setEmailAction("send-signin"); setMessage(""); }}>Email me a sign-in link</button>
-          <button type="button" className="text-button" onClick={() => { setEmailAction("resend-verification"); setMessage(""); }}>Resend verification</button>
-        </div>}
-        <button className="text-button" onClick={() => { if (emailAction) { setEmailAction(""); setSignup(false); } else setSignup(!signup); setMessage(""); }}>
-          {emailAction ? "Back to sign in" : signup
-            ? "Already have an account? Sign in"
-            : "New here? Create an account"}
-        </button>
+        <AuthDialogContent
+          mode={emailAction ? emailAction as AuthMode : signup ? "signup" : "login"}
+          busy={authBusy} feedback={authFeedback} accountType={accountType}
+          onAccountType={setAccountType} onSubmit={authenticate}
+          onMode={(next)=>{setSignup(next === "signup");setEmailAction(["login","signup"].includes(next)?"":next);setAuthFeedback(null);}}
+        />
       </dialog>
       {message && (
         <div className="toast" role="status">
