@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "@/components/depth-motion.css";
 import DepthMotion from "@/components/depth-motion";
+import LandingProgrammes from "@/components/landing-programmes";
 export const metadata: Metadata = {
   title: "Waste Right — A little care. A cleaner tomorrow.",
   description:
@@ -15,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}<DepthMotion /><LandingClipMotion /></body>
+      <body>{children}<DepthMotion /><LandingClipMotion /><LandingProgrammes /></body>
     </html>
   );
 }
