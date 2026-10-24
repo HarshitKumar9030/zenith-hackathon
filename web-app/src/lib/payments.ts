@@ -49,9 +49,26 @@ export async function applyCapture(
     };
     if (order.plan === "basic") {
       const b = a.bookings.find((b) => b.id === order.bookingId);
-      if (!b || !["payment_due", "quote_ready"].includes(b.status))
+      const final = order.stage === "final";
+      if (
+        !b ||
+        (final
+          ? b.status !== "payment_due_after_collection" ||
+            amount !== b.balanceDuePaise
+          : !["payment_due", "quote_ready"].includes(b.status) ||
+            amount !== b.feePaise)
+      )
         receipt.status = "review_needed";
-      else {
+      else if (final) {
+        b.status = "completed";
+        b.finalPaymentId = paymentId;
+        b.finalPaidPaise = (b.finalPaidPaise || 0) + amount;
+        b.balanceDuePaise = 0;
+        b.events.push({
+          status: "final_payment_received",
+          at: new Date().toISOString(),
+        });
+      } else {
         b.status = "scheduled";
         b.paymentId = paymentId;
         b.events.push({ status: "paid", at: new Date().toISOString() });

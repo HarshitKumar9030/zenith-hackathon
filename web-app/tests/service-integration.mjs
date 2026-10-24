@@ -60,9 +60,9 @@ async function signup(name, email, accountType = "user") {
   const cookie = response.headers.get("set-cookie").split(";")[0];
   return {
     id: data.user.id,
-    async req(path, body) {
+    async req(path, body, method = body ? "POST" : "GET") {
       const r = await fetch(base + "/api/" + path, {
-        method: body ? "POST" : "GET",
+        method,
         headers: {
           cookie,
           Origin: base,
@@ -182,7 +182,6 @@ try {
     requestId: randomUUID(),
     source: "reward",
     scanId: String(scan.insertedId),
-    weightKg: 1,
     date: new Date(Date.now() + 2 * 86400000).toLocaleDateString("en-CA"),
     window: "09:00",
     segregated: true,
@@ -226,12 +225,15 @@ try {
   const eveningQuote = await resident.req("service", {
     ...booking,
     requestId: randomUUID(),
-    weightKg: 3,
+    weightKg: 2,
+    source: "basic",
     segregated: false,
     window: "18:37",
   });
-  assert.equal(eveningQuote.data.result.surgeFeePaise, 700);
-  assert.equal(eveningQuote.data.result.status, "quote_requested");
+  assert.equal(eveningQuote.data.result.surgeFeePaise, 600);
+  assert.equal(eveningQuote.data.result.sortingFeePaise, 0);
+  assert.equal(eveningQuote.data.result.feePaise, 1600);
+  assert.equal(eveningQuote.data.result.status, "payment_due");
   assert.equal(
     (
       await admin.req("operations", {
@@ -374,19 +376,80 @@ try {
       segregated: false,
     })
   ).data.result;
-  assert.equal(quote.status, "quote_requested");
+  assert.equal(quote.status, "payment_due");
+  assert.equal(quote.sortingFeePaise, 0);
+  async function captureBooking(id, amount, stage = "initial") {
+    const order = "order_" + randomUUID(),
+      payment = "pay_" + randomUUID();
+    await database
+      .collection("payment_orders")
+      .insertOne({
+        orderId: order,
+        userId: resident.id,
+        plan: "basic",
+        bookingId: id,
+        amount,
+        currency: "INR",
+        stage,
+        status: "created",
+      });
+    const body = JSON.stringify({
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: { id: payment, order_id: order, amount, currency: "INR" },
+        },
+      },
+    });
+    const sig = createHmac("sha256", secret).update(body).digest("hex");
+    assert.equal((await hook(sig, body)).status, 200);
+    return { sig, body };
+  }
+  assert.equal(quote.weightPending, true);
+  assert.equal(quote.estimatedKg, 0);
+  await captureBooking(quote.id, quote.feePaise);
+  await collector.req("operations", {
+    action: "claim",
+    residentId: resident.id,
+    id: quote.id,
+  });
   assert.equal(
     (
-      await admin.req("operations", {
-        action: "quote",
+      await collector.req("operations", {
+        action: "weigh",
         residentId: resident.id,
         id: quote.id,
-        feePaise: 3500,
-        terms: "QA sorting and collection quote",
+        grossKg: 2.1,
+        tareKg: 0.1,
+        material: "cardboard",
+        notes: "Helper measured 2 kg",
       })
     ).status,
     200,
   );
+  let weighed = (await resident.req("service")).data.account.bookings.find(
+    (b) => b.id === quote.id,
+  );
+  assert.equal(weighed.receipt.sortingFeePaise, 1000);
+  assert.equal(weighed.receipt.additionalDuePaise, 1000);
+  assert.equal(
+    (await resident.req("service", { action: "accept_receipt", id: quote.id }))
+      .status,
+    200,
+  );
+  weighed = (await resident.req("service")).data.account.bookings.find(
+    (b) => b.id === quote.id,
+  );
+  assert.equal(weighed.status, "payment_due_after_collection");
+  assert.equal(weighed.balanceDuePaise, 1000);
+  const finalCapture = await captureBooking(quote.id, 1000, "final");
+  await hook(finalCapture.sig, finalCapture.body);
+  weighed = (await resident.req("service")).data.account.bookings.find(
+    (b) => b.id === quote.id,
+  );
+  assert.equal(weighed.status, "completed");
+  assert.equal(weighed.finalPaidPaise, 1000);
+  assert.equal(weighed.balanceDuePaise, 0);
   const multi = await database.collection("history").insertOne({
     userId: new ObjectId(resident.id),
     identification: {
@@ -422,206 +485,267 @@ try {
     selectedItems: [1],
   });
   assert.equal(selected.data.item.identification.detected_items[0].name, "Box");
-  const { chromium } = await import("@playwright/test");
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const ctx = await browser.newContext({
-      permissions: ["geolocation"],
-      geolocation: { latitude: 28.6139, longitude: 77.209, accuracy: 12 },
-      viewport: { width: 1440, height: 1000 },
-    });
-    const page = await ctx.newPage();
-    const errors = [];
-    page.on("pageerror", (e) => errors.push(e.message));
-    async function login(email) {
-      await page.goto(base);
-      await page.getByRole("button", { name: "Sign in", exact: true }).click();
-      await page.getByLabel("Email address").fill(email);
-      await page.locator("input[name=password]").fill("QA-only-password-1234");
+  assert.equal(
+    (
+      await other.req(
+        "history",
+        { id: String(multi.insertedId), action: "remove_item", index: 0 },
+        "PATCH",
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await resident.req("history", { id: String(multi.insertedId) }, "DELETE"))
+      .status,
+    200,
+  );
+  assert.ok(
+    !(await resident.req("history")).data.items.some(
+      (i) => String(i._id) === String(multi.insertedId),
+    ),
+  );
+  assert.equal(
+    (
+      await resident.req(
+        "history",
+        { id: String(multi.insertedId), restore: true },
+        "PATCH",
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await resident.req(
+        "history",
+        { id: String(multi.insertedId), action: "remove_item", index: 0 },
+        "PATCH",
+      )
+    ).data.removed,
+    true,
+  );
+  if (process.env.QA_SKIP_BROWSER !== "1") {
+    const { chromium } = await import("@playwright/test");
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const ctx = await browser.newContext({
+        permissions: ["geolocation"],
+        geolocation: { latitude: 28.6139, longitude: 77.209, accuracy: 12 },
+        viewport: { width: 1440, height: 1000 },
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      async function login(email) {
+        await page.goto(base);
+        if (
+          await page
+            .getByRole("button", { name: "Skip tour", exact: true })
+            .isVisible()
+        )
+          await page
+            .getByRole("button", { name: "Skip tour", exact: true })
+            .click();
+        await page
+          .getByRole("button", { name: "Sign in", exact: true })
+          .click();
+        await page.getByLabel("Email address").fill(email);
+        await page
+          .locator("input[name=password]")
+          .fill("QA-only-password-1234");
+        await page
+          .getByRole("button", { name: "Sign in", exact: true })
+          .last()
+          .click();
+        await page.locator("dialog.auth-modal").waitFor({ state: "hidden" });
+      }
+      await login("resident@example.test");
+      assert.equal(
+        await page
+          .locator("nav")
+          .getByRole("button", { name: "Helper dashboard", exact: true })
+          .count(),
+        0,
+      );
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Local guides", exact: true })
+          .count(),
+        0,
+      );
+      assert.equal(await page.locator(".nav-dot").count(), 0);
+      await page.getByRole("button", { name: "Pickups", exact: true }).click();
+      await page.locator(".address-disclosure summary").click();
       await page
-        .getByRole("button", { name: "Sign in", exact: true })
-        .last()
+        .getByRole("button", { name: "Use my location", exact: true })
         .click();
-      await page.locator("dialog").waitFor({ state: "hidden" });
-    }
-    await login("resident@example.test");
-    assert.equal(
+      await page.getByText("28.61390, 77.20900", { exact: false }).waitFor();
+      const inlineFixture = {
+        userId: new ObjectId(resident.id),
+        identification: {
+          object_name: "QA paper bag",
+          material: "paper",
+          physical_state: "dry",
+          contaminated: "no",
+          mixed_material: false,
+          special_handling: "no",
+          explanation: "Controlled browser test fixture",
+          clarification_question: null,
+          detected_items: [
+            { name: "Paper bag", material: "paper", special_handling: "no" },
+          ],
+        },
+        recommendation: {
+          status: "unsupported",
+          category: null,
+          steps: [],
+          rule: null,
+          message: "",
+        },
+        preview: true,
+        confirmed: false,
+        createdAt: new Date(),
+      };
+      const inlineScan = await database
+        .collection("history")
+        .insertOne(inlineFixture);
+      await page.route("**/api/classify", (route) =>
+        route.fulfill({
+          json: { ...inlineFixture, _id: String(inlineScan.insertedId) },
+        }),
+      );
+      await page
+        .getByRole("button", { name: "Identify waste", exact: true })
+        .click();
+      await page
+        .getByRole("tab", { name: "Write a description", exact: true })
+        .click();
+      await page.getByLabel("Describe your item").fill("A paper bag");
+      await page
+        .getByRole("button", { name: "Identify my item", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Confirm & schedule pickup", exact: true })
+        .click();
+      await page
+        .getByRole("heading", { name: "Schedule this pickup", exact: true })
+        .waitFor();
+      const quick = page.getByRole("region", { name: "Schedule this scan" });
+      await quick.getByLabel("Pickup time", { exact: true }).fill("14:30");
+      assert.equal(
+        await quick
+          .getByLabel("Pickup time", { exact: true })
+          .evaluate((e) => e.checkValidity()),
+        false,
+      );
+      await quick.getByLabel("Pickup time", { exact: true }).fill("17:35");
+      await quick.getByText("5–7 pm · ₹6 extra", { exact: false }).waitFor();
+      await quick.getByLabel("Pickup time", { exact: true }).fill("09:37");
+      assert.equal(await quick.getByLabel("Estimated weight (kg)").count(), 0);
+      await quick
+        .getByRole("radio", { name: "Separated", exact: true })
+        .click();
+      await quick
+        .getByRole("button", { name: "Request this pickup", exact: true })
+        .click();
+      await quick
+        .getByRole("heading", { name: "Pickup requested", exact: true })
+        .waitFor();
+      assert.equal(
+        (
+          await database
+            .collection("service_accounts")
+            .findOne({ _id: new ObjectId(resident.id) })
+        ).bookings.filter((b) => b.scanId === String(inlineScan.insertedId))
+          .length,
+        1,
+      );
+      await page.unroute("**/api/classify");
+      await page.getByRole("button", { name: "Settings", exact: true }).click();
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await login("collector@example.test");
+      if (
+        await page
+          .getByRole("button", { name: "Skip tour", exact: true })
+          .isVisible()
+      )
+        await page
+          .getByRole("button", { name: "Skip tour", exact: true })
+          .click();
       await page
         .locator("nav")
         .getByRole("button", { name: "Helper dashboard", exact: true })
-        .count(),
-      0,
-    );
-    assert.equal(
+        .waitFor();
+      assert.equal(
+        await page
+          .locator("nav")
+          .getByRole("button", { name: "Plans", exact: true })
+          .count(),
+        0,
+      );
       await page
-        .getByRole("button", { name: "Local guides", exact: true })
-        .count(),
-      0,
-    );
-    assert.equal(await page.locator(".nav-dot").count(), 0);
-    await page.getByRole("button", { name: "Pickups", exact: true }).click();
-    await page
-      .getByRole("button", { name: "Use my location", exact: true })
-      .click();
-    await page.getByText("28.61390, 77.20900", { exact: false }).waitFor();
-    const inlineFixture = {
-      userId: new ObjectId(resident.id),
-      identification: {
-        object_name: "QA paper bag",
-        material: "paper",
-        physical_state: "dry",
-        contaminated: "no",
-        mixed_material: false,
-        special_handling: "no",
-        explanation: "Controlled browser test fixture",
-        clarification_question: null,
-        detected_items: [
-          { name: "Paper bag", material: "paper", special_handling: "no" },
-        ],
-      },
-      recommendation: {
-        status: "unsupported",
-        category: null,
-        steps: [],
-        rule: null,
-        message: "",
-      },
-      preview: true,
-      confirmed: false,
-      createdAt: new Date(),
-    };
-    const inlineScan = await database
-      .collection("history")
-      .insertOne(inlineFixture);
-    await page.route("**/api/classify", (route) =>
-      route.fulfill({
-        json: { ...inlineFixture, _id: String(inlineScan.insertedId) },
-      }),
-    );
-    await page
-      .getByRole("button", { name: "Identify waste", exact: true })
-      .click();
-    await page
-      .getByRole("tab", { name: "Write a description", exact: true })
-      .click();
-    await page.getByLabel("Describe your item").fill("A paper bag");
-    await page
-      .getByRole("button", { name: "Identify my item", exact: true })
-      .click();
-    await page
-      .getByLabel(
-        "I reviewed the suggestions and answered what I can establish",
-      )
-      .check();
-    await page
-      .getByRole("button", { name: "Confirm & schedule pickup", exact: true })
-      .click();
-    await page
-      .getByRole("heading", { name: "Schedule this pickup", exact: true })
-      .waitFor();
-    const quick = page.getByRole("region", { name: "Schedule this scan" });
-    await quick.getByLabel("Pickup time", { exact: true }).fill("14:30");
-    assert.equal(
-      await quick
-        .getByLabel("Pickup time", { exact: true })
-        .evaluate((e) => e.checkValidity()),
-      false,
-    );
-    await quick.getByLabel("Pickup time", { exact: true }).fill("17:35");
-    await quick.getByText("5–7 pm · ₹6 extra", { exact: false }).waitFor();
-    await quick.getByLabel("Pickup time", { exact: true }).fill("09:37");
-    await quick.getByLabel("Estimated weight (kg)").fill("1");
-    await quick
-      .getByLabel("I have separated the materials for collection")
-      .check();
-    await quick
-      .getByRole("button", { name: "Request this pickup", exact: true })
-      .click();
-    await quick
-      .getByRole("heading", { name: "Pickup requested", exact: true })
-      .waitFor();
-    assert.equal(
-      (
-        await database
-          .collection("service_accounts")
-          .findOne({ _id: new ObjectId(resident.id) })
-      ).bookings.filter((b) => b.scanId === String(inlineScan.insertedId))
-        .length,
-      1,
-    );
-    await page.unroute("**/api/classify");
-    await page.getByRole("button", { name: "Settings", exact: true }).click();
-    await page.getByRole("button", { name: "Sign out", exact: true }).click();
-    await login("collector@example.test");
-    await page
-      .locator("nav")
-      .getByRole("button", { name: "Helper dashboard", exact: true })
-      .waitFor();
-    assert.equal(
+        .getByRole("button", { name: "Service area", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Use my location", exact: true })
+        .click();
+      await page.getByText("28.61390, 77.20900", { exact: false }).waitFor();
+      await page.getByRole("button", { name: "हिन्दी", exact: true }).click();
+      await page
+        .getByRole("button", { name: "मेरा स्थान चुनें", exact: true })
+        .waitFor();
+      await page.screenshot({
+        path: "/tmp/waste-right-helper-area.png",
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+      );
+      await page.getByRole("button", { name: "Settings", exact: true }).click();
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
+      await page
+        .getByRole("button", {
+          name: "New here? Create an account",
+          exact: true,
+        })
+        .click();
+      await page.getByLabel("Your name").fill("New helper QA");
+      await page.getByLabel("Email address").fill("signup-helper@example.test");
+      await page.locator("input[name=password]").fill("QA-only-password-1234");
+      await page
+        .getByRole("button", { name: "Account type", exact: true })
+        .click();
+      await page.getByRole("option", { name: "Helper", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Create account", exact: true })
+        .click();
+      await page.locator("dialog.auth-modal").waitFor({ state: "hidden" });
       await page
         .locator("nav")
-        .getByRole("button", { name: "Plans", exact: true })
-        .count(),
-      0,
-    );
-    await page
-      .getByRole("button", { name: "Service area", exact: true })
-      .click();
-    await page
-      .getByRole("button", { name: "Use my location", exact: true })
-      .click();
-    await page.getByText("28.61390, 77.20900", { exact: false }).waitFor();
-    await page.getByRole("button", { name: "हिन्दी", exact: true }).click();
-    await page
-      .getByRole("button", { name: "मेरा स्थान चुनें", exact: true })
-      .waitFor();
-    await page.screenshot({
-      path: "/tmp/waste-right-helper-area.png",
-      fullPage: true,
-    });
-    await page.setViewportSize({ width: 390, height: 844 });
-    assert.equal(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-      true,
-    );
-    await page.getByRole("button", { name: "Settings", exact: true }).click();
-    await page.getByRole("button", { name: "Sign out", exact: true }).click();
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page
-      .getByRole("button", { name: "New here? Create an account", exact: true })
-      .click();
-    await page.getByLabel("Your name").fill("New helper QA");
-    await page.getByLabel("Email address").fill("signup-helper@example.test");
-    await page.locator("input[name=password]").fill("QA-only-password-1234");
-    await page
-      .getByRole("button", { name: "Account type", exact: true })
-      .click();
-    await page.getByRole("option", { name: "Helper", exact: true }).click();
-    await page
-      .getByRole("button", { name: "Create account", exact: true })
-      .click();
-    await page.locator("dialog").waitFor({ state: "hidden" });
-    await page
-      .locator("nav")
-      .getByRole("button", { name: "Helper dashboard", exact: true })
-      .waitFor();
-    assert.equal(
-      (
-        await database
-          .collection("users")
-          .findOne({ email: "signup-helper@example.test" })
-      ).accountType,
-      "helper",
-    );
-    assert.deepEqual(errors, []);
-    await ctx.close();
-  } finally {
-    await browser.close();
+        .getByRole("button", { name: "Helper dashboard", exact: true })
+        .waitFor();
+      assert.equal(
+        (
+          await database
+            .collection("users")
+            .findOne({ email: "signup-helper@example.test" })
+        ).accountType,
+        "helper",
+      );
+      assert.deepEqual(errors, []);
+      await ctx.close();
+    } finally {
+      await browser.close();
+    }
   }
   console.log(
-    "PASS: owner isolation, collector approval, once-daily points, atomic redemption, booking idempotency, competing claims, measured receipt approval, settlement, signed webhook replay/tamper rejection, quote workflow, multi-item review, role-specific signup/navigation, saved geolocation, Hindi and mobile layout.",
+    "PASS: automatic sorting prices, owner isolation, collector approval, once-daily points, atomic redemption, booking idempotency, competing claims, measured receipt approval, settlement, signed webhook replay/tamper rejection, automatic pricing, item removal and history restore.",
   );
 } finally {
   await database.dropDatabase();

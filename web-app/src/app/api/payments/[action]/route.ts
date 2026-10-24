@@ -65,7 +65,14 @@ export async function POST(
       const a = await account(u._id);
       if (data.plan === "basic") {
         const b = a.bookings.find((b) => b.id === data.bookingId);
-        if (!b || !["payment_due", "quote_ready"].includes(b.status))
+        if (
+          !b ||
+          ![
+            "payment_due",
+            "quote_ready",
+            "payment_due_after_collection",
+          ].includes(b.status)
+        )
           throw new Error("Choose an unpaid Basic booking.");
       } else if (a.membership && new Date(a.membership.expiresAt) > new Date())
         throw new Error("Your current pass is still active.");
@@ -80,7 +87,12 @@ export async function POST(
         throw new Error("Too many checkout attempts. Try again later.");
       const amount =
         data.plan === "basic"
-          ? a.bookings.find((b) => b.id === data.bookingId)!.feePaise
+          ? (() => {
+              const b = a.bookings.find((b) => b.id === data.bookingId)!;
+              return b.status === "payment_due_after_collection"
+                ? b.balanceDuePaise
+                : b.feePaise;
+            })()
           : PLANS[data.plan].price * 100;
       const id = new ObjectId();
       const order = await client.orders.create({
@@ -95,6 +107,12 @@ export async function POST(
         userId: String(u._id),
         plan: data.plan,
         bookingId: data.bookingId,
+        stage:
+          data.plan === "basic" &&
+          a.bookings.find((b) => b.id === data.bookingId)?.status ===
+            "payment_due_after_collection"
+            ? "final"
+            : "initial",
         amount,
         currency: "INR",
         status: "created",

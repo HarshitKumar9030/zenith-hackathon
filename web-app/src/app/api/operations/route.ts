@@ -1,4 +1,5 @@
 import { helperCompensation } from "@/lib/helper-pay";
+import { pickupPrice } from "@/lib/pickup-pricing";
 import { NextResponse } from "next/server";
 import { SORTING_PER_KG_PAISE } from "@/lib/pickup-pricing";
 import { z } from "zod";
@@ -174,8 +175,6 @@ export async function POST(req: Request) {
             : b.source === "quote"
               ? 100
               : 2;
-        const excessKg = b.source === "quote" ? 0 : Math.max(0, Math.round((net - cap) * 1000) / 1000);
-        const excessFeePaise = Math.round(excessKg * 300);
         if (b.source === "quote" && net > cap) throw new Error("Measured weight exceeds the agreed specialist collection limit.");
         if (
           b.source === "membership" &&
@@ -189,14 +188,36 @@ export async function POST(req: Request) {
             );
           a.membership.remainingKg -= difference;
         }
-        b.totalFeePaise = (b.feePaise || 0) + excessFeePaise;
+        const excessPrice = pickupPrice({ source: b.source, weightKg: net, includedKg: cap, segregated: b.segregated, time: b.window });
+        const excessKg = b.source === "quote" ? 0 : excessPrice.excessKg;
+        const excessFeePaise = b.source === "quote" ? 0 : excessPrice.excessPaise;
+        const measuredPrice =
+          b.pricingVersion === "helper-weighed-v1"
+            ? pickupPrice({
+                source: b.source,
+                weightKg: net,
+                includedKg: cap,
+                segregated: b.segregated,
+                time: b.window,
+              })
+            : null;
+        const additionalDuePaise = excessFeePaise + (measuredPrice
+          ? measuredPrice.sortingPaise +
+            Math.max(0, measuredPrice.surgePaise - (b.surgeFeePaise || 0))
+          : 0);
+        b.weightPending = false;
+        b.totalFeePaise = (b.feePaise || 0) + additionalDuePaise;
         b.receipt = {
+          sortingIncluded: b.source === "membership",
+          sortingReferencePaise: b.source === "membership" && !b.segregated ? Math.ceil(net * SORTING_PER_KG_PAISE) : 0,
           excessKg,
           excessFeePaise,
           includedKg: cap,
-          additionalDuePaise: excessFeePaise,
-          sortingIncluded: b.source === "membership",
-          sortingReferencePaise: b.source === "membership" && !b.segregated ? Math.ceil(net * SORTING_PER_KG_PAISE) : 0,
+          sortingFeePaise: measuredPrice?.sortingPaise || 0,
+          surgeAdjustmentPaise: measuredPrice
+            ? Math.max(0, measuredPrice.surgePaise - (b.surgeFeePaise || 0))
+            : 0,
+          additionalDuePaise,
           grossKg: data.grossKg,
           tareKg: data.tareKg,
           netKg: Math.round((data.grossKg - data.tareKg) * 1000) / 1000,
