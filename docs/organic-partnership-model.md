@@ -6,7 +6,7 @@ Updated 24 October 2026. This direction supersedes older pitch pricing where inc
 
 The founder confirmed that government collaboration and funding are **proposed / applying**. No executed public-authority agreement or funding award has been supplied. Public wording must reflect this status.
 
-The implemented **Basic base fee is ₹10**, reduced from ₹15. Its current limit remains 2 kg. Gold remains ₹599 and Platinum ₹699. Existing sorting and evening charges still apply; historic bookings retain their recorded fees.
+The implemented **Basic base fee is ₹10**, reduced from ₹15. Its current limit remains 2 kg. Gold is now ₹399/month and Platinum ₹469/month. Monthly prices are scaled with Basic’s ₹15-to-₹10 reduction and rounded to convenient amounts (Gold: ₹399.33 → ₹399; Platinum: ₹466 → ₹469). Pickup counts, weight limits and recovery percentages are unchanged. New payment orders use the shared catalog; recorded orders retain their original amounts. Existing sorting and evening charges still apply; historic bookings retain their recorded fees.
 
 ## Proposed organic discount
 
@@ -59,4 +59,6 @@ Implemented: ₹10 shared catalog price, current UI price copy linked to that ca
 
 ## Validation
 
-All 21 existing unit tests and TypeScript passed. The current localhost landing page displayed ₹10 Basic, ₹599 Gold and ₹699 Platinum; expanding the fee details showed the unchanged sorting/evening policy. No framework overlay or browser errors appeared. Existing GSAP warnings about a missing `.art-float` target were observed and are outside this pricing change. Integration fixtures were updated to use recorded booking amounts, but the MongoDB/provider integration suite was not rerun. The organic discount, official credentials and programme funding remain proposals.
+All 21 existing unit tests and TypeScript passed. The initial Basic-fee check displayed ₹10 Basic, ₹599 Gold and ₹699 Platinum; expanding the fee details showed the unchanged sorting/evening policy. No framework overlay or browser errors appeared. Existing GSAP warnings about a missing `.art-float` target were observed and are outside this pricing change. Integration fixtures were updated to use recorded booking amounts, but the MongoDB/provider integration suite was not rerun. The organic discount, official credentials and programme funding remain proposals.
+
+Subscription follow-up on 24 October: Gold was reduced to ₹399 and Platinum to ₹469 using the shared plan catalog. All 21 unit tests and TypeScript passed again. At localhost:3001, Plans navigation opened the comparison showing ₹10/₹399/₹469 with the original pickup and weight allowances. A desktop screenshot was inspected; no framework overlay or browser errors appeared, with the same pre-existing GSAP warnings. Checkout uses the catalog for new orders; no provider payment was executed.

@@ -1,6 +1,6 @@
 # Waste Right final pitch
 
-**Pricing update, 24 October 2026:** the application Basic base fee is now ₹10. The decks below retain their earlier ₹15 pricing and have not been revised. Government collaboration and grants are proposed/applying; see [the current organic partnership model](../organic-partnership-model.md).
+**Pricing update, 24 October 2026:** application prices are now ₹10 Basic, ₹399/month Gold and ₹469/month Platinum. The decks below retain their earlier ₹15/₹599/₹699 pricing and have not been revised. Government collaboration and grants are proposed/applying; see [the current organic partnership model](../organic-partnership-model.md).
 
 `Waste-Right-Final-Pitch-10-Slides.pptx` is the final 10-slide hackathon pitch, including the cover. Use this version for presenting. It condenses the supplied 16-slide reference into the problem, resident journey, human verification, pricing, fees and rewards, revenue, prototype readiness, illustrative economics and a 30-household pilot ask. Editable text, a native pricing table, presenter notes and slide-specific source notes are included.
 
