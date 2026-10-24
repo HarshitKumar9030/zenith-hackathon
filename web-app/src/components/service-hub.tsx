@@ -385,6 +385,7 @@ export default function ServiceHub({
                 {[
                   "payment_due",
                   "scheduled",
+                  "assigned",
                   "quote_requested",
                   "quote_ready",
                 ].includes(b.status) && (

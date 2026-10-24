@@ -47,5 +47,10 @@ try{
  assert.equal(confirmation.status,200,JSON.stringify(confirmation.data));assert.equal(confirmation.data.item.identification.detected_items.length,16);
  const booking=await request({action:'book',requestId:crypto.randomUUID(),source:'basic',scanId:String(scan.insertedId),asap:true,date:'2000-01-01',window:'14:30',segregated:true},fresh.cookie,'','service');
  assert.equal(booking.status,200,JSON.stringify(booking.data));assert.equal(booking.data.result.asap,true);assert.equal(booking.data.result.surgeFeePaise,0);assert.notEqual(booking.data.result.date,'2000-01-01');
- console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and ASAP booking without surge.');
+ await db.collection('service_accounts').updateOne({_id:fresh.id},{$set:{credits:1}});
+ const included=await request({action:'book',requestId:crypto.randomUUID(),source:'reward',scanId:String(scan.insertedId),asap:true,date:'2000-01-01',window:'14:30',segregated:true},fresh.cookie,'','service');
+ assert.equal(included.status,200,JSON.stringify(included.data));assert.equal(included.data.result.status,'assigned');assert.equal(included.data.result.collectorId,String(helper.id));
+ const cancelled=await request({action:'cancel',id:included.data.result.id},fresh.cookie,'','service');assert.equal(cancelled.status,200,JSON.stringify(cancelled.data));
+ const saved=await db.collection('service_accounts').findOne({_id:fresh.id});assert.equal(saved.credits,1);assert.equal(saved.bookings.find(b=>b.id===included.data.result.id).status,'cancelled');
+ console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and ASAP booking without surge, automatic helper assignment and cancellation credit restoration.');
 }finally{app.kill('SIGTERM');await db.dropDatabase();await client.close()}

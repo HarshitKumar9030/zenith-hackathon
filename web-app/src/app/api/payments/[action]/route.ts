@@ -192,7 +192,7 @@ async function changeForRefund(
     if (
       amount >= p.amountPaise &&
       b &&
-      ["scheduled", "payment_due"].includes(b.status)
+      ["scheduled", "assigned", "payment_due"].includes(b.status)
     ) {
       if (b.source === "reward") a.credits++;
       if (
