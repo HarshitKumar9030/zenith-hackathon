@@ -174,23 +174,27 @@ export async function POST(req: Request) {
             : b.source === "quote"
               ? 100
               : 2;
-        if (net > cap)
-          throw new Error(
-            "Measured weight exceeds this service limit. Obtain a new agreed quote.",
-          );
+        const excessKg = b.source === "quote" ? 0 : Math.max(0, Math.round((net - cap) * 1000) / 1000);
+        const excessFeePaise = Math.round(excessKg * 300);
+        if (b.source === "quote" && net > cap) throw new Error("Measured weight exceeds the agreed specialist collection limit.");
         if (
           b.source === "membership" &&
           a.membership &&
           a.membership.orderId === b.membershipOrderId
         ) {
-          const difference = net - b.estimatedKg;
+          const difference = Math.min(net, cap) - Math.min(b.estimatedKg || 0, cap);
           if (difference > a.membership.remainingKg)
             throw new Error(
               "Measured weight exceeds remaining monthly allowance.",
             );
           a.membership.remainingKg -= difference;
         }
+        b.totalFeePaise = (b.feePaise || 0) + excessFeePaise;
         b.receipt = {
+          excessKg,
+          excessFeePaise,
+          includedKg: cap,
+          additionalDuePaise: excessFeePaise,
           sortingIncluded: b.source === "membership",
           sortingReferencePaise: b.source === "membership" && !b.segregated ? Math.ceil(net * SORTING_PER_KG_PAISE) : 0,
           grossKg: data.grossKg,

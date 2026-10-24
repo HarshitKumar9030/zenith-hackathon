@@ -480,6 +480,7 @@ export default function ServiceHub({
               {b.receipt && (
                 <div className="receipt">
                   <h3>Measured receipt</h3>
+                  {b.receipt.excessFeePaise > 0 && <p>Extra weight: {b.receipt.excessKg} kg × ₹3 = ₹{(b.receipt.excessFeePaise / 100).toFixed(2)}</p>}
                   <p>
                     Gross {b.receipt.grossKg} kg − tare {b.receipt.tareKg} kg ={" "}
                     {b.receipt.netKg} kg net

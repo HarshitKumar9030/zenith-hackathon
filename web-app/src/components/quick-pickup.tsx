@@ -246,9 +246,8 @@ export default function QuickPickup({
                 type="number"
                 inputMode="decimal"
                 min="0.1"
-                max={cap}
                 step="0.1"
-                placeholder={`Up to ${cap} kg`}
+                placeholder={`${cap} kg included · ₹3/kg extra`}
                 required
               />
             </label>
@@ -262,7 +261,7 @@ export default function QuickPickup({
             I have separated the materials for collection
           </label>}
           <small>
-            Gold and Platinum include segregation. Basic and reward pickups add ₹5/kg for unsegregated waste after helper weighing. Evening fees apply separately.
+            Extra weight costs ₹3/kg above the included limit, confirmed by the helper. Gold and Platinum include segregation. Basic and reward pickups add ₹5/kg for unsegregated waste after helper weighing. Evening fees apply separately.
           </small>
           <button className="primary" disabled={busy}>
             {busy ? (
