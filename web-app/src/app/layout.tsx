@@ -1,3 +1,4 @@
+import LandingClipMotion from "@/components/landing-clip-motion";
 import type { Metadata } from "next";
 import "./globals.css";
 import "@/components/depth-motion.css";
@@ -14,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}<DepthMotion /></body>
+      <body>{children}<DepthMotion /><LandingClipMotion /></body>
     </html>
   );
 }

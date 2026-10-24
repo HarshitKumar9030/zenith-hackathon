@@ -426,6 +426,7 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <AnimatedSidebar
+        signedIn={Boolean(user)}
         role={user?.role}
         accountType={user?.accountType}
         page={page}

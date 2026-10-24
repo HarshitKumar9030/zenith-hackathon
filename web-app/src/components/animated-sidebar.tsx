@@ -1,4 +1,5 @@
 "use client";
+import SidebarPlanCard from "./sidebar-plan-card";
 import { useState } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
@@ -29,11 +30,15 @@ export default function AnimatedSidebar({
   role,
   accountType,
   onNavigate,
+  membership,
+  signedIn,
 }: {
   page: string;
   role?: string;
   accountType?: string;
   onNavigate: (page: string) => void;
+  signedIn?: boolean;
+  membership?: {plan:string;remainingPickups:number;remainingKg:number}|null;
 }) {
   const reduce = useReducedMotion();
   const [hovered, setHovered] = useState<string | null>(null);
@@ -134,44 +139,8 @@ export default function AnimatedSidebar({
           ))}
         </motion.nav>
       </LayoutGroup>
-      <motion.div
-        className="sidebar-bottom"
-        initial={{ opacity: 0, y: reduce ? 0 : 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduce ? 0 : 0.5, delay: reduce ? 0 : 0.3 }}
-      >
-        <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
-          <motion.path
-            d="M50 86V47M50 64C21 68 18 45 18 34c22-1 34 9 32 30ZM50 48C49 21 64 13 85 14c0 23-11 38-35 34Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            initial={{ pathLength: reduce ? 1 : 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: reduce ? 0 : 1.4, delay: reduce ? 0 : 0.3 }}
-          />
-          <motion.path
-            d="m50 64-20-19m20 3 23-23"
-            stroke="currentColor"
-            strokeWidth="2"
-            initial={{ pathLength: reduce ? 1 : 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: reduce ? 0 : 0.7, delay: reduce ? 0 : 0.8 }}
-          />
-        </svg>
-        <p>
-          Small actions.
-          <br />
-          Lasting change.
-        </p>
-        <motion.span
-          className="tiny-line"
-          initial={{ scaleX: reduce ? 1 : 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : 0.75 }}
-          style={{ transformOrigin: "left" }}
-        />
-        <small>Made for a better everyday.</small>
-      </motion.div>
+      <SidebarPlanCard helper={accountType === "helper"} signedIn={signedIn} membership={membership} onNavigate={onNavigate}/>
+
     </aside>
   );
 }
