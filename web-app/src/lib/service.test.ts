@@ -2,6 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ObjectId } from "mongodb";
 import { newAccount, reward, redeem, reserve, roleFor } from "./service";
+test("participation IDs are unique Waste Right records without government or Aadhaar claims", () => {
+  const a = newAccount(new ObjectId()), b = newAccount(new ObjectId());
+  assert.match(a.participation.id, /^WR-[0-9A-F-]{36}$/);
+  assert.notEqual(a.participation.id, b.participation.id);
+  assert.equal(a.participation.issuer, "Waste Right");
+  assert.equal(a.participation.governmentIssued, false);
+  assert.equal(a.participation.aadhaarLinked, false);
+});
 test("only one point per India calendar day", () => {
   const a = newAccount(new ObjectId());
   assert.equal(reward(a, new Date("2026-10-23T06:00Z")), true);

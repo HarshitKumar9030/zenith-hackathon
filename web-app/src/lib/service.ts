@@ -2,6 +2,8 @@ import { ObjectId, type Document } from "mongodb";
 import { db } from "./db";
 import { activityDay, streakSummary } from "./streak";
 import { PLANS } from "./catalog";
+import { randomUUID } from "node:crypto";
+import { benefitSummary, type ParticipationRecord } from "./benefits";
 export { PLANS } from "./catalog";
 export type Plan = keyof typeof PLANS;
 export const REWARD_COST = 10,
@@ -25,6 +27,7 @@ export function newAccount(userId: ObjectId) {
   return {
     _id: userId,
     rev: 0,
+    participation: newParticipation(),
     points: 0,
     rewardDays: [] as string[],
     rewardScanIds: [] as string[],
@@ -59,7 +62,19 @@ export async function account(userId: ObjectId) {
   } catch (e) {
     if ((e as { code?: number }).code !== 11000) throw e;
   }
-  return (await collection.findOne({ _id: userId }))!;
+  let saved = (await collection.findOne({ _id: userId }))!;
+  if (!saved.participation) {
+    // The revision increment protects a concurrent account update during lazy migration.
+    await collection.updateOne(
+      { _id: userId, participation: { $exists: false } },
+      { $set: { participation: newParticipation() }, $inc: { rev: 1 } },
+    );
+    saved = (await collection.findOne({ _id: userId }))!;
+  }
+  return saved;
+}
+function newParticipation(): ParticipationRecord {
+  return { id: `WR-${randomUUID().toUpperCase()}`, issuer: "Waste Right", issuedAt: new Date().toISOString(), governmentIssued: false, aadhaarLinked: false };
 }
 // Each user's entitlements, points, bookings and payment grants share one atomic document.
 export async function changeAccount<T>(
@@ -97,6 +112,7 @@ export function summarize(a: Account) {
       maxRedemptionsPerMonth: MONTHLY_REDEMPTIONS,
     },
     plans: PLANS,
+    benefits: benefitSummary(a),
   };
 }
 export function reward(a: Account, now = new Date()) {

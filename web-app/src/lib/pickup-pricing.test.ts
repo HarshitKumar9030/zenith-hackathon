@@ -8,13 +8,27 @@ test("instant prices itemise sorting and evening fees for all funding sources", 
   assert.equal(p.sortingPaise, 750);
   assert.equal(p.surgePaise, 600);
   assert.equal(p.totalPaise, 2350);
-  for (const source of ["reward", "membership"])
-    assert.equal(pickupPrice({ ...base, source }).totalPaise, 1350);
+  assert.equal(pickupPrice({ ...base, source: "reward" }).totalPaise, 1350);
+  assert.equal(pickupPrice({ ...base, source: "membership" }).totalPaise, 500);
   assert.equal(
     pickupPrice({ ...base, source: "reward", segregated: true, time: "09:37" })
       .totalPaise,
     0,
   );
+});
+
+test("Gold and Platinum allowance pickups include sorting before and after weighing", () => {
+  for (const weightKg of [null, 1.5, 8, 10]) {
+    const price = pickupPrice({ source: "membership", weightKg, segregated: false, time: "09:00" });
+    assert.equal(price.sortingIncluded, true);
+    assert.equal(price.sortingPending, false);
+    assert.equal(price.sortingPaise, 0);
+    assert.equal(price.totalPaise, 0);
+  }
+  const evening = pickupPrice({ source: "membership", weightKg: 8, segregated: false, time: "17:30" });
+  assert.equal(evening.sortingPaise, 0);
+  assert.equal(evening.surgePaise, 600); // Time/weight surcharge only; no segregation penalty.
+  assert.equal(pickupPrice({ source: "basic", weightKg: 2, segregated: false, time: "09:00" }).sortingPaise, 1000);
 });
 test("a quote needs a valid weight and an available time", () => {
   for (const weightKg of [0, -1, NaN])

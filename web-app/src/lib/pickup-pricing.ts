@@ -16,22 +16,24 @@ export function pickupPrice(input: {
     validPickupTime(input.time) && (input.weightKg == null || measured);
   const collectionPaise =
     input.source === "basic" ? PLANS.basic.price * 100 : 0;
+  const sortingIncluded = input.source === "membership";
   const sortingPaise =
-    input.segregated || !measured
+    sortingIncluded || input.segregated || !measured
       ? 0
       : Math.ceil(input.weightKg! * SORTING_PER_KG_PAISE);
   const surgePaise = pickupSurgePaise(
     input.time,
     measured ? input.weightKg! : 0,
-    input.segregated,
+    input.segregated || sortingIncluded,
   );
   return {
     valid,
     measured,
     collectionPaise,
     sortingPaise,
+    sortingIncluded,
     surgePaise,
     totalPaise: collectionPaise + sortingPaise + surgePaise,
-    sortingPending: !input.segregated && !measured,
+    sortingPending: !sortingIncluded && !input.segregated && !measured,
   };
 }
