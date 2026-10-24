@@ -1,5 +1,11 @@
 # Waste Right complete project pitch
 
+## Present this version for the three-minute slot
+
+Use `Waste-Right-3-Minute-Pitch.pptx` (editable) or `Waste-Right-3-Minute-Pitch.pdf` (sharing copy). Eight slides cover the problem, pain points, solution, hub flow, pricing, AI, sustainability/scaling and pilot ask. Speaker notes contain a complete timed script totalling 175 seconds, leaving five seconds for transitions. Rehearse aloud; the timing is a speaking target, not a measured presenter performance. No live demo or extra appendix is included in this slot.
+
+The short version incorporates proposed hub segregation/composting, ₹3/kg excess weight, current plan prices, the separate model's evaluation limits and revenue/cost context. It retains GOBARdhan/NAMASTE as potential routes, without claiming an award. All eight slides were rendered and reviewed. Text and the pricing table are editable; the matching PDF uses the reviewed renders. `build_three_minute_session.js` contains the Artifact Session authoring source. The complete 31-slide deck and its longer presenter guide below remain reference material.
+
 ## Current deck · 24 October 2026
 
 The [26-page presenter guide](../../output/pdf/Waste-Right-Presenter-Guide.pdf) provides speaking notes for every slide, transitions, full/short timing routes, current hub and excess-weight clarifications, a demo sequence, sustainability/scalability answers and judge-question preparation. It supplements the deck with the later ₹3/kg excess rule and proposed hub segregation/composting model; the deck itself is unchanged by this guide. Regenerate it with the bundled Python runtime using `docs/presentations/build_pitch_guide.py` (ReportLab required). Its pages include PDF navigation bookmarks.
