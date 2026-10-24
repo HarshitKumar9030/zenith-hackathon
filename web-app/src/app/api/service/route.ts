@@ -38,6 +38,7 @@ const input = z.discriminatedUnion("action", [
   z.object({ action: z.literal("redeem") }),
   z.object({
     action: z.literal("book"),
+    asap: z.boolean().optional(),
     requestId: z.uuid(),
     source: z.enum(["reward", "membership", "basic"]),
     scanId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -47,7 +48,7 @@ const input = z.discriminatedUnion("action", [
       .string()
       .refine(
         validPickupTime,
-        "Choose 7 am–2 pm or 5 pm–7 pm. No pickups during the 2–5 pm break.",
+        "Choose a valid pickup time (00:00–23:59 IST).",
       ),
     segregated: z.boolean(),
   }),
@@ -87,11 +88,12 @@ export async function POST(req: Request) {
     const data = input.parse(await req.json());
     let scan = null;
     if (data.action === "book") {
-      const day = new Date(data.date + "T12:00:00+05:30");
+      if(data.asap){const next=new Date(Date.now()+5*60000);data.date=next.toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"});data.window=next.toLocaleTimeString("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit"});}
+      const day = new Date(data.date + "T" + data.window + ":00+05:30");
       const delta = day.getTime() - Date.now();
-      if (delta < 0 || delta > 30 * 86400000)
+      if (!Number.isFinite(delta) || day.toLocaleDateString("en-CA", {timeZone:"Asia/Kolkata"}) !== data.date || delta < 0 || delta > 30 * 86400000)
         throw new Error(
-          "Choose a date from tomorrow through the next 30 days.",
+          "Choose a future pickup time within the next 30 days.",
         );
       scan = await (await db()).collection("history").findOne({
         _id: new ObjectId(data.scanId),
@@ -173,6 +175,7 @@ export async function POST(req: Request) {
           estimatedKg: 0,
           weightPending: true,
           pricingVersion: "helper-weighed-v1",
+          asap: Boolean(data.asap),
           date: data.date,
           window: data.window,
           timezone: "Asia/Kolkata",

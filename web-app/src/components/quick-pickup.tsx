@@ -44,7 +44,9 @@ export default function QuickPickup({
     [scans, setScans] = useState<Scan[]>([]),
     [selectedScan, setSelectedScan] = useState(scanId || ""),
     [funding, setFunding] = useState("basic"),
-    [time, setTime] = useState("09:00"),
+    [automatic, setAutomatic] = useState(true),
+    [time, setTime] = useState(""),
+    [pickupDate, setPickupDate] = useState(""),
     [segregated, setSegregated] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -60,6 +62,9 @@ export default function QuickPickup({
   useEffect(() => {
     let active = true;
     requestId.current = crypto.randomUUID();
+    const next = new Date(Date.now() + 15 * 60000);
+    setTime(next.toLocaleTimeString("en-GB", {timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit"}));
+    setPickupDate(next.toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"}));
     Promise.all([serviceApi("service"), serviceApi("history")])
       .then(([d, h]) => {
         if (!active) return;
@@ -129,6 +134,7 @@ export default function QuickPickup({
     }
     setSelectedScan(previous.scanId);
     setSegregated(Boolean(previous.segregated));
+    setAutomatic(false);
     setTime(validPickupTime(previous.window) ? previous.window : "09:00");
     setFunding(
       previous.source === "membership" && plan?.remainingPickups > 0
@@ -175,6 +181,7 @@ export default function QuickPickup({
         action: "book",
         requestId: requestId.current,
         source: funding,
+        asap: automatic,
         scanId: selectedScan,
         date: f.get("date"),
         window: time,
@@ -233,7 +240,7 @@ export default function QuickPickup({
               "en-IN",
               { day: "numeric", month: "long", timeZone: "Asia/Kolkata" },
             )}{" "}
-            · {pickupTimeLabel(booking.window)} · Weight checked at collection
+            · {booking.asap ? "Next available helper · arrival estimate pending live location" : pickupTimeLabel(booking.window)} · Weight checked at collection
           </p>
           <p>
             {booking.source === "membership"
@@ -362,25 +369,31 @@ export default function QuickPickup({
             </div>
             <div className="booking-section">
               <h3>When should we come?</h3>
-              <div className="service-columns">
+              <div className="choice-tabs" role="group" aria-label="Pickup timing">
+                <button type="button" aria-pressed={automatic} onClick={()=>setAutomatic(true)}>Next available helper</button>
+                <button type="button" aria-pressed={!automatic} onClick={()=>setAutomatic(false)}>Choose a time</button>
+              </div>
+              {automatic ? <><input type="hidden" name="date" value={pickupDate}/><input type="hidden" name="pickupTime" value={time}/><p>Arrival estimate pending assignment. Your helper’s live location will provide an approximate arrival range. Available 24 hours for the hackathon, with no surge.</p></> : <div className="service-columns">
                 <label className="field">
                   Collection date
                   <input
                     name="date"
                     type="date"
                     required
-                    defaultValue={day(1)}
-                    min={day(1)}
+                    value={pickupDate}
+                    onChange={(e) => setPickupDate(e.target.value)}
+                    min={day(0)}
                     max={day(30)}
                   />
                 </label>
+                <p className="muted">Your helper’s live location will provide an arrival estimate after assignment. You can choose your preferred time below.</p>
                 <PickupTimeInput
                   value={time}
                   onChange={setTime}
                   weightKg={0}
                   segregated={segregated || funding === "membership"}
                 />
-              </div>
+              </div>}
             </div>
             <details
               className="booking-section address-disclosure"
