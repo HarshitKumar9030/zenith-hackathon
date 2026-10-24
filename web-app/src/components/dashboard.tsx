@@ -993,7 +993,7 @@ export default function Dashboard() {
         ref={camera}
         type="file"
         accept="image/*"
-        capture="environment"
+        capture
         hidden
         onChange={(e) => {
           void pick(e.target.files?.[0]);

@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { SwitchCamera } from "lucide-react";
+import { openCameraStream, type CameraFacing } from "@/lib/camera";
+import cameraControls from "./camera-controls.module.css";
 import CapturedFrameDrop from "./captured-frame-drop";
 import frameStyles from "./captured-frame-drop.module.css";
 import { Camera, ScanLine, Square, RefreshCw } from "lucide-react";
@@ -26,6 +29,12 @@ export default function LiveCamera({
     [count, setCount] = useState(0),
     [auto, setAuto] = useState(true);
   const [readLabels, setReadLabels] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [facing, setFacing] = useState<CameraFacing>("environment");
+  const [canSwitch, setCanSwitch] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const opening = useRef(false);
+  const facingPreference = useRef<CameraFacing>("environment");
   const labelsRef = useRef(readLabels);
   labelsRef.current = readLabels;
   const workerRef = useRef<import("tesseract.js").Worker | null>(null);
@@ -35,6 +44,9 @@ export default function LiveCamera({
   const inFlight = useRef(false);
   function stop() {
     generation.current++;
+    opening.current = false;
+    setStarting(false);
+    setSwitching(false);
     active.current = false;
     if (timer.current) clearTimeout(timer.current);
     stream.current?.getTracks().forEach((t) => t.stop());
@@ -108,8 +120,10 @@ export default function LiveCamera({
       await callback.current(captured, labelText);
       if (epoch === generation.current) setCount(n + 1);
     } catch (e) {
-      errorCallback.current((e as Error).message);
-      stop();
+      if (epoch === generation.current) {
+        errorCallback.current((e as Error).message);
+        stop();
+      }
     } finally {
       inFlight.current = false;
       setProcessing(false);
@@ -122,45 +136,67 @@ export default function LiveCamera({
         timer.current = setTimeout(() => void scan(epoch, n + 1), 15000);
     }
   }
-  async function start() {
+  async function start(target: CameraFacing = facingPreference.current, switchingCamera = false) {
+    if (opening.current || inFlight.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
-      onError(
-        "Camera access needs HTTPS or localhost. Open the secure site on your phone.",
-      );
+      errorCallback.current("Camera access needs HTTPS or localhost. Open the secure site on your phone.");
       return;
     }
-    stop();
-    const epoch = generation.current;
+    const previous = stream.current;
+    const scans = switchingCamera ? count : 0;
+    const epoch = ++generation.current;
+    active.current = false;
+    opening.current = true;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    stream.current = null;
+    if (video.current) video.current.srcObject = null;
+    setRunning(false);
+    setCapturedFrame(null);
+    setStarting(true);
+    setSwitching(switchingCamera);
     try {
-      const next = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
+      const result = await openCameraStream(navigator.mediaDevices, {
+        facing: target, previous, isCurrent: () => epoch === generation.current,
       });
-      if (epoch !== generation.current) {
-        next.getTracks().forEach((t) => t.stop());
-        return;
-      }
+      if (!result) return;
+      const next = result.stream;
+      if (epoch !== generation.current || !video.current) { next.getTracks().forEach(track => track.stop()); return; }
       stream.current = next;
-      if (video.current) {
-        video.current.srcObject = next;
-        await video.current.play();
-      }
+      video.current.srcObject = next;
+      await video.current.play();
+      // Stop / navigation can happen while permission or playback is pending.
+      if (epoch !== generation.current) { next.getTracks().forEach(track => track.stop()); return; }
+      facingPreference.current = result.facing;
+      setFacing(result.facing);
       active.current = true;
       setRunning(true);
-      setCount(0);
-      // Allow time to frame the items before the first automatic capture.
-      if (autoRef.current) timer.current = setTimeout(() => void scan(epoch, 0), 2000);
-    } catch (e) {
-      onError(
-        (e as DOMException).name === "NotAllowedError"
-          ? "Camera permission denied. Allow camera access or use a description."
-          : "Unable to open camera. Close other camera apps and try again.",
-      );
+      setCount(scans);
+      const settings = next.getVideoTracks()[0]?.getSettings();
+      const supportsFacing = navigator.mediaDevices.getSupportedConstraints?.().facingMode !== false;
+      setCanSwitch(!result.restored && supportsFacing && Boolean(settings?.facingMode));
+      // Enumeration is optional: some phones expose only the authorised camera.
+      if (!result.restored && navigator.mediaDevices.enumerateDevices) {
+        void navigator.mediaDevices.enumerateDevices().then(devices => {
+          if (epoch === generation.current) setCanSwitch(supportsFacing &&
+            (devices.filter(device => device.kind === "videoinput").length > 1 || Boolean(settings?.facingMode)));
+        }).catch(() => { /* Keep scanning when device enumeration is restricted. */ });
+      }
+      if (result.restored) errorCallback.current("Could not switch cameras. Your previous camera is ready to use.");
+      // Keep the same scan budget and allow time to frame the newly selected camera.
+      if (autoRef.current && scans < 8) timer.current = setTimeout(() => void scan(epoch, scans), 2000);
+    } catch (error) {
+      if (epoch !== generation.current) return;
+      errorCallback.current((error as DOMException).name === "NotAllowedError"
+        ? "Camera permission denied. Allow camera access or use a description."
+        : "Unable to open camera. Close other camera apps and try again.");
       stop();
+    } finally {
+      if (epoch === generation.current) {
+        opening.current = false;
+        setStarting(false);
+        setSwitching(false);
+      }
     }
   }
   return (
@@ -175,7 +211,17 @@ export default function LiveCamera({
           autoPlay
           playsInline
           aria-label="Live waste camera"
+          style={{transform: facing === "user" ? "scaleX(-1)" : undefined}}
         />
+        {(running || switching) && canSwitch && (
+          <button type="button" className={cameraControls.flip}
+            disabled={starting || processing}
+            aria-label={`Switch to ${facing === "user" ? "back" : "front"} camera`}
+            title={`Switch to ${facing === "user" ? "back" : "front"} camera`}
+            onClick={() => void start(facing === "user" ? "environment" : "user", true)}>
+            <SwitchCamera size={18}/><span>{switching ? "Switching…" : "Flip camera"}</span>
+          </button>
+        )}
         {!running && (
           <div className="camera-empty">
             <Camera size={42} strokeWidth={1.3} />
@@ -212,7 +258,7 @@ export default function LiveCamera({
             </button>
           </>
         ) : (
-          <button className="primary" onClick={start}>
+          <button className="primary" disabled={starting} onClick={() => void start()}>
             <Camera size={17} />
             Start live camera
           </button>

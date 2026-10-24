@@ -1,0 +1,6 @@
+.flip{position:absolute;top:16px;right:16px;z-index:8;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:11px 15px;border:0;border-radius:16px;background:#f5f7ef;color:#244633;font:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s,transform .2s}
+.flip:hover:not(:disabled){background:#e3e9d7;transform:translateY(-2px)}
+.flip:disabled{opacity:.65;cursor:wait}
+.flip:focus-visible{outline:3px solid #9d8ec5;outline-offset:4px}
+@media(max-width:480px){.flip{top:12px;right:12px;padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){.flip{transition:none}.flip:hover:not(:disabled){transform:none}}
