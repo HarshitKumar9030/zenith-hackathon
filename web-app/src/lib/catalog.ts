@@ -1,7 +1,7 @@
 export const PLANS = {
   basic: {
     name: "Basic",
-    price: 15,
+    price: 10,
     pickups: 1,
     perPickupKg: 2,
     monthlyKg: 2,

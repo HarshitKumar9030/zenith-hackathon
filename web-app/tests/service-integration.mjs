@@ -205,7 +205,7 @@ try {
     window: "17:35",
   });
   assert.equal(evening.data.result.surgeFeePaise, 500);
-  assert.equal(evening.data.result.feePaise, 2500);
+  assert.equal(evening.data.result.feePaise, 1500);
   assert.equal(evening.data.result.status, "payment_due");
   await resident.req("service", {
     action: "cancel",
@@ -328,7 +328,7 @@ try {
     userId: resident.id,
     plan: "basic",
     bookingId: payBooking.id,
-    amount: 2000,
+    amount: payBooking.feePaise,
     currency: "INR",
     status: "created",
   });
@@ -339,7 +339,7 @@ try {
         entity: {
           id: "pay_qa_1",
           order_id: orderId,
-          amount: 2000,
+          amount: payBooking.feePaise,
           currency: "INR",
         },
       },

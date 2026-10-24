@@ -4,10 +4,10 @@ import { pickupPrice } from "./pickup-pricing";
 test("instant prices itemise sorting and evening fees for all funding sources", () => {
   const base = { weightKg: 1.5, segregated: false, time: "17:35" };
   const p = pickupPrice({ ...base, source: "basic" });
-  assert.equal(p.collectionPaise, 1500);
+  assert.equal(p.collectionPaise, 1000);
   assert.equal(p.sortingPaise, 750);
   assert.equal(p.surgePaise, 600);
-  assert.equal(p.totalPaise, 2850);
+  assert.equal(p.totalPaise, 2350);
   for (const source of ["reward", "membership"])
     assert.equal(pickupPrice({ ...base, source }).totalPaise, 1350);
   assert.equal(
@@ -47,7 +47,7 @@ test("residents book without weight and sorting is added only after helper measu
   });
   assert.equal(before.valid, true);
   assert.equal(before.sortingPending, true);
-  assert.equal(before.totalPaise, 1500);
+  assert.equal(before.totalPaise, 1000);
   const after = pickupPrice({
     source: "basic",
     weightKg: 2.4,
@@ -55,7 +55,7 @@ test("residents book without weight and sorting is added only after helper measu
     time: "09:00",
   });
   assert.equal(after.sortingPaise, 1200);
-  assert.equal(after.totalPaise, 2700);
+  assert.equal(after.totalPaise, 2200);
   assert.equal(
     pickupPrice({
       source: "basic",
@@ -63,6 +63,6 @@ test("residents book without weight and sorting is added only after helper measu
       segregated: true,
       time: "09:00",
     }).totalPaise,
-    1500,
+    1000,
   );
 });
