@@ -1,3 +1,4 @@
+import { helperCompensation } from "@/lib/helper-pay";
 import { NextResponse } from "next/server";
 import { SORTING_PER_KG_PAISE } from "@/lib/pickup-pricing";
 import { z } from "zod";
@@ -215,9 +216,15 @@ export async function POST(req: Request) {
         }
         if (data.action === "record_workpay") {
           if (!b.collectorId) throw new Error("Assign a collector first.");
-          if (b.workPay) throw new Error("Work pay already recorded.");
+          if (b.status !== "completed") throw new Error("Complete and accept the pickup before recording helper pay.");
+          const due = helperCompensation(b as {status:string}).duePaise;
+          if (data.amountPaise < due) throw new Error("Record at least the outstanding helper entitlement: ₹" + (due / 100).toFixed(2));
+          if (due === 0) throw new Error("No outstanding helper entitlement.");
+          if (b.workPay?.reference === data.reference || b.workPayments?.some((p: {reference:string}) => p.reference === data.reference)) throw new Error("Payment reference already recorded.");
+          const previousPaid = b.workPay?.amountPaise || 0;
+          b.workPayments = [...(b.workPayments || (b.workPay ? [b.workPay] : [])), { amountPaise: data.amountPaise, reference: data.reference, at: new Date().toISOString(), actor: String(u._id) }];
           b.workPay = {
-            amountPaise: data.amountPaise,
+            amountPaise: previousPaid + data.amountPaise,
             reference: data.reference,
             actor: String(u._id),
             at: new Date().toISOString(),
