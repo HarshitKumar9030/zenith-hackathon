@@ -1,5 +1,6 @@
 "use client";
-import ActionMoment from "./action-moment";
+import RewardsDashboard from "./rewards-dashboard";
+import recordStyles from "./collection-records.module.css";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import PickupTimeInput from "./pickup-time-input";
 import LocationPicker from "./location-picker";
@@ -51,12 +52,14 @@ export default function ServiceHub({
   onSignIn,
   notify,
   onRefresh,
+  onNavigate,
 }: {
   page: string;
   signedIn: boolean;
   onSignIn: () => void;
   notify: (v: string) => void;
   onRefresh: () => void;
+  onNavigate?: (page: string) => void;
 }) {
   const [estimatedWeight, setEstimatedWeight] = useState(0),
     [segregated, setSegregated] = useState(false);
@@ -172,10 +175,8 @@ export default function ServiceHub({
       "Your next handover.",
       "Confirm a scan, save your address, and choose a collection window.",
     ],
-    Rewards: [
-      "A good habit earns a useful reward.",
-      "One confirmed scan day earns one point. Redeem throughout the month.",
-    ],
+    Rewards: ["Good habits. Useful rewards.", "Scan, confirm, and turn your points into a pickup."],
+    "My history": ["My history.", "Your scans, collection receipts and disputes in one place."],
     "Collection route": [
       "Your collection route.",
       "Claim a scheduled handover, verify the materials, and record scale weight.",
@@ -207,7 +208,7 @@ export default function ServiceHub({
     );
   return (
     <>
-      <div className="page-heading heading-actions">
+      {!["Rewards", "My history"].includes(page) && <div className="page-heading heading-actions">
         <div>
           <h1>{heading[0]}</h1>
           <p>{heading[1]}</p>
@@ -220,7 +221,7 @@ export default function ServiceHub({
           <RotateCcw size={16} />
           Refresh
         </button>
-      </div>
+      </div>}
       {page === "Plans" && (
         <>
           <div className="plan-grid">
@@ -250,9 +251,7 @@ export default function ServiceHub({
                       ? `${p.recoveryPercent}% of positive net accepted recovery proceeds`
                       : "No recovery payout"}
                   </li>
-                  <li>
-                    Separate quote for assisted sorting or specialist waste
-                  </li>
+                  <li>{key === "basic" ? "Unsegregated waste: ₹5/kg after helper weighing" : "Segregation included · no sorting charge"}</li>
                 </ul>
                 {key === "basic" ? (
                   <p className="micro">BOOK AND PAY UNDER PICKUPS</p>
@@ -307,74 +306,7 @@ export default function ServiceHub({
           </p>
         </>
       )}
-      {page === "Rewards" && (
-        <>
-          <section className="rewards-summary">
-            <div>
-              <img src="/assets/fire.svg" width="46" height="52" alt="" />
-              <h2>{a?.points || 0} scan points</h2>
-              <p>Earned points remain when a streak breaks.</p>
-            </div>
-            <div>
-              <Gift size={35} />
-              <h2>{a?.credits || 0} pickup credits</h2>
-              <p>Each credit covers one Basic pickup up to 2 kg.</p>
-            </div>
-          </section>
-          <section className="service-block">
-            <h2>10 points. One pickup credit.</h2>
-            <p>
-              Redeem any time during the month, up to two credits per calendar
-              month. Credit pickups use the same route windows and handling
-              limits as Basic.
-            </p>
-            <button
-              className="primary"
-              disabled={busy || (a?.points || 0) < 10}
-              onClick={() => action("service", { action: "redeem" }, true)}
-            >
-              <Gift size={17} />
-              Redeem 10 points
-            </button>
-            {rewardMoment > 0 && <ActionMoment key={rewardMoment} kind="reward" label="Points redeemed. One pickup credit added." />}
-          </section>
-          <div className="service-block">
-            <h2>Your locality leaderboard</h2>
-            <p>
-              {a?.profile.locality ||
-                "Save your locality under Pickups to see your community."}{" "}
-              · opt-in aliases only · ranked by distinct confirmed scan days,
-              not waste generated
-            </p>
-            {ranking.length ? (
-              ranking.map((r) => (
-                <p key={r.rank}>
-                  {r.rank}. {r.alias}
-                  {r.isYou ? " (you)" : ""} · {r.days} confirmed scan days
-                </p>
-              ))
-            ) : (
-              <p>
-                No participating aliases yet. Join under your collection
-                profile.
-              </p>
-            )}
-          </div>
-          <div className="service-block">
-            <h3>Your redemption history</h3>
-            {a?.redemptions.length ? (
-              a.redemptions.map((r) => (
-                <p key={r.id}>
-                  {new Date(r.createdAt).toLocaleDateString()} · 10 points
-                  exchanged for one pickup credit
-                </p>
-              ))
-            ) : (
-              <p>No redemptions yet. Confirm a scan to start earning.</p>
-            )}
-          </div>
-        </>
-      )}
+      {page === "Rewards" && <RewardsDashboard account={a} ranking={ranking} busy={busy} onRedeem={() => void action("service", { action: "redeem" }, true)} onNavigate={(next) => onNavigate?.(next)} celebration={rewardMoment} />}
       {page === "Pickups" && (
         <>
           <div className="service-columns">
@@ -530,7 +462,11 @@ export default function ServiceHub({
               </form>
             </section>
           </div>
-          <h2 className="section-spaced">Your collection records</h2>
+        </>
+      )}
+      {page === "My history" && (
+        <>
+          <h2 className="section-spaced">Receipts &amp; disputes</h2>
           {!bookings.length && (
             <div className="empty">
               <Truck size={30} />
@@ -538,7 +474,8 @@ export default function ServiceHub({
             </div>
           )}
           {[...bookings].reverse().map((b) => (
-            <section className="booking-entry" key={b.id}>
+            <details className={recordStyles.record} key={b.id} open={["receipt_pending", "payment_due", "payment_due_after_collection", "disputed"].includes(b.status)}>
+              <summary>
               <div className="section-heading">
                 <h3>{b.item}</h3>
                 <span className="status">
@@ -549,6 +486,7 @@ export default function ServiceHub({
                 {b.date} · {pickupTimeLabel(b.window)} · estimated{" "}
                 {b.estimatedKg} kg · {b.source}
               </p>
+              </summary>
               {b.surgeFeePaise > 0 && (
                 <p>
                   Evening surcharge: ₹{b.surgeFeePaise / 100} · Included in
@@ -576,6 +514,7 @@ export default function ServiceHub({
                     : "Pending payout"}
                 </p>
               )}
+              {b.dispute && <p className={recordStyles.review}>Issue reported: {b.dispute.reason}{b.status === "disputed" ? " · Operations review pending." : ""}</p>}
               <div className="inline-actions">
                 {["payment_due", "quote_ready"].includes(b.status) && (
                   <button
@@ -617,6 +556,7 @@ export default function ServiceHub({
                 )}
               </div>
               {["receipt_pending", "completed"].includes(b.status) && (
+                <details className={recordStyles.dispute}><summary>Report a weighing or material issue</summary>
                 <form
                   className="inline-form"
                   onSubmit={(e) => {
@@ -630,6 +570,7 @@ export default function ServiceHub({
                 >
                   <input
                     name="reason"
+                    aria-label="Reason for dispute"
                     placeholder="Explain a weighing or material dispute…"
                     required
                     minLength={5}
@@ -638,9 +579,9 @@ export default function ServiceHub({
                   <button className="secondary" disabled={busy}>
                     Raise dispute
                   </button>
-                </form>
+                </form></details>
               )}
-            </section>
+            </details>
           ))}
         </>
       )}

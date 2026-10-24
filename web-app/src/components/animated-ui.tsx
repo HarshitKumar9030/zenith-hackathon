@@ -10,8 +10,10 @@ function PageSurface({ children }: { children: ReactNode }) {
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
+        const targets = root.current?.querySelectorAll(".page-heading, .overview-grid, .streak-band, .stats, .activity, .identify-grid, .guide-layout, .settings-grid, .history-toolbar");
+        if (!targets?.length) return;
         gsap.from(
-          ".page-heading, .overview-grid, .streak-band, .stats, .activity, .identify-grid, .guide-layout, .settings-grid, .history-toolbar",
+          targets,
           {
             y: 12,
             opacity: 0,

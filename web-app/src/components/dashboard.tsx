@@ -25,6 +25,9 @@ import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
+import HistoryList from "./history-list";
+import historyStyles from "./history-list.module.css";
+import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
@@ -38,7 +41,7 @@ type User = {
   role?: string;
   accountType?: "user" | "helper";
 };
-type Result = {
+export type Result = {
   confirmed?: boolean;
   _id: string;
   identification: Identification;
@@ -101,6 +104,7 @@ export default function Dashboard() {
     [filter, setFilter] = useState("all"),
     [authBusy, setAuthBusy] = useState(false);
   const [liveStop, setLiveStop] = useState(0);
+  const [historyView, setHistoryView] = useState("scans");
   const scanEpoch = useRef(0);
   const currentPage = useRef(page);
   currentPage.current = page;
@@ -326,7 +330,7 @@ export default function Dashboard() {
           <QuickPickup
             key={item._id}
             scanId={item._id}
-            onRecords={() => setPage("Pickups")}
+            onRecords={() => { setHistoryView("collections"); setPage("My history"); }}
             notify={setMessage}
           />
         )}
@@ -581,6 +585,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               </section>
+              {user && <BenefitsPanel />}
               <div className="service-shortcuts">
                 <button
                   className="secondary"
@@ -885,121 +890,24 @@ export default function Dashboard() {
           )}
           {page === "My history" && (
             <>
-              <div className="page-heading heading-actions">
-                <div>
-                  <h1>A little history of better choices.</h1>
-                  <p>
-                    Your identifications, source rules, and corrections in one
-                    place.
-                  </p>
-                </div>
-                <button
-                  className="secondary"
-                  onClick={exportHistory}
-                  disabled={!history.length}
-                >
-                  <ArrowDownToLine size={16} />
-                  Export JSON
-                </button>
+              <div className="page-heading"><h1>My history.</h1><p>Your scans, collection receipts and disputes.</p></div>
+              <div className={historyStyles.tabs} role="tablist" aria-label="History view">
+                {[{ id: "scans", label: "Scans" }, { id: "collections", label: "Receipts & disputes" }].map((tab) => <button type="button" role="tab" aria-selected={historyView === tab.id} key={tab.id} onClick={() => { setHistoryView(tab.id); setResult(null); }}>{tab.label}</button>)}
               </div>
-              <div className="history-toolbar">
-                <label className="search-input">
-                  <Search size={18} />
-                  <input
-                    placeholder="Search your items…"
-                    aria-label="Search history"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </label>
-                <Dropdown
-                  label="Filter history"
-                  value={filter}
-                  onChange={setFilter}
-                  options={[
-                    { value: "all", label: "All items" },
-                    { value: "confirmed", label: "Confirmed" },
-                    { value: "unclear", label: "Needs clarification" },
-                  ]}
-                />
-              </div>
-              {!visible.length ? (
-                <div className="empty spacious">
-                  <AnimatedIllustration
-                    asset="abstract-animtion-another.svg"
-                    className="history-art"
-                  />
-                  <h2>
-                    {history.length
-                      ? "No matching items."
-                      : "Everyday actions, remembered."}
-                  </h2>
-                  <p>
-                    {history.length
-                      ? "Try another search or filter."
-                      : "Identify your first item to start your history."}
-                  </p>
-                  <button
-                    className="primary"
-                    onClick={() => setPage("Identify waste")}
-                  >
-                    Identify an item <ArrowRight size={16} />
-                  </button>
-                </div>
-              ) : (
-                visible.map((item) => (
-                  <div className="history-row" key={item._id}>
-                    <button
-                      className="row-main"
-                      onClick={() => setResult(item)}
-                    >
-                      <span className="item-icon">
-                        <Leaf size={21} />
-                      </span>
-                      <span>
-                        <strong>{item.identification.object_name}</strong>
-                        <small>
-                          {title(
-                            item.correction?.material ||
-                              item.identification.material,
-                          )}{" "}
-                          · {new Date(item.createdAt).toLocaleDateString()}
-                        </small>
-                      </span>
-                      <span className="status">
-                        {item.recommendation.category || "Needs review"}
-                      </span>
-                    </button>
-                    <button
-                      className="icon-button"
-                      aria-label={`Delete ${item.identification.object_name}`}
-                      onClick={async () => {
-                        try {
-                          await api("history", "DELETE", { id: item._id });
-                          if (result?._id === item._id) setResult(null);
-                          await refresh();
-                        } catch (e) {
-                          setMessage((e as Error).message);
-                        }
-                      }}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-                  </div>
-                ))
-              )}
-              {result && resultPanel(result)}
+              {historyView === "scans" && (result ? <div id="history-detail" className="history-detail-view"><button className="text-button" onClick={() => setResult(null)}>Back to scans</button>{resultPanel(result)}</div> : <HistoryList hideHeading items={history} onOpen={setResult} onRefresh={() => void refresh()} onScan={() => setPage("Identify waste")} onExport={exportHistory} notify={setMessage} />)}
             </>
           )}
           {[
             "Plans",
             "Pickups",
             "Rewards",
+            "My history",
             "Collection route",
             "Operations",
-          ].includes(page) && (
+          ].includes(page) && (page !== "My history" || historyView === "collections") && (
             <ServiceHub
               page={page}
+              onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }}
               signedIn={Boolean(user)}
               onSignIn={() => setAuth(true)}
               notify={setMessage}

@@ -152,7 +152,7 @@ export default function QuickPickup({
                 : "Collection is subject to helper availability. You can review its status under Pickups."}
           </p>
           <button type="button" className="secondary" onClick={onRecords}>
-            View pickup <ArrowRight size={16} />
+            View in My history <ArrowRight size={16} />
           </button>
         </div>
       ) : account ? (
@@ -206,7 +206,7 @@ export default function QuickPickup({
               value={window}
               onChange={setWindow}
               weightKg={estimatedWeight}
-              segregated={segregated}
+              segregated={segregated || funding === "membership"}
             />
           </div>
           <div className="service-columns">
@@ -217,7 +217,7 @@ export default function QuickPickup({
                 value={funding}
                 onChange={setFunding}
                 options={[
-                  { value: "basic", label: "Basic · ₹20" },
+                  { value: "basic", label: `Basic · ₹${PLANS.basic.price}` },
                   ...(account.credits > 0
                     ? [
                         {
@@ -253,18 +253,16 @@ export default function QuickPickup({
               />
             </label>
           </div>
-          <label className="check-row">
+          {funding === "membership" ? <p>We segregate your waste. Sorting is included in Gold and Platinum.</p> : <label className="check-row">
             <input
               type="checkbox"
               name="segregated"
               onChange={(e) => setSegregated(e.target.checked)}
             />
             I have separated the materials for collection
-          </label>
+          </label>}
           <small>
-            Unsegregated or special-handling waste requires a quote. Basic
-            pickups need payment before scheduling; checkout is currently
-            unconfigured.
+            Gold and Platinum include segregation. Basic and reward pickups add ₹5/kg for unsegregated waste after helper weighing. Evening fees apply separately.
           </small>
           <button className="primary" disabled={busy}>
             {busy ? (
