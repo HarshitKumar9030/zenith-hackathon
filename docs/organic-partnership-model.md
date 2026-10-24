@@ -6,7 +6,7 @@ Updated 24 October 2026. This direction supersedes older pitch pricing where inc
 
 The founder confirmed that government collaboration and funding are **proposed / applying**. No executed public-authority agreement or funding award has been supplied. Public wording must reflect this status.
 
-The implemented **Basic base fee is ₹10**, reduced from ₹15. Its current limit remains 2 kg. Gold is now ₹399/month and Platinum ₹469/month. Monthly prices are scaled with Basic’s ₹15-to-₹10 reduction and rounded to convenient amounts (Gold: ₹399.33 → ₹399; Platinum: ₹466 → ₹469). Pickup counts, weight limits and recovery percentages are unchanged. New payment orders use the shared catalog; recorded orders retain their original amounts. Existing sorting and evening charges still apply; historic bookings retain their recorded fees.
+The implemented **Basic base fee is ₹10**, reduced from ₹15. Its current limit remains 2 kg. Gold is now ₹399/month and Platinum ₹469/month. Monthly prices are scaled with Basic’s ₹15-to-₹10 reduction and rounded to convenient amounts (Gold: ₹399.33 → ₹399; Platinum: ₹466 → ₹469). Pickup counts, weight limits and recovery percentages are unchanged. New payment orders use the shared catalog; recorded orders retain their original amounts. Segregation is now included in Gold/Platinum allowance pickups. Basic/reward sorting and applicable evening charges remain; historic paid receipts retain their recorded fees.
 
 ## Proposed organic discount
 
@@ -55,7 +55,7 @@ Until authorised, label it: **“Issued by Waste Right. Government collaboration
 
 ## Implementation scope
 
-Implemented: ₹10 shared catalog price, current UI price copy linked to that catalog, and updated existing pricing-test expectations. Proposed only: organic discounts and their settlement, participation-record generation, government partnership and grants. The existing PPTX decks remain historical snapshots and have not been rewritten in this update.
+Implemented: ₹10 shared catalog price, current UI price copy linked to that catalog, and updated existing pricing-test expectations. Independent Waste Right participation records and verified comparison benefits are now implemented; see [the participation implementation](savings-participation.md). Proposed only: organic discounts and their settlement, government partnership and grants. Government credentials and Aadhaar linking remain unavailable. The existing PPTX decks remain historical snapshots and have not been rewritten in this update.
 
 ## Validation
 

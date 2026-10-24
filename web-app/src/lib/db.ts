@@ -26,6 +26,10 @@ export async function db() {
       .collection("payment_orders")
       .createIndex({ orderId: 1 }, { unique: true }),
     database.collection("guides").createIndex({ userId: 1 }),
+    database.collection("service_accounts").createIndex(
+      { "participation.id": 1 },
+      { unique: true, partialFilterExpression: { "participation.id": { $type: "string" } } },
+    ),
   ]).catch((error) => {
     globalDb.indexes = undefined;
     throw error;

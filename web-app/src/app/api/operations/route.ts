@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { SORTING_PER_KG_PAISE } from "@/lib/pickup-pricing";
 import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { currentUser, checkOrigin } from "@/lib/auth";
@@ -188,6 +189,8 @@ export async function POST(req: Request) {
           a.membership.remainingKg -= difference;
         }
         b.receipt = {
+          sortingIncluded: b.source === "membership",
+          sortingReferencePaise: b.source === "membership" && !b.segregated ? Math.ceil(net * SORTING_PER_KG_PAISE) : 0,
           grossKg: data.grossKg,
           tareKg: data.tareKg,
           netKg: Math.round((data.grossKg - data.tareKg) * 1000) / 1000,

@@ -156,6 +156,7 @@ export async function POST(req: Request) {
           id: new ObjectId().toString(),
           requestId: data.requestId,
           source: data.source,
+          benefitReferenceBasePaise: data.source === "basic" ? 1500 : 0,
           membershipOrderId:
             data.source === "membership" ? a.membership?.orderId : null,
           segregated: data.segregated,
