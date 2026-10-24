@@ -1,3 +1,4 @@
+import { demoHelper, assignDemoHelper } from "./demo-assignment";
 import Razorpay from "razorpay";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ObjectId } from "mongodb";
@@ -36,6 +37,7 @@ export async function applyCapture(
     .findOne({ orderId });
   if (!order || order.amount !== amount || currency !== "INR")
     throw new Error("Payment does not match a recorded order.");
+  const helper = order.plan === "basic" && order.stage !== "final" ? await demoHelper(new ObjectId(order.userId)) : null;
   const outcome = await changeAccount(new ObjectId(order.userId), (a) => {
     if (a.payments.some((p) => p.orderId === orderId)) return "duplicate";
     const receipt = {
@@ -72,6 +74,7 @@ export async function applyCapture(
         b.status = "scheduled";
         b.paymentId = paymentId;
         b.events.push({ status: "paid", at: new Date().toISOString() });
+        assignDemoHelper(b, helper);
       }
     } else {
       if (a.membership && new Date(a.membership.expiresAt) > new Date())

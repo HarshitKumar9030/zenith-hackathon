@@ -1,3 +1,4 @@
+import { demoHelper, assignDemoHelper } from "@/lib/demo-assignment";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { currentUser, checkOrigin } from "@/lib/auth";
@@ -103,6 +104,7 @@ export async function POST(req: Request) {
       });
       if (!scan) throw new Error("Confirm a scan before booking.");
     }
+    const helper = data.action === "book" ? await demoHelper(u._id) : null;
     const result = await changeAccount(u._id, (a) => {
       if (data.action === "location") {
         a.profile.location = data.location
@@ -191,6 +193,7 @@ export async function POST(req: Request) {
           createdAt: new Date().toISOString(),
           events: [{ status: "created", at: new Date().toISOString() }],
         };
+        assignDemoHelper(booking, helper);
         a.bookings.push(booking);
         return booking;
       }
@@ -201,6 +204,7 @@ export async function POST(req: Request) {
         if (
           ![
             "scheduled",
+            "assigned",
             "payment_due",
             "quote_requested",
             "quote_ready",

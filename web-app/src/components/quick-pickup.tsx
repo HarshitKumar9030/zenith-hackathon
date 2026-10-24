@@ -192,7 +192,7 @@ export default function QuickPickup({
       if (d.account) setAccount(d.account);
       onBooked?.();
       notify(
-        d.result.status === "scheduled"
+        ["scheduled", "assigned"].includes(d.result.status)
           ? "Pickup requested."
           : "Pickup saved. Payment is required to schedule it.",
       );
@@ -545,8 +545,7 @@ export default function QuickPickup({
                     : "Confirm included pickup"}
             </button>
             <small>
-              Subject to helper availability. Payment is required for any amount
-              due.
+              Helper assignment is automatic for this demo.
             </small>
           </aside>
         </form>
