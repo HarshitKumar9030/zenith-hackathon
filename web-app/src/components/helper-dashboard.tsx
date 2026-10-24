@@ -191,8 +191,10 @@ export default function HelperDashboard({
       setJobs(result.jobs);
       setApproved(true);
       setError("");
-    } catch {
-      setApproved(false);
+    } catch (e) {
+      const message=e instanceof Error?e.message:"";
+      if (/approved collector|access required|sign in/i.test(message)) setApproved(false);
+      else setError("Could not refresh collections. Your last loaded records are still shown. Try again.");
     }
   }, [signedIn]);
   useEffect(() => {

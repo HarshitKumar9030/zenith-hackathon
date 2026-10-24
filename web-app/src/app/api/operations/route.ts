@@ -165,6 +165,7 @@ export async function POST(req: Request) {
         if (data.grossKg <= data.tareKg)
           throw new Error("Gross weight must exceed tare.");
         const net = Math.round((data.grossKg - data.tareKg) * 1000) / 1000;
+        if (net <= 0) throw new Error("Net weight must be at least 0.001 kg.");
         const cap =
           b.source === "membership"
             ? b.recoveryPercent === 15
@@ -220,7 +221,7 @@ export async function POST(req: Request) {
           const due = helperCompensation(b as {status:string}).duePaise;
           if (data.amountPaise < due) throw new Error("Record at least the outstanding helper entitlement: ₹" + (due / 100).toFixed(2));
           if (due === 0) throw new Error("No outstanding helper entitlement.");
-          if (b.workPay?.reference === data.reference || b.workPayments?.some((p: {reference:string}) => p.reference === data.reference)) throw new Error("Payment reference already recorded.");
+          if (a.bookings.some(job => job.workPay?.reference === data.reference || job.workPayments?.some((p: {reference:string}) => p.reference === data.reference))) throw new Error("Payment reference already recorded.");
           const previousPaid = b.workPay?.amountPaise || 0;
           b.workPayments = [...(b.workPayments || (b.workPay ? [b.workPay] : [])), { amountPaise: data.amountPaise, reference: data.reference, at: new Date().toISOString(), actor: String(u._id) }];
           b.workPay = {
