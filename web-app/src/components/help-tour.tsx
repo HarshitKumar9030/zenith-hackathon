@@ -179,11 +179,11 @@ export default function HelpTour({
             {[
               {
                 q: "What will my pickup cost?",
-                a: `Basic pickups cost ₹${PLANS.basic.price} for either separated or unsegregated waste, up to ${PLANS.basic.perPickupKg} kg. Gold and Platinum use your remaining allowance. A reward credit covers the pickup fee. Segregation is included in Gold and Platinum. Basic and reward pickups with unsegregated waste add ₹5/kg based on the helper’s measured weight. You approve this receipt before the additional charge becomes due. Evening fees apply separately.`,
+                a: `Basic pickups cost ₹${PLANS.basic.price} for either separated or unsegregated waste, up to ${PLANS.basic.perPickupKg} kg. Gold and Platinum use your remaining allowance. A reward credit covers the pickup fee. Segregation is included in Gold and Platinum. Basic and reward pickups with unsegregated waste add ₹5/kg based on the helper’s measured weight. You approve this receipt before the additional charge becomes due. No evening surge applies during the hackathon.`,
               },
               {
                 q: "When can I book?",
-                a: "Choose any minute from 7 am to before 2 pm, or from 5 pm through 7 pm, India time. There are no pickups during the 2–5 pm break. The evening surcharge is ₹5, plus ₹1 for unsegregated waste and ₹1 after collection if the measured weight exceeds 2 kg, capped at ₹7.",
+                a: "For the hackathon, pickups are available 24 hours in India time, with no break or surge charge. Arrival estimates appear when your assigned helper shares a fresh location.",
               },
               {
                 q: "Can I correct or remove an item?",
