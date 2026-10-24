@@ -188,3 +188,25 @@ async function changeForRefund(
     }
   });
 }
+
+export async function GET(req: Request, ctx: { params: Promise<{ action: string }> }) {
+  const headers = { "Cache-Control": "private, no-store", "Vary": "Cookie" };
+  try {
+    if ((await ctx.params).action !== "receipt") return NextResponse.json({ error: "Not found." }, { status: 404, headers });
+    const u = await currentUser();
+    if (!u) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers });
+    const orderId = new URL(req.url).searchParams.get("orderId");
+    if (!orderId || orderId.length > 100) return NextResponse.json({ error: "Choose a payment receipt." }, { status: 400, headers });
+    const payment = (await account(u._id)).payments.find((p) => p.orderId === orderId);
+    if (!payment) return NextResponse.json({ error: "Receipt not found." }, { status: 404, headers });
+    return NextResponse.json({
+      issuer: "Waste Right", document: "Payment record", currency: "INR",
+      orderId: payment.orderId, paymentId: payment.paymentId, plan: payment.plan,
+      amountPaise: payment.amountPaise, status: payment.status, recordedAt: payment.createdAt,
+      refundAmountPaise: payment.refundAmountPaise || 0,
+      statement: "This is a Waste Right payment record, not a tax invoice or government credential.",
+    }, { headers: { ...headers, "Content-Disposition": 'attachment; filename="waste-right-payment-receipt.json"' } });
+  } catch {
+    return NextResponse.json({ error: "Receipt unavailable. Try again." }, { status: 503, headers });
+  }
+}

@@ -36,3 +36,12 @@ test("legacy records and already separated waste do not invent a sorting benefit
   assert.equal(s.includedSortingPaise, 0);
   assert.equal(s.feeReductionPaise, 0);
 });
+test("participation eligibility requires a completed, measured organic receipt", () => {
+  const organic = { ...member, receipt: { ...member.receipt, material: "food_waste", netKg: 2 } };
+  assert.equal(benefitSummary({ bookings: [organic], payments: [] }).organicPickups, 1);
+  assert.equal(benefitSummary({ bookings: [organic], payments: [] }).organicKg, 2);
+  for (const status of ["receipt_pending", "disputed", "cancelled", "payment_due_after_collection"])
+    assert.equal(benefitSummary({ bookings: [{ ...organic, status }], payments: [] }).organicPickups, 0);
+  assert.equal(benefitSummary({ bookings: [basic, member], payments: [] }).organicPickups, 0);
+  assert.equal(benefitSummary({ bookings: [organic], payments: [{ bookingId: "member", status: "refunded" }] }).organicPickups, 0);
+});

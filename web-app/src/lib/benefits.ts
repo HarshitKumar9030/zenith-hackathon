@@ -4,6 +4,7 @@ export type ParticipationRecord = {
   issuedAt: string;
   governmentIssued: false;
   aadhaarLinked: false;
+  qualifyingPickupId: string;
 };
 
 export type BenefitBooking = {
@@ -15,6 +16,7 @@ export type BenefitBooking = {
   pricing?: { collectionPaise?: number };
   receipt?: {
     netKg?: number;
+    material?: string;
     sortingIncluded?: boolean;
     sortingReferencePaise?: number;
   };
@@ -24,7 +26,8 @@ export function benefitSummary(input: {
   bookings: readonly BenefitBooking[];
   payments: readonly { bookingId?: string; status?: string }[];
 }) {
-  let feeReductionPaise = 0, includedSortingPaise = 0, verifiedKg = 0, completedPickups = 0;
+  let feeReductionPaise = 0, includedSortingPaise = 0, verifiedKg = 0, completedPickups = 0, organicPickups = 0, organicKg = 0;
+  let qualifyingPickupId: string | null = null;
   const excluded = new Set(input.payments
     .filter((p) => p.bookingId && ["refunded", "partially_refunded", "review_needed"].includes(p.status || ""))
     .map((p) => p.bookingId));
@@ -34,6 +37,12 @@ export function benefitSummary(input: {
     if (typeof kg !== "number" || !Number.isFinite(kg) || kg <= 0) continue;
     verifiedKg += kg;
     completedPickups++;
+    const material = b.receipt.material?.trim().toLowerCase().replace(/[\s-]+/g, "_");
+    if (b.id && material && ["food_waste", "garden_waste", "organic", "organic_waste", "kitchen_waste"].includes(material)) {
+      organicPickups++;
+      organicKg += kg;
+      qualifyingPickupId ??= b.id;
+    }
     const reference = b.benefitReferenceBasePaise;
     const paidBase = b.pricing?.collectionPaise;
     if (b.source === "basic" && validPaise(reference) && validPaise(paidBase))
@@ -46,6 +55,9 @@ export function benefitSummary(input: {
     includedSortingPaise,
     verifiedKg: Math.round(verifiedKg * 1000) / 1000,
     completedPickups,
+    organicPickups,
+    organicKg: Math.round(organicKg * 1000) / 1000,
+    qualifyingPickupId,
     governmentSavingsPaise: 0,
     governmentStatus: "proposed" as const,
   };

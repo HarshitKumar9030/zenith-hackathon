@@ -27,7 +27,7 @@ export function newAccount(userId: ObjectId) {
   return {
     _id: userId,
     rev: 0,
-    participation: newParticipation(),
+    participation: null as ParticipationRecord | null,
     points: 0,
     rewardDays: [] as string[],
     rewardScanIds: [] as string[],
@@ -63,18 +63,18 @@ export async function account(userId: ObjectId) {
     if ((e as { code?: number }).code !== 11000) throw e;
   }
   let saved = (await collection.findOne({ _id: userId }))!;
-  if (!saved.participation) {
-    // The revision increment protects a concurrent account update during lazy migration.
+  for (let attempt = 0; attempt < 3 && !saved.participation?.qualifyingPickupId && benefitSummary(saved).organicPickups > 0; attempt++) {
+    // Recheck the account revision so an intervening dispute cannot qualify a stale receipt.
     await collection.updateOne(
-      { _id: userId, participation: { $exists: false } },
-      { $set: { participation: newParticipation() }, $inc: { rev: 1 } },
+      { _id: userId, rev: saved.rev },
+      { $set: { participation: newParticipation(benefitSummary(saved).qualifyingPickupId!, saved.participation?.id) }, $inc: { rev: 1 } },
     );
     saved = (await collection.findOne({ _id: userId }))!;
   }
   return saved;
 }
-function newParticipation(): ParticipationRecord {
-  return { id: `WR-${randomUUID().toUpperCase()}`, issuer: "Waste Right", issuedAt: new Date().toISOString(), governmentIssued: false, aadhaarLinked: false };
+function newParticipation(qualifyingPickupId: string, existingId?: string): ParticipationRecord {
+  return { id: existingId || `WR-${randomUUID().toUpperCase()}`, issuer: "Waste Right", issuedAt: new Date().toISOString(), governmentIssued: false, aadhaarLinked: false, qualifyingPickupId };
 }
 // Each user's entitlements, points, bookings and payment grants share one atomic document.
 export async function changeAccount<T>(
@@ -97,12 +97,14 @@ export async function changeAccount<T>(
 }
 export function summarize(a: Account) {
   const now = new Date();
+  const benefits = benefitSummary(a);
   const active =
     a.membership?.expiresAt && new Date(a.membership.expiresAt) > now
       ? a.membership
       : null;
   return {
     ...a,
+    participation: benefits.organicPickups > 0 && a.participation?.qualifyingPickupId ? a.participation : null,
     membership: active,
     role: undefined,
     streak: streakSummary(a.rewardDays),
@@ -112,7 +114,7 @@ export function summarize(a: Account) {
       maxRedemptionsPerMonth: MONTHLY_REDEMPTIONS,
     },
     plans: PLANS,
-    benefits: benefitSummary(a),
+    benefits,
   };
 }
 export function reward(a: Account, now = new Date()) {
