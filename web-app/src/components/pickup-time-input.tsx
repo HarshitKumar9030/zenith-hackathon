@@ -21,6 +21,8 @@ export default function PickupTimeInput({
       Pickup time (IST)
       <input
         type="time"
+        name="pickupTime"
+        onInput={(e) => onChange(e.currentTarget.value)}
         aria-label="Pickup time"
         value={value}
         min="07:00"
@@ -41,7 +43,7 @@ export default function PickupTimeInput({
         {!valid
           ? "Choose 7 am–2 pm or 5 pm–7 pm. No pickups during the 2–5 pm break."
           : surgeTime(value)
-            ? `5–7 pm · ₹${pickupSurgePaise(value, weightKg, segregated) / 100} extra: ₹5 evening base${weightKg > 2 ? " + ₹1 above 2 kg" : ""}${!segregated ? " + ₹1 unsegregated" : ""}. Applies to Basic, plan and reward pickups.`
+            ? `5–7 pm · ₹${pickupSurgePaise(value, 0, segregated) / 100} evening charge. ₹1 more applies after weighing if above 2 kg.`
             : "7 am–2 pm · Standard hours. Choose any minute."}
       </small>
     </label>
