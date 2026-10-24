@@ -1,3 +1,4 @@
+import { selectableWaste } from "@/lib/scan-safety";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ObjectId } from "mongodb";
@@ -43,6 +44,10 @@ export async function POST(req: Request) {
         new Set(data.selectedItems).size !== data.selectedItems.length)
     )
       throw new Error("Invalid item selection.");
+    if (Array.isArray(detected)) {
+      const chosen = data.selectedItems ? data.selectedItems.map(i=>detected[i]) : detected;
+      if (!chosen.length || chosen.some(item=>!selectableWaste(item))) throw new Error("Choose waste items only. People and non-waste objects cannot be collected.");
+    }
     const identification = identificationSchema.parse({
       ...record.identification,
       ...(data.selectedItems

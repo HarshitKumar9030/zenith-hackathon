@@ -1,4 +1,5 @@
 "use client";
+import { selectableWaste } from "@/lib/scan-safety";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, Loader2, Pencil, X } from "lucide-react";
@@ -36,7 +37,7 @@ export default function ConfirmationChecklist({
 }) {
   const [editing, setEditing] = useState(false),
     [selected, setSelected] = useState(
-      (identification.detected_items || []).map((_, i) => i),
+      (identification.detected_items || []).flatMap((item, i) => selectableWaste(item) && item.classification !== "uncertain" ? [i] : []),
     ),
     [material, setMaterial] = useState(identification.material),
     [condition, setCondition] = useState(identification.contaminated),
@@ -46,7 +47,7 @@ export default function ConfirmationChecklist({
   const reduce = useReducedMotion();
   const items = identification.detected_items?.length
     ? identification.detected_items
-    : [{ name: identification.object_name, material: identification.material }];
+    : identification.detected_items ? [] : [{ name: identification.object_name, material: identification.material, classification: undefined }];
   async function remove(index: number) {
     setBusy(true);
     try {
@@ -98,7 +99,7 @@ export default function ConfirmationChecklist({
     setCondition(identification.contaminated);
     setSpecial(identification.special_handling);
     setMixed(identification.mixed_material);
-    setSelected((identification.detected_items || []).map((_, i) => i));
+    setSelected((identification.detected_items || []).flatMap((item, i) => selectableWaste(item) && item.classification !== "uncertain" ? [i] : []));
     setEditing(false);
   }
   function choices(
@@ -151,7 +152,7 @@ export default function ConfirmationChecklist({
           <div className="confirmed-product" key={index}>
             <div>
               <strong>{item.name}</strong>
-              <small>{item.material.replaceAll("_", " ")}</small>
+              <small>{!selectableWaste(item) ? "Not waste · excluded from pickup" : item.classification === "uncertain" ? "Needs your review · select only if this is waste" : item.material.replaceAll("_", " ")}</small>
             </div>
             <button
               type="button"
@@ -188,6 +189,8 @@ export default function ConfirmationChecklist({
         </p>
       </header>
       <div className="review-products">
+        {!items.length && <p role="status">No waste identified. People are excluded. Try a clearer view of the waste.</p>}
+        {items.length > 1 && <p>{items.length} objects reviewed · up to 16 per scan</p>}
         {items.map((item, index) => (
           <label className="review-product" key={index}>
             <input
@@ -197,7 +200,7 @@ export default function ConfirmationChecklist({
                 !identification.detected_items?.length ||
                 selected.includes(index)
               }
-              disabled={!identification.detected_items?.length}
+              disabled={!identification.detected_items?.length || !selectableWaste(item)}
               onChange={(e) =>
                 setSelected((v) =>
                   e.target.checked
@@ -208,7 +211,7 @@ export default function ConfirmationChecklist({
             />
             <span>
               <strong>{item.name}</strong>
-              <small>{item.material.replaceAll("_", " ")}</small>
+              <small>{!selectableWaste(item) ? "Not waste · excluded from pickup" : item.classification === "uncertain" ? "Needs your review · select only if this is waste" : item.material.replaceAll("_", " ")}</small>
             </span>
           </label>
         ))}
@@ -299,7 +302,7 @@ export default function ConfirmationChecklist({
             }
             disabled={
               busy ||
-              Boolean(identification.detected_items?.length && !selected.length)
+              Boolean(identification.detected_items && !selected.length)
             }
             onClick={() => void save()}
           >
