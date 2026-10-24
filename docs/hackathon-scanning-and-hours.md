@@ -11,3 +11,5 @@ Basic stays at its existing price and 2 kg allowance. Existing measured sorting/
 ## Automatic helper assignment
 
 Hackathon dispatch automatically assigns any approved helper account to a pickup once it becomes scheduled. It ignores distance, shifts and helper workload for the demonstration. Included/reward pickups assign on booking; paid pickups assign after verified payment capture. Pending payment is never silently marked paid. If no approved helper exists, the real pickup remains scheduled for manual assignment rather than inventing a collector. `DEMO_AUTO_ASSIGN=false` disables this shortcut. The repeated availability/payment disclaimer is replaced with a short automatic-assignment note. Live GPS and ETA still require that actual assigned helper to pair and start sharing.
+
+The live camera’s optional “Read packaging labels” control and its separate OCR worker are temporarily removed. Live scans send the captured frame directly for identification. Automatic scanning and front/back camera switching are unchanged.
