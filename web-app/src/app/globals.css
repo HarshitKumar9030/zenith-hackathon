@@ -3754,3 +3754,36 @@ main,
 .mt-2 {
   margin-top: 8px;
 }
+
+/* Plans: consistent card rhythm and a separate current-pass summary. */
+.current-plan-summary {
+  display: grid;
+  gap: 10px;
+  padding: 26px 30px;
+  margin: 0 0 32px;
+  background: #f2f5ee;
+  border-radius: 18px;
+  scroll-margin-top: 28px;
+}
+.current-plan-summary h2 { margin: 0; font-size: 23px; line-height: 1.35; }
+.current-plan-summary p { margin: 0; font-size: 14px; line-height: 1.7; }
+.current-plan-summary .text-button { justify-self: start; margin-top: 6px; padding: 4px 0; }
+.plan-grid { align-items: stretch; gap: 24px; margin-bottom: 30px; }
+.plan-option { display: flex; flex-direction: column; padding: 30px; min-width: 0; }
+.plan-option > .micro { margin: 0 0 18px; line-height: 1.5; }
+.plan-option .plan-heading { min-height: 46px; margin: 0; font-size: 25px; line-height: 1.35; }
+.plan-option .plan-price { display: flex; align-items: baseline; gap: 7px; margin: 24px 0 18px; line-height: 1.2; }
+.plan-option > p:not(.micro) { margin: 0; min-height: 44px; line-height: 1.7; }
+.plan-option ul { flex: 1; min-height: 0; margin: 22px 0 28px; padding-left: 18px; }
+.plan-option li { margin-bottom: 12px; line-height: 1.8; }
+.plan-option > .primary { margin-top: auto; min-height: 46px; }
+.plan-option > p.micro { display: flex; align-items: center; min-height: 46px; margin: auto 0 0; font-size: 11px; }
+@media (max-width: 1050px) {
+  .plan-option > p:not(.micro) { min-height: 0; }
+  .plan-option > .primary { width: 100%; }
+}
+@media (max-width: 600px) {
+  .current-plan-summary { padding: 22px 20px; margin-bottom: 24px; }
+  .plan-option { padding: 24px; }
+  .plan-grid { gap: 20px; }
+}

@@ -213,6 +213,12 @@ export default function ServiceHub({
       </div>}
       {page === "Plans" && (
         <>
+          {a?.membership && <section id="current-plan" aria-label="Current plan details" className="current-plan-summary">
+            <h2>Your {String(a.membership.plan).replace(/^./, c => c.toUpperCase())} pass</h2>
+            <p>{String(a.membership.remainingPickups)} pickups and {String(a.membership.remainingKg)} kg remaining. Valid until {new Date(a.membership.expiresAt).toLocaleDateString()}.</p>
+            <p>Renews manually. No automatic charges. Choose your next pass after this one expires.</p>
+            <button type="button" className="text-button" onClick={() => onNavigate?.("My history")}>View collection receipts and disputes</button>
+          </section>}
           <div className="plan-grid">
             {Object.entries(PLANS).map(([key, p]) => (
               <section
@@ -250,7 +256,7 @@ export default function ServiceHub({
                     disabled={busy || !available || Boolean(a?.membership)}
                     onClick={() => checkout(key)}
                   >
-                    Choose {p.name} <ArrowRight size={16} />
+                    {a?.membership?.plan === key ? "Current plan" : a?.membership ? "Available after current pass" : `Choose ${p.name}`} {!a?.membership && <ArrowRight size={16} />}
                   </button>
                 )}
               </section>
@@ -260,14 +266,6 @@ export default function ServiceHub({
             <div className="service-notice">
               Online payments are not available yet. Paid plans activate only
               after payment is verified.
-            </div>
-          )}
-          {a?.membership && (
-            <div className="service-notice">
-              Active {String(a.membership.plan)} pass ·{" "}
-              {String(a.membership.remainingPickups)} pickups and{" "}
-              {String(a.membership.remainingKg)} kg remaining · expires{" "}
-              {new Date(a.membership.expiresAt).toLocaleDateString()}
             </div>
           )}
           <PaymentReceipts payments={a?.payments ?? []} loading={!a} />
