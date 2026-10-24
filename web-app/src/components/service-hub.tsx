@@ -1,4 +1,5 @@
 "use client";
+import { helperCompensation, type HelperPayJob } from "@/lib/helper-pay";
 import RewardsDashboard from "./rewards-dashboard";
 import PaymentReceipts from "./payment-receipts";
 import recordStyles from "./collection-records.module.css";
@@ -716,7 +717,7 @@ export default function ServiceHub({
                     <button className="secondary">Send quote</button>
                   </form>
                 )}
-                {role === "admin" && Boolean(b.collectorId) && !b.workPay && (
+                {role === "admin" && Boolean(b.collectorId) && b.status === "completed" && helperCompensation(b as unknown as HelperPayJob).duePaise > 0 && (
                   <form
                     className="inline-form"
                     onSubmit={(e) => {
@@ -734,7 +735,9 @@ export default function ServiceHub({
                     <input
                       name="amount"
                       type="number"
-                      min="0"
+                      min={helperCompensation(b as unknown as HelperPayJob).duePaise / 100}
+                      defaultValue={(helperCompensation(b as unknown as HelperPayJob).duePaise / 100).toFixed(2)}
+                      aria-label="Actual helper payment in rupees"
                       step=".01"
                       placeholder="Actual collector pay ₹"
                       required

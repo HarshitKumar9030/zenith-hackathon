@@ -16,7 +16,7 @@ Overview and the expandable participation section in Rewards show separate measu
 
 - **Waste Right fee reductions:** completed, measured Basic pickups with a saved ₹15 reference baseline, compared with their recorded base collection charge. Old records lacking that baseline are excluded.
 - **Included segregation value:** completed membership pickups with a measured receipt explicitly marking segregation included, where the waste was not already separated. This is the value compared with a ₹5/kg sorting charge.
-- **Government-funded savings:** ₹0. Collaboration and funding are at the application stage. No government award, subsidy ledger or public-service payment is fabricated.
+- **Government-funded savings:** defaults to ₹0. Only Operations-recorded, externally completed resident credits backed by support-receipt, processor and credit references count. The resident policy is 50% of attributable support received. Approval remains a business assumption until evidence is supplied; projected fertiliser assistance is not counted as pickup savings. See [helper/support accounting](helper-pay-government-support.md).
 
 The first two figures are comparison values, not cash payouts or net savings after subscription costs. The UI does not add them to government funding or claim they are a government benefit. Pending, disputed, cancelled, invalid-weight and booking-refunded records are excluded. No emissions or biogas yield is inferred from collection weight.
 

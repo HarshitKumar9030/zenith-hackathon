@@ -28,6 +28,6 @@ English/Hindi analytics show seven days of recorded payments by India payment da
 
 ## Verification
 
-29 unit tests pass, including completed-work compensation, sorting/recovery allocation, outstanding balances and government credit validity. TypeScript passed. A temporary UI-only route used explicitly synthetic jobs without changing MongoDB or calling a payment provider: it displayed ₹32.50 earned, ₹24.50 outstanding, ₹8 recorded payments and 7 kg, and its daily breakdown opened correctly. Browser console was clear. Desktop and a narrow viewport were visually inspected. The temporary preview was removed after inspection.
+29 unit tests pass, including completed-work compensation, sorting/recovery allocation, outstanding balances and government credit validity. TypeScript passed. The unauthenticated support-record endpoint rejects access; live staff recording was not exercised. A temporary UI-only route used explicitly synthetic jobs without changing MongoDB or calling a payment provider: it displayed ₹32.50 earned, ₹24.50 outstanding, ₹8 recorded payments and 7 kg, and its daily breakdown opened correctly. Browser console was clear. Desktop and a narrow viewport were visually inspected. The temporary preview was removed after inspection.
 
 Live helper bank transfers, staff recording of real support and government eligibility have not been exercised or verified. No actual government or resident financial data was invented for the UI test.
