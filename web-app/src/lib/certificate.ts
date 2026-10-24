@@ -1,0 +1,34 @@
+import "regenerator-runtime/runtime";
+import {PDFDocument,rgb} from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
+import {readFile} from 'node:fs/promises';
+import type {BenefitSummary,ParticipationRecord} from './benefits';
+export async function participationPdf(input:{name:string;record:ParticipationRecord;benefits:BenefitSummary;now?:Date}){
+ const pdf=await PDFDocument.create();pdf.registerFontkit(fontkit);
+ const font=await pdf.embedFont(await readFile(new URL('../assets/NotoSans-Regular.ttf',import.meta.url)),{subset:true});
+ const page=pdf.addPage([842,595]),ink=rgb(.12,.27,.2),muted=rgb(.43,.49,.43);
+ page.drawRectangle({x:0,y:0,width:842,height:595,color:rgb(.98,.985,.96)});
+ page.drawRectangle({x:0,y:0,width:17,height:595,color:ink});
+ page.drawCircle({x:795,y:535,size:95,color:rgb(.89,.93,.85)});
+ const text=(value:string,x:number,y:number,size:number,color=ink)=>page.drawText(value,{x,y,size,font,color});
+ text('Waste Right',55,535,23);text('INDEPENDENT PARTICIPATION RECORD',55,504,9,muted);
+ text('Certificate of participation',55,438,34);
+ text('Presented to',55,393,12,muted);
+ const name=Array.from(input.name.replace(/[\r\n\t\u0000-\u001f\u007f]/g,' ').trim()).slice(0,100).join('')||'Waste Right participant';
+ const nameFont=/[\u0900-\u097f]/.test(name)?await pdf.embedFont(await readFile(new URL('../assets/NotoSansDevanagari-Regular.ttf',import.meta.url)),{subset:true}):font;
+ let nameSize=30;while(nameFont.widthOfTextAtSize(name,nameSize)>720&&nameSize>10)nameSize--;
+ page.drawText(name,{x:55,y:350,size:nameSize,font:nameFont,color:ink});
+ text('For completing verified organic waste collections through Waste Right.',55,309,13,muted);
+ text('Collection weight was recorded by a helper and the receipt accepted by the resident.',55,286,11,muted);
+ page.drawRectangle({x:55,y:180,width:730,height:75,color:rgb(.9,.94,.87)});
+ text(String(input.benefits.organicPickups),75,216,24);text('Completed organic pickups',75,195,10,muted);
+ text(`${input.benefits.organicKg.toLocaleString('en-IN')} kg`,340,216,24);text('Verified organic weight',340,195,10,muted);
+ text('Waste Right',585,216,20);text('Record issuer',585,195,10,muted);
+ text(`Participation ID: ${input.record.id}`,55,149,10);
+ text(`Issued: ${new Date(input.record.issuedAt).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'})}`,55,126,10,muted);
+ text(`Activity snapshot: ${(input.now||new Date()).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'})}`,420,126,10,muted);
+ text('Independent service record. Not a government-issued certificate or Aadhaar-linked credential.',55,78,10,muted);
+ text('Identity is based on the account profile; DigiLocker verification is not connected.',55,60,9,muted);
+ pdf.setTitle('Waste Right participation certificate');pdf.setAuthor('Waste Right');pdf.setSubject('Independent record of completed measured organic collections');
+ return pdf.save();
+}

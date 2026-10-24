@@ -53,7 +53,7 @@ export default function BenefitsPanel() {
                 try { await navigator.clipboard.writeText(record.id); setCopied(true); }
                 catch { setError("Could not copy. You can select the participation ID above."); }
               }}><Copy size={15} />{copied ? "ID copied" : "Copy ID"}</button>
-              <a href="/api/participation?download=1"><Download size={15} />Download record</a>
+              <a href="/api/participation?format=pdf"><Download size={15} />Download certificate</a>
               <span>Issued {new Date(record.issuedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
             </div>
             {copied ? <span className={styles.srOnly} role="status">Participation ID copied.</span> : null}

@@ -1,3 +1,4 @@
+import { participationPdf } from "@/lib/certificate";
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
 import { account, summarize } from "@/lib/service";
@@ -19,6 +20,11 @@ export async function GET(request: Request) {
       calculatedAt: new Date().toISOString(),
     };
     const headers: Record<string, string> = { "Cache-Control": "private, no-store", "Vary": "Cookie" };
+    if (new URL(request.url).searchParams.get("format") === "pdf") {
+      if (!qualifies || !a.participation) return NextResponse.json({error:"Complete an accepted, measured organic pickup first."},{status:409,headers});
+      const bytes=await participationPdf({name:String(user.name||"Waste Right participant"),record:a.participation,benefits:a.benefits});
+      return new Response(Buffer.from(bytes),{headers:{...headers,"Content-Type":"application/pdf","Content-Disposition":`attachment; filename="${a.participation.id}.pdf"`,"X-Content-Type-Options":"nosniff"}});
+    }
     if (new URL(request.url).searchParams.get("download") === "1") {
       if (!qualifies || !a.participation) return NextResponse.json({ error: "Complete a pickup with measured, accepted organic waste before downloading a participation record." }, { status: 409, headers });
       headers["Content-Disposition"] = `attachment; filename="${a.participation.id}.json"`;
