@@ -85,6 +85,7 @@ export default function Dashboard() {
     [user, setUser] = useState<User | null>(null),
     [auth, setAuth] = useState(false),
     [signup, setSignup] = useState(false),
+    [emailAction, setEmailAction] = useState(""),
     [accountType, setAccountType] = useState("user"),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
@@ -259,10 +260,15 @@ export default function Dashboard() {
     setAuthBusy(true);
     const form = new FormData(event.currentTarget);
     try {
+      if (emailAction) {
+        const data = await api(`auth/${emailAction}`, "POST", { email: form.get("email") });
+        setMessage(data.message); return;
+      }
       const data = await api(`auth/${signup ? "signup" : "login"}`, "POST", {
         ...Object.fromEntries(form),
         ...(signup ? { accountType } : {}),
       });
+      if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setMessage(data.message); return; }
       setUser(data.user);
       setPage(
         data.user.accountType === "helper" ? "Helper dashboard" : "Overview",
@@ -1022,7 +1028,7 @@ export default function Dashboard() {
         <span className="round-icon">
           <Leaf size={27} />
         </span>
-        <h2>{signup ? "A fresh start." : "Welcome back."}</h2>
+        <h2>{emailAction === "forgot-password" ? "Reset your password" : emailAction === "send-signin" ? "Email sign-in link" : emailAction === "resend-verification" ? "Verify your email" : signup ? "A fresh start." : "Welcome back."}</h2>
         <p>
           {signup
             ? "Make room for better everyday choices."
@@ -1034,13 +1040,13 @@ export default function Dashboard() {
           </p>
         )}
         <form onSubmit={authenticate}>
-          {signup && (
+          {signup && !emailAction && (
             <label className="field">
               Your name
               <input name="name" required autoComplete="name" maxLength={80} />
             </label>
           )}
-          {signup && (
+          {signup && !emailAction && (
             <div className="field">
               <label>Account type</label>
               <Dropdown
@@ -1069,7 +1075,7 @@ export default function Dashboard() {
               maxLength={254}
             />
           </label>
-          <label className="field">
+          {!emailAction && <label className="field">
             Password
             <input
               name="password"
@@ -1080,18 +1086,23 @@ export default function Dashboard() {
               autoComplete={signup ? "new-password" : "current-password"}
             />
             <small>At least 10 characters.</small>
-          </label>
+          </label>}
           <button className="primary" disabled={authBusy}>
             {authBusy ? (
               <Loader2 className="spin" size={16} />
             ) : (
               <ArrowRight size={16} />
             )}{" "}
-            {signup ? "Create account" : "Sign in"}
+            {emailAction ? "Send email" : signup ? "Create account" : "Sign in"}
           </button>
         </form>
-        <button className="text-button" onClick={() => setSignup(!signup)}>
-          {signup
+        {!signup && !emailAction && <div>
+          <button type="button" className="text-button" onClick={() => { setEmailAction("forgot-password"); setMessage(""); }}>Forgot password?</button>
+          <button type="button" className="text-button" onClick={() => { setEmailAction("send-signin"); setMessage(""); }}>Email me a sign-in link</button>
+          <button type="button" className="text-button" onClick={() => { setEmailAction("resend-verification"); setMessage(""); }}>Resend verification</button>
+        </div>}
+        <button className="text-button" onClick={() => { if (emailAction) { setEmailAction(""); setSignup(false); } else setSignup(!signup); setMessage(""); }}>
+          {emailAction ? "Back to sign in" : signup
             ? "Already have an account? Sign in"
             : "New here? Create an account"}
         </button>
