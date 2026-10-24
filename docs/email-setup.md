@@ -42,3 +42,13 @@ QA_SKIP_BROWSER=1 node tests/service-integration.mjs
 ```
 
 The email integration suite starts an isolated application and temporary MongoDB database plus a local TLS SMTP sink. It exercises delivery, verification, email sign-in, expiry, replay/concurrency rejection, reset, session revocation, and rate limits without contacting Google or sending real email. It requires OpenSSL to create an ephemeral test certificate. The service integration suite explicitly disables SMTP so its account fixtures cannot send real mail.
+
+## Sign-in security emails
+
+Each newly created session schedules one sign-in notice after the response: password login, email-link login, and verification that signs the account in. Session lookups, failed logins and replayed links do not send notices. The session record claims the send once; failures are marked and do not block authentication. This is a single best-effort SMTP attempt, not a durable retry queue or inbox-delivery guarantee.
+
+The HTML/plain-text message includes India and UTC time, the sign-in method, browser/OS labels, reported user-agent and a validated client IP when available. It contains no password or bearer token. The reset button points to the configured application origin. No external IP-geolocation service is called.
+
+On Vercel, managed forwarded-IP headers are used. On another host, `AUTH_TRUSTED_PROXY_HOPS` may be set to the number of controlled reverse proxies only when the origin cannot be reached directly and those proxies append/replace forwarded headers correctly. Otherwise the email says the IP is unavailable; arbitrary caller-supplied IP headers are ignored. Device information is reported by the browser and is not verified device identity. See [Vercel headers](https://vercel.com/docs/headers/request-headers) and [forwarded-header trust guidance](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For).
+
+The local TLS SMTP integration verifies exactly one notice for each successful verification/password/email-link session, no replay notice, and the expected IP/method. No real recipient is contacted by the test.
