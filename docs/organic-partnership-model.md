@@ -55,7 +55,7 @@ Until authorised, label it: **“Issued by Waste Right. Government collaboration
 
 ## Implementation scope
 
-Implemented: ₹10 shared catalog price, current UI price copy linked to that catalog, and updated existing pricing-test expectations. Independent Waste Right participation records and verified comparison benefits are now implemented; see [the participation implementation](savings-participation.md). Proposed only: organic discounts and their settlement, government partnership and grants. Government credentials and Aadhaar linking remain unavailable. The existing PPTX decks remain historical snapshots and have not been rewritten in this update.
+Implemented: ₹10 shared catalog price, current UI price copy linked to that catalog, and updated existing pricing-test expectations. Independent Waste Right participation records and verified comparison benefits are now implemented; see [the participation implementation](savings-participation.md). Proposed only: organic discounts and their settlement, government partnership and grants. Government credentials and Aadhaar linking remain unavailable. The current complete pitch has been updated; older decks remain historical snapshots. See [current presentation](presentations/README.md) and [government programme research](government-programmes.md).
 
 ## Validation
 

@@ -2,13 +2,15 @@
 
 ## Current deck · 24 October 2026
 
-Use `Waste-Right-Complete-Pitch-2026-10-24.pptx` for editing and presenting. The matching PDF provides a fixed-layout sharing copy. The deck contains 27 slides: 24 main slides ending with the pilot ask, followed by two detail slides and a source slide.
+Use `Waste-Right-Complete-Pitch-2026-10-24.pptx` for editing and presenting. The matching PDF provides a fixed-layout sharing copy. The deck contains 31 slides: 28 main slides ending with the pilot ask, followed by two detail slides and a source slide.
+
+After the cover, the opening follows: problem statement → resident/helper pain points → solutions → complete Waste Right overview. Government coverage now names GOBARdhan, SBM–Urban 2.0, MDA, NAMASTE and the historical 2022 Swachhata Startup Challenge, with source links in the notes and eligibility/status distinctions on the slides. The participation example matches the redesigned teal/violet PDF certificate with its bold completed-pickups label and concise independent-issuer footer.
 
 It covers the problem, phone-camera flow, human confirmation, downstream handling, ₹10 Basic / ₹399 Gold / ₹469 Platinum, helper collections and compensation, Operations, points and pickup credits, participation certificates, revenue and cost limits, proposed government support, NAMASTE, AI/OCR, the trained model, architecture, prototype readiness and a proposed locality pilot.
 
 The PowerPoint keeps text and the pricing table editable. Every slide includes source/context notes where needed. Product screenshots use synthetic QA records, the cover is an illustration, and the certificate is an example. No government partnership, grant, PPP status, customer traction or profit is presented as secured. The model's 66.13% foreground mean IoU is capture-group-held-out within one household, not phone-camera accuracy. DigiLocker and government-issued credentials remain unavailable.
 
-Authoring used the live Artifact Session. All 27 slides were rendered and inspected, with repairs to image embedding, long copy and certificate imagery. The PPTX package has 27 note pages, a native pricing table and four embedded images. The PDF uses the reviewed slide renders for reliable visual consistency. This does not claim native PowerPoint application testing.
+Authoring used the live Artifact Session. All 31 revised slides were rendered; the changed slides were inspected and unchanged content was compared against the previously reviewed renders. The PPTX package has 31 note pages, a native pricing table and four embedded images. The PDF uses the reviewed slide renders for reliable visual consistency. This does not claim native PowerPoint application testing.
 
 ## Historical decks
 

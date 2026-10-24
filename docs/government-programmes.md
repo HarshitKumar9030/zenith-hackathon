@@ -1,0 +1,17 @@
+# Public programme references
+
+Checked 24 October 2026. Website: `/government-programmes`, also linked from the interactive landing section. These are relevant programmes, not evidence of a Waste Right award. The public partnership remains proposed/applying.
+
+| Programme | Relevance to Waste Right | Status and limits | Official source |
+| --- | --- | --- | --- |
+| GOBARdhan | Proposed organic-feedstock collection and aggregation for a contracted CBG partner | The integrated 2026–36 framework supports eligible projects; a collection app does not automatically receive plant assistance | [MoPNG launch, 1 October 2026](https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2317937&lang=2&reg=48) |
+| NAMASTE | Help eligible collection partners reach official waste-picker enumeration and validation | PPE, skilling, occupational IDs and health coverage depend on scheme eligibility; app signup is not enrolment | [MoSJE waste-picker component](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2134303&lang=2&reg=48) |
+| SBM–Urban 2.0 | Source segregation, collection and scientific processing; seek a municipal locality pilot | Published period October 2021–October 2026. Confirm current local approvals and procurement routes | [MoHUA overview](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2220345&lang=1&reg=1) |
+| Market Development Assistance | Assess eligible organic-fertiliser output through the processing partner | Published ₹1,500/tonne for FOM/LFOM/PROM; not household input weight. March 2026 update said the scheme was concluding that year; continuation unconfirmed | [Department of Fertilizers update](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2237444&lang=2&reg=48) |
+| Swachhata Startup Challenge | Monitor future competitive innovation calls | Historical 2022 competition: ₹25 lakh for each of ten selected projects. Cited window closed 15 April 2022. No current call or Waste Right award verified | [MoHUA challenge update](https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1860635&lang=2&reg=48) |
+
+The website’s three interactive chapters group organic processing (GOBARdhan/MDA), safer collection (NAMASTE) and local partnerships (SBM-U/challenge). Keyboard arrows, Home/End, visible focus, responsive stacking and reduced-motion handling are included. A custom SVG route and restrained tab transitions explain the collection chain. Detailed eligibility remains available on the source page. No government emblem or claimed endorsement is used.
+
+Waste Right’s 50% resident-credit allocation applies only to attributable support actually received and recorded against eligible completed organic activity. It is a company policy, not a government-set entitlement or a per-kg household subsidy. The certificate independently names Waste Right as issuer. A PPP requires an appropriate public-authority contract, not merely programme alignment; see [Ministry of Finance PPP guidance](https://www.pppinindia.gov.in/faqs).
+
+The current pitch includes these five programmes and separates historical awards, unconfirmed continuation, proposed partnerships and implemented accounting. Website TypeScript and production-build checks passed. The detailed page returned all five programme names and official source links in its rendered HTML. Interactive browser visual review was unavailable because local browser control is disabled in Work settings.
