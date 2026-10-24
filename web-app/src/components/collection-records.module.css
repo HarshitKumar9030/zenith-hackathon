@@ -1,0 +1,4 @@
+.record { background:#f5f6f2; padding:0 24px; margin:14px 0; border-radius:22px; }
+.record>summary { list-style:none; cursor:pointer; padding:24px 0; }.record>summary::-webkit-details-marker { display:none; }.record>summary h3 { font-size:18px; letter-spacing:-.025em; }.record>summary p { margin:12px 0 0; font-size:13px; color:#819085; }.record[open] { padding-bottom:24px; }.record>summary:hover h3 { color:#5658a5; }
+.dispute { margin-top:22px; }.dispute>summary { cursor:pointer; font-size:13px; color:#6d7870; padding:8px 0; }.dispute input { min-height:48px; background:white; }.dispute form { margin-top:12px; }.review { color:#65715e; font-size:13px; line-height:1.7; }
+@media(max-width:480px) { .record { padding-left:20px; padding-right:20px; }.record>summary h3 { font-size:16px; } }
