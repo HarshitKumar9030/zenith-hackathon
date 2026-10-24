@@ -1,5 +1,6 @@
 "use client";
 import RewardsDashboard from "./rewards-dashboard";
+import PaymentReceipts from "./payment-receipts";
 import recordStyles from "./collection-records.module.css";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import PickupTimeInput from "./pickup-time-input";
@@ -281,23 +282,7 @@ export default function ServiceHub({
               {new Date(a.membership.expiresAt).toLocaleDateString()}
             </div>
           )}
-          <section className="service-block section-spaced">
-            <h2>Payment receipts</h2>
-            {a?.payments.length ? (
-              a.payments.map((p) => (
-                <p key={p.orderId}>
-                  {new Date(p.createdAt).toLocaleDateString()} · {p.plan} · ₹
-                  {(p.amountPaise / 100).toFixed(2)} · {p.status} ·{" "}
-                  {p.paymentId}
-                </p>
-              ))
-            ) : (
-              <p>
-                No captured payments. Your pass activates only after gateway
-                verification.
-              </p>
-            )}
-          </section>
+          <PaymentReceipts payments={a?.payments ?? []} loading={!a} />
           <p className="service-footnote">
             Dry recyclables only. Metal counts toward limits. Organic collection
             and hazardous waste need separate arrangements. Recovery rates are

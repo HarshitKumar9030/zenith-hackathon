@@ -1,23 +1,23 @@
-.panel { margin:28px 0; padding:30px; background:#f4f6f0; border-radius:26px; }
-.heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:24px; }
-.heading h2 { margin:8px 0 0; font-size:clamp(22px,2.5vw,29px); letter-spacing:-.04em; }
-.grid { display:grid; grid-template-columns:1.1fr 1fr; gap:30px; align-items:start; }
-.values { display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; margin:0; }
-.values dt { font-size:13px; color:#58715e; }
-.values dd { font-size:32px; letter-spacing:-.04em; margin:8px 0; font-weight:600; }
-.values small,.note { display:block; font-size:12px; line-height:1.65; color:#718174; }
-.government { grid-column:1/-1; padding-top:12px; }
-.government dd { font-size:26px; }
-.note { margin-top:16px; }
-.record { padding:24px; min-width:0; background:#e8eee1; border-radius:20px; animation:recordIn 500ms ease both; }
-.issuer { display:flex; flex-wrap:wrap; align-items:center; gap:10px; font-size:14px; }
-.issuer span { margin-left:auto; color:#65765e; font-size:11px; }
-.record h3 { font-size:16px; margin:26px 0 12px; }
-.record code { display:block; font-size:13px; line-height:1.75; overflow-wrap:anywhere; color:#52664b; user-select:all; }
-.record p { font-size:13px; line-height:1.65; }
-.actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; margin-top:20px; }
-.actions button,.actions a { font-size:12px; }
+.panel { margin:28px 0; padding:32px; background:#f5f6f2; border-radius:28px; color:#214638; }
+.heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:26px; }
+.eyebrow { font-size:10px; letter-spacing:.13em; line-height:1.7; font-weight:600; color:#667668; }
+.heading h2 { margin:9px 0; font-size:clamp(24px,2.6vw,32px); letter-spacing:-.045em; line-height:1.15; }
+.heading p { margin:0; font-size:13px; color:#627367; }
+.refresh { display:grid; place-items:center; flex-shrink:0; width:42px; height:42px; border:0; background:#e8ece3; border-radius:50%; color:inherit; cursor:pointer; transition:transform .25s,background .25s; }
+.refresh:hover { transform:rotate(-25deg); background:#dfe7d5; }.refresh:disabled { opacity:.5; cursor:wait; }
+.values { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:0; }
+.values>div { padding:22px; border-radius:20px; background:#fff; min-width:0; }
+.values dt { font-size:13px; color:#536758; }.values dd { font-size:clamp(30px,3vw,42px); letter-spacing:-.055em; margin:12px 0 6px; font-weight:550; line-height:1.1; }.values span { font-size:11px; line-height:1.6; color:#728075; }
+.explanation { margin:18px 0 26px; font-size:12px; color:#667568; }.explanation summary { cursor:pointer; width:fit-content; padding:5px 0; }.explanation p { line-height:1.8; max-width:850px; margin:8px 0 0; }
+.record { display:flex; gap:20px; padding:26px; background:#ebeaf4; border-radius:23px; animation:recordIn .45s ease both; }.issued { background:#e5eddd; }
+.recordIcon { display:grid; place-items:center; width:56px; height:56px; flex-shrink:0; border-radius:18px; background:#ffffff90; color:#6661a2; }.issued .recordIcon { color:#4d7046; }
+.recordBody { min-width:0; flex:1; }.recordTitle { display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center; gap:8px 16px; }.status { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:#635f8c; }.issued .status { color:#4d7046; }
+.record h3 { margin:13px 0 9px; font-size:22px; letter-spacing:-.035em; line-height:1.25; }.record p { margin:0; font-size:13px; line-height:1.75; color:#5e6d63; max-width:650px; }
+.id { display:block; width:fit-content; max-width:100%; margin:18px 0; padding:12px 15px; border-radius:12px; background:#ffffff95; font-size:12px; line-height:1.7; overflow-wrap:anywhere; user-select:all; }
+.actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 22px; }.actions button,.actions a,.book { display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:inherit; text-decoration:none; cursor:pointer; transition:color .2s,transform .2s; }.actions button { border:0; background:transparent; padding:8px 0; }.actions a:hover,.book:hover { transform:translateX(3px); }.actions span { font-size:11px; color:#6c796a; margin-left:auto; }.book { margin-top:18px; padding:9px 0; color:#575394; }
+.disclosure { margin:17px 0 0; font-size:11px; line-height:1.8; color:#6b786c; max-width:800px; }.error { color:#974747; font-size:13px; }.srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+.panel button:focus-visible,.panel a:focus-visible,.panel summary:focus-visible { outline:2px solid #6862a8; outline-offset:5px; }
 @keyframes recordIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-@media(max-width:900px) { .grid { grid-template-columns:1fr; }.panel { padding:24px; } }
-@media(max-width:480px) { .panel { padding:20px; border-radius:20px; }.values { gap:20px 16px; }.values dd { font-size:27px; }.record { padding:20px; }.issuer span { margin-left:0; } }
-@media(prefers-reduced-motion:reduce) { .record { animation:none; } }
+@media(max-width:900px) { .panel { padding:24px; }.values>div { padding:18px; }.record { padding:22px; } }
+@media(max-width:600px) { .panel { padding:20px; border-radius:22px; }.heading { align-items:flex-start; }.values { grid-template-columns:1fr; gap:9px; }.values>div { display:grid; grid-template-columns:1fr auto; align-items:center; padding:17px 18px; }.values dd { grid-column:2; grid-row:1/3; margin:0 0 0 12px; font-size:30px; }.values span { margin-top:5px; }.record { flex-direction:column; gap:16px; padding:20px; }.recordTitle { align-items:flex-start; flex-direction:column; gap:7px; }.record h3 { font-size:23px; }.actions span { margin-left:0; width:100%; }.id { font-size:11px; padding:10px; }.heading { gap:8px; }.heading h2 { font-size:22px; max-width:none; }.refresh { width:32px; height:32px; } }
+@media(prefers-reduced-motion:reduce) { .record { animation:none; }.panel button,.panel a { transition:none; transform:none; } }
