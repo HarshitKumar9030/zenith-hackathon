@@ -2,6 +2,8 @@
 
 ## Current deck · 24 October 2026
 
+The [26-page presenter guide](../../output/pdf/Waste-Right-Presenter-Guide.pdf) provides speaking notes for every slide, transitions, full/short timing routes, current hub and excess-weight clarifications, a demo sequence, sustainability/scalability answers and judge-question preparation. It supplements the deck with the later ₹3/kg excess rule and proposed hub segregation/composting model; the deck itself is unchanged by this guide. Regenerate it with the bundled Python runtime using `docs/presentations/build_pitch_guide.py` (ReportLab required). Its pages include PDF navigation bookmarks.
+
 Use `Waste-Right-Complete-Pitch-2026-10-24.pptx` for editing and presenting. The matching PDF provides a fixed-layout sharing copy. The deck contains 31 slides: 28 main slides ending with the pilot ask, followed by two detail slides and a source slide.
 
 After the cover, the opening follows: problem statement → resident/helper pain points → solutions → complete Waste Right overview. Government coverage now names GOBARdhan, SBM–Urban 2.0, MDA, NAMASTE and the historical 2022 Swachhata Startup Challenge, with source links in the notes and eligibility/status distinctions on the slides. The participation example matches the redesigned teal/violet PDF certificate with its bold completed-pickups label and concise independent-issuer footer.
