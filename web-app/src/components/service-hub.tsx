@@ -8,6 +8,7 @@ import TierBadge from "./tier-badge";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import WorkflowArt from "./workflow-art";
 import QuickPickup from "./quick-pickup";
+import {PickupTracking} from "./pickup-tracking";
 import { useEffect, useState, useCallback } from "react";
 import {
   ArrowRight,
@@ -277,6 +278,7 @@ export default function ServiceHub({
       {page === "Rewards" && <RewardsDashboard account={a} ranking={ranking} busy={busy} onRedeem={() => void action("service", { action: "redeem" }, true)} onNavigate={(next) => onNavigate?.(next)} celebration={rewardMoment} />}
       {page === "Pickups" && (
         <>
+          {bookings.filter(b=>b.status === "assigned").map(b=><PickupTracking key={b.id} bookingId={b.id}/>)}
           <QuickPickup
             notify={notify}
             initialScanId={initialScanId}
@@ -311,7 +313,7 @@ export default function ServiceHub({
                 </span>
               </div>
               <p>
-                {b.date} · {pickupTimeLabel(b.window)} ·{" "}
+                {b.date} · {(b.asap ? "Next available helper" : pickupTimeLabel(b.window))} ·{" "}
                 {b.receipt
                   ? `${b.receipt.netKg} kg measured`
                   : "Helper weighs at collection"}{" "}
@@ -327,6 +329,7 @@ export default function ServiceHub({
               {b.receipt && (
                 <div className="receipt">
                   <h3>Measured receipt</h3>
+                  {b.status === "assigned" && <PickupTracking bookingId={b.id}/>}
                   <p>
                     Gross {b.receipt.grossKg} kg − tare {b.receipt.tareKg} kg ={" "}
                     {b.receipt.netKg} kg net

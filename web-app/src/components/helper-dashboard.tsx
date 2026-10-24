@@ -2,6 +2,7 @@
 import helperStyles from "./helper-insights.module.css";
 import { helperCompensation } from "@/lib/helper-pay";
 import HelperCollections from "./helper-collections";
+import {HelperTracking} from "./pickup-tracking";
 import HelperInsights from "./helper-insights";
 import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
@@ -456,6 +457,7 @@ export default function HelperDashboard({
                   {t.claim}
                 </button>
               )}
+              {view === "Helper collections" && b.status === "assigned" && <HelperTracking bookingId={b.id} hindi={lang === "hi"}/>}
               {view === "Helper collections" && b.status === "assigned" && (
                 <form
                   onSubmit={(e) => {
