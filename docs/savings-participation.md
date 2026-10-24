@@ -2,6 +2,8 @@
 
 Updated 24 October 2026.
 
+The downloadable certificate now uses a white, teal and violet layout with a small gold accent. Shorter copy focuses on the participant, completed organic pickups, helper-recorded kg, record ID and dates. It retains the independent Waste Right issuer and account-name disclosure; eligibility and download permissions are unchanged. The PDF was rendered for inspection and the existing long-name, Hindi-name and empty-name checks passed.
+
 ## Gold and Platinum
 
 Gold (₹399/month) and Platinum (₹469/month) now include segregation for pickups funded by their membership allowance. The price calculator returns zero sorting fees before and after helper weighing, with no sorting-pending flag. Residents do not have to choose a packing option for these pickups. The evening surcharge still applies for time and, where applicable, weight, but the unsegregated surcharge component is waived for membership pickups.
