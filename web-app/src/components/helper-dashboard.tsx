@@ -1,4 +1,5 @@
 "use client";
+import HelperCollections from "./helper-collections";
 import HelperInsights from "./helper-insights";
 import helperStyles from "./helper-insights.module.css";
 import { helperCompensation } from "@/lib/helper-pay";
@@ -233,7 +234,7 @@ export default function HelperDashboard({
                 ? lang === "hi"
                   ? "आपकी कमाई का रिकॉर्ड"
                   : "Your earnings ledger"
-                : t.title}
+                : view === "Helper collections" ? (lang === "hi" ? "आपके संग्रह।" : "Your collections.") : t.title}
           </h1>
           <p>{t.intro}</p>
           <p>{lang === "hi" ? "बेसिक संग्रह: सभी सामग्रियों के लिए 2 किलो तक।" : "Basic pickups: up to 2 kg for all materials, verified at weighing."}</p>
@@ -356,6 +357,7 @@ export default function HelperDashboard({
         </section>
       ) : (
         <>
+          {view !== "Helper collections" && <>
           <HelperInsights jobs={jobs} hindi={lang === "hi"} />
           <div className="helper-metrics">
             <div>
@@ -391,19 +393,8 @@ export default function HelperDashboard({
               <small>{t.receipts}</small>
             </div>
           </div>
-          {view === "Helper dashboard" && (
-            <h2 className="section-spaced">{t.jobs}</h2>
-          )}
-          {jobs.length === 0 && (
-            <div className="empty">
-              <Truck size={38} />
-              <p>{t.empty}</p>
-            </div>
-          )}
-          {(view === "Helper earnings"
-            ? jobs.filter((b) => b.workPay || b.status === "completed")
-            : jobs
-          ).map((b) => (
+          </>}
+          {view === "Helper collections" && <HelperCollections jobs={jobs} hindi={lang === "hi"}>{(b) => (
             <article className="booking-entry helper-job" key={b.id}>
               {b.status === "completed" && <p>{lang === "hi" ? "अर्जित" : "Earned"}: ₹{(helperCompensation(b).earnedPaise / 100).toFixed(2)} · {lang === "hi" ? "बाकी" : "Outstanding"}: ₹{(helperCompensation(b).duePaise / 100).toFixed(2)}</p>}
               <div className="section-heading">
@@ -442,7 +433,7 @@ export default function HelperDashboard({
               <p>
                 {t.estimated}: {b.estimatedKg} {t.kg}
               </p>
-              {view === "Helper dashboard" && b.status === "scheduled" && (
+              {view === "Helper collections" && b.status === "scheduled" && (
                 <button
                   className="primary"
                   disabled={busy}
@@ -454,7 +445,7 @@ export default function HelperDashboard({
                   {t.claim}
                 </button>
               )}
-              {view === "Helper dashboard" && b.status === "assigned" && (
+              {view === "Helper collections" && b.status === "assigned" && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -533,7 +524,7 @@ export default function HelperDashboard({
                   : t.noPay}
               </p>
             </article>
-          ))}
+          )}</HelperCollections>}
         </>
       )}
       {error && (

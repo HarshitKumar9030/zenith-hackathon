@@ -76,6 +76,7 @@ export default function AnimatedSidebar({
             ...(accountType === "helper"
               ? [
                   { label: "Helper dashboard", Icon: Truck },
+                  { label: "Helper collections", Icon: CalendarDays },
                   { label: "Helper earnings", Icon: Wallet },
                   { label: "Service area", Icon: MapPin },
                   { label: "Settings", Icon: Settings },

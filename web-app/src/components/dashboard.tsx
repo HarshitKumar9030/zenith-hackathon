@@ -126,7 +126,7 @@ export default function Dashboard() {
     api("auth/session")
       .then((data) => {
         setUser(data.user);
-        if (data.user?.accountType === "helper") setPage("Helper dashboard");
+        if (data.user?.accountType === "helper") { const helperView = new URLSearchParams(window.location.search).get("view"); setPage(helperView && ["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(helperView) ? helperView : "Helper dashboard"); }
         if (data.user) void refresh();
       })
       .catch((e) => setMessage(e.message));
@@ -912,7 +912,7 @@ export default function Dashboard() {
               onRefresh={() => void refresh()}
             />
           )}
-          {["Helper dashboard", "Helper earnings", "Service area"].includes(
+          {["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(
             page,
           ) &&
             user?.accountType === "helper" && (
