@@ -6,6 +6,7 @@ import type {BenefitSummary,ParticipationRecord} from './benefits';
 export async function participationPdf(input:{name:string;record:ParticipationRecord;benefits:BenefitSummary;now?:Date}){
  const pdf=await PDFDocument.create();pdf.registerFontkit(fontkit);
  const font=await pdf.embedFont(await readFile(new URL('../assets/NotoSans-Regular.ttf',import.meta.url)),{subset:true});
+ const boldFont=await pdf.embedFont(await readFile(new URL('../assets/NotoSans-Bold.ttf',import.meta.url)),{subset:true});
  const page=pdf.addPage([842,595]);
  const ink=rgb(.08,.22,.22),muted=rgb(.35,.43,.46),teal=rgb(.02,.55,.49),violet=rgb(.39,.30,.74),gold=rgb(.96,.73,.25),white=rgb(1,1,1);
  page.drawRectangle({x:0,y:0,width:842,height:595,color:white});
@@ -25,13 +26,14 @@ export async function participationPdf(input:{name:string;record:ParticipationRe
  text('For contributing organic waste through completed collections.',58,278,12,muted);
  page.drawRectangle({x:58,y:159,width:348,height:86,color:teal});
  page.drawRectangle({x:420,y:159,width:364,height:86,color:violet});
- text(String(input.benefits.organicPickups),78,201,28,white);text('Completed organic pickups',78,177,11,white);
+ text(String(input.benefits.organicPickups),78,201,28,white);
+ page.drawText('Completed organic pickups',{x:78,y:177,size:11,font:boldFont,color:white});
  text(`${input.benefits.organicKg.toLocaleString('en-IN')} kg`,440,201,28,white);text('Helper-recorded organic weight',440,177,11,white);
  text(`ID  ${input.record.id}`,58,128,10);
  const date=(value:string|Date)=>new Date(value).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'});
  text(`Issued ${date(input.record.issuedAt)}   |   Activity as of ${date(input.now||new Date())}`,58,106,10,muted);
  page.drawRectangle({x:58,y:77,width:42,height:3,color:gold});
- text('Issued by Waste Right using your account name. Not government-issued or Aadhaar-linked.',58,52,9,muted);
+ text('Independent participation record. Issued by Waste Right using your account name.',58,52,9,muted);
  pdf.setTitle('Waste Right participation certificate');pdf.setAuthor('Waste Right');pdf.setSubject('Independent record of completed measured organic collections');
  return pdf.save();
 }

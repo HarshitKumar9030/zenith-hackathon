@@ -2,7 +2,7 @@
 
 Updated 24 October 2026.
 
-The downloadable certificate now uses a white, teal and violet layout with a small gold accent. Shorter copy focuses on the participant, completed organic pickups, helper-recorded kg, record ID and dates. It retains the independent Waste Right issuer and account-name disclosure; eligibility and download permissions are unchanged. The PDF was rendered for inspection and the existing long-name, Hindi-name and empty-name checks passed.
+The downloadable certificate now uses a white, teal and violet layout with a small gold accent. Shorter copy focuses on the participant, completed organic pickups (bold), helper-recorded kg, record ID and dates. Its footer identifies the independent Waste Right issuer and account-profile name without a government disclaimer; eligibility and download permissions are unchanged. Noto Sans Bold is embedded under the existing OFL licence. The PDF was rendered for inspection and the existing long-name, Hindi-name and empty-name checks passed.
 
 ## Gold and Platinum
 
