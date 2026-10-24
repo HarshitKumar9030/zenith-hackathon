@@ -46,3 +46,19 @@ Final checks passed: production build with TypeScript, 15 unit tests, the isolat
 ### Flexible pickup hours
 
 Replaced fixed windows with minute-level time selection in India time: 7 am–2 pm (2 pm excluded), a blocked 2–5 pm break, then 5–7 pm (7 pm included). Evening pricing is ₹5 + ₹1 above 2 kg + ₹1 for unsegregated waste, capped at ₹7; the UI shows the factors and the server persists the computed fee. Surcharge payments apply to plan/reward pickups too, so they remain payment-due until capture. Quoted total fees cannot omit the surcharge. Tests cover service/break boundaries, exact minutes, all surcharge amounts, Basic/reward payment states and rejected underpriced quotes.
+
+## Resident UX refinement and focused item editor
+
+Replaced the two competing pickup forms with one open layout and a separate price summary. The active plan and remaining allowance appear in the sidebar and booking form; unavailable funding options are hidden. Ordinary unsegregated waste receives an automatic price instead of an Operations-quote wait. Special-handling or uncertain waste cannot use ordinary instant booking.
+
+Added first-visit, skippable tours, a replayable Help menu and animated input/packing/history tabs with reduced-motion support. Removed provider/model names from product copy. Confirmed items collapse to a compact summary; the dedicated item editor uses condition/handling choices, a mixed-material switch and a single Save action. History has date groups, search, filters, direct removal and Undo for soft-deleted scans. Its detail view no longer jumps into booking automatically.
+
+Native in-app browser checks at 1440×1000 and 390×844 exercised: first-visit tour navigation, Help expansion, a Gold account showing its actual allowance, live sorting/surge breakdown, confirmed-product removal, saving changed residue information, a plan-covered test booking, and delete/Undo. Mobile document width matched the viewport. Browser screenshots were compared with the supplied screenshots and reviewed for spacing, visible fields, hierarchy and dropdown placement. Temporary QA account data is removed after verification.
+
+Production build/type validation and 20 unit tests passed; the isolated MongoDB API suite passed with QA_SKIP_BROWSER=1. Current native-browser checks replace the earlier Playwright visual evidence for these surfaces; no real payments, physical-camera capture or new live AI classification were performed.
+
+## GitHub publication checks, 24 October 2026
+
+Rechecked the complete pending application changes before publication: `npm test` passed all 39 tests, `npm run typecheck` passed, `npm run build` passed, and `QA_SKIP_BROWSER=1 node tests/service-integration.mjs` passed against its isolated temporary database. The integration suite covers measured receipts, ownership and collector approval, rewards, booking concurrency, settlements, synthetic payment webhooks, and history removal/restore. No live gateway payment or new browser/device test formed part of this publication check.
+
+The documented npm setup and `package-lock.json` remain the dependency source. Stale local pnpm files were moved to ignored backup storage. Private environment files, dependencies, model checkpoints, datasets and temporary validation outputs remain excluded from Git.
