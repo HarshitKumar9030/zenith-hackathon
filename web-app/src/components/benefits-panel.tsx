@@ -36,9 +36,10 @@ export default function BenefitsPanel() {
       <dl className={styles.values}>
         <div><dt>Fee reductions</dt><dd>{money(data.benefits.feeReductionPaise)}</dd><span>Waste Right pricing benefit</span></div>
         <div><dt>Included segregation</dt><dd>{money(data.benefits.includedSortingPaise)}</dd><span>Gold & Platinum service value</span></div>
-        <div><dt>Government benefits</dt><dd>{money(data.benefits.governmentSavingsPaise)}</dd><span>Funding application stage</span></div>
+        <div><dt>Government benefits</dt><dd>{money(data.benefits.governmentSavingsPaise)}</dd><span>{data.benefits.governmentSavingsPaise ? "Recorded resident credits" : "No support credited yet"}</span></div>
       </dl>
-      <details className={styles.explanation}><summary>How these values are calculated</summary><p>Fee reductions compare recorded Basic collection fees with the previous ₹15 base fee. Included segregation compares measured mixed waste handled under a membership with ₹5/kg sorting. These are comparison values, not cash payouts or savings after subscription costs. Pending, disputed and refunded collections are excluded. No government subsidy has been credited.</p></details>
+      <p className={styles.disclosure}>Resident share: 50% of attributable government support received, credited only after processing and payment records are confirmed. Scheme approval alone is not a saving.</p>
+      <details className={styles.explanation}><summary>How these values are calculated</summary><p>Fee reductions compare recorded Basic collection fees with the previous ₹15 base fee. Included segregation compares measured mixed waste handled under a membership with ₹5/kg sorting. These are comparison values, not cash payouts or savings after subscription costs. Pending, disputed and refunded collections are excluded. Government benefits include only recorded resident credits backed by support-receipt and processor references.</p></details>
       <div className={`${styles.record} ${record ? styles.issued : ""}`}>
         <div className={styles.recordIcon} aria-hidden="true">{record ? <Leaf size={29} strokeWidth={1.5} /> : <LockKeyhole size={26} strokeWidth={1.5} />}</div>
         <div className={styles.recordBody}>

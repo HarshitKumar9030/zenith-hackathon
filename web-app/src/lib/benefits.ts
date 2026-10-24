@@ -14,6 +14,7 @@ export type BenefitBooking = {
   segregated?: boolean;
   benefitReferenceBasePaise?: number;
   pricing?: { collectionPaise?: number };
+  governmentBenefit?: {receivedPaise:number;residentCreditPaise:number;status:string;receiptReference:string;processorReference:string;residentCreditReference:string};
   receipt?: {
     netKg?: number;
     material?: string;
@@ -27,6 +28,7 @@ export function benefitSummary(input: {
   payments: readonly { bookingId?: string; status?: string }[];
 }) {
   let feeReductionPaise = 0, includedSortingPaise = 0, verifiedKg = 0, completedPickups = 0, organicPickups = 0, organicKg = 0;
+  let governmentSavingsPaise = 0;
   let qualifyingPickupId: string | null = null;
   const excluded = new Set(input.payments
     .filter((p) => p.bookingId && ["refunded", "partially_refunded", "review_needed"].includes(p.status || ""))
@@ -39,6 +41,8 @@ export function benefitSummary(input: {
     completedPickups++;
     const material = b.receipt.material?.trim().toLowerCase().replace(/[\s-]+/g, "_");
     if (b.id && material && ["food_waste", "garden_waste", "organic", "organic_waste", "kitchen_waste"].includes(material)) {
+      const g=b.governmentBenefit;
+      if(g?.status === "credited" && validPaise(g.receivedPaise) && g.receivedPaise > 0 && validPaise(g.residentCreditPaise) && g.residentCreditPaise === Math.floor(g.receivedPaise / 2) && g.receiptReference && g.processorReference && g.residentCreditReference) governmentSavingsPaise += g.residentCreditPaise;
       organicPickups++;
       organicKg += kg;
       qualifyingPickupId ??= b.id;
@@ -58,7 +62,7 @@ export function benefitSummary(input: {
     organicPickups,
     organicKg: Math.round(organicKg * 1000) / 1000,
     qualifyingPickupId,
-    governmentSavingsPaise: 0,
+    governmentSavingsPaise,
     governmentStatus: "proposed" as const,
   };
 }

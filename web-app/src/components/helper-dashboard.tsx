@@ -1,7 +1,7 @@
+"use client";
 import HelperInsights from "./helper-insights";
 import helperStyles from "./helper-insights.module.css";
 import { helperCompensation } from "@/lib/helper-pay";
-"use client";
 import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
 import LocationPicker from "./location-picker";

@@ -45,3 +45,5 @@ test("participation eligibility requires a completed, measured organic receipt",
   assert.equal(benefitSummary({ bookings: [basic, member], payments: [] }).organicPickups, 0);
   assert.equal(benefitSummary({ bookings: [organic], payments: [{ bookingId: "member", status: "refunded" }] }).organicPickups, 0);
 });
+
+test("government savings require completed organic waste and a recorded 50 percent resident credit",()=>{const booking={...basic,receipt:{netKg:2,material:"food_waste"},governmentBenefit:{receivedPaise:100,residentCreditPaise:50,status:"credited",receiptReference:"support-ref",processorReference:"processor-ref",residentCreditReference:"credit-ref"}};assert.equal(benefitSummary({bookings:[booking],payments:[]}).governmentSavingsPaise,50);assert.equal(benefitSummary({bookings:[{...booking,status:"disputed"}],payments:[]}).governmentSavingsPaise,0);assert.equal(benefitSummary({bookings:[{...booking,governmentBenefit:{...booking.governmentBenefit,residentCreditPaise:100}}],payments:[]}).governmentSavingsPaise,0);});
