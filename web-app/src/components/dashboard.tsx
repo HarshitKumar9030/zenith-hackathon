@@ -26,7 +26,7 @@ import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
 import HistoryList from "./history-list";
-import historyStyles from "./history-list.module.css";
+import HistoryTabs, { type HistoryView } from "./history-tabs";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
@@ -104,7 +104,7 @@ export default function Dashboard() {
     [filter, setFilter] = useState("all"),
     [authBusy, setAuthBusy] = useState(false);
   const [liveStop, setLiveStop] = useState(0);
-  const [historyView, setHistoryView] = useState("scans");
+  const [historyView, setHistoryView] = useState<HistoryView>("scans");
   const scanEpoch = useRef(0);
   const currentPage = useRef(page);
   currentPage.current = page;
@@ -891,20 +891,18 @@ export default function Dashboard() {
           {page === "My history" && (
             <>
               <div className="page-heading"><h1>My history.</h1><p>Your scans, collection receipts and disputes.</p></div>
-              <div className={historyStyles.tabs} role="tablist" aria-label="History view">
-                {[{ id: "scans", label: "Scans" }, { id: "collections", label: "Receipts & disputes" }].map((tab) => <button type="button" role="tab" aria-selected={historyView === tab.id} key={tab.id} onClick={() => { setHistoryView(tab.id); setResult(null); }}>{tab.label}</button>)}
-              </div>
-              {historyView === "scans" && (result ? <div id="history-detail" className="history-detail-view"><button className="text-button" onClick={() => setResult(null)}>Back to scans</button>{resultPanel(result)}</div> : <HistoryList hideHeading items={history} onOpen={setResult} onRefresh={() => void refresh()} onScan={() => setPage("Identify waste")} onExport={exportHistory} notify={setMessage} />)}
+              <HistoryTabs view={historyView} onChange={(view) => { setHistoryView(view); setResult(null); }}>
+                {historyView === "scans" ? (result ? <div id="history-detail" className="history-detail-view"><button className="text-button" onClick={() => setResult(null)}>Back to scans</button>{resultPanel(result)}</div> : <HistoryList hideHeading items={history} onOpen={setResult} onRefresh={() => void refresh()} onScan={() => setPage("Identify waste")} onExport={exportHistory} notify={setMessage} />) : <ServiceHub page="My history" signedIn={Boolean(user)} onSignIn={() => setAuth(true)} notify={setMessage} onRefresh={() => void refresh()} onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }} />}
+              </HistoryTabs>
             </>
           )}
           {[
             "Plans",
             "Pickups",
             "Rewards",
-            "My history",
             "Collection route",
             "Operations",
-          ].includes(page) && (page !== "My history" || historyView === "collections") && (
+          ].includes(page) && (
             <ServiceHub
               page={page}
               onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }}

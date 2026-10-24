@@ -284,10 +284,7 @@ export default function ServiceHub({
           )}
           <PaymentReceipts payments={a?.payments ?? []} loading={!a} />
           <p className="service-footnote">
-            Dry recyclables only. Metal counts toward limits. Organic collection
-            and hazardous waste need separate arrangements. Recovery rates are
-            pilot defaults and use actual accepted proceeds after agreed direct
-            costs.
+            Metal counts toward plan limits. Special-handling waste cannot use ordinary instant booking. Recovery shares use actual accepted proceeds after agreed direct costs.
           </p>
         </>
       )}
