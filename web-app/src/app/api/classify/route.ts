@@ -1,3 +1,4 @@
+import { geminiJsonSchema, identificationFailure } from "@/lib/gemini-response";
 import { safeIdentification } from "@/lib/scan-safety";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -110,23 +111,19 @@ export async function POST(request: Request) {
           contents: [{ role: "user", parts }],
           generationConfig: {
             responseMimeType: "application/json",
-            responseJsonSchema: z.toJSONSchema(identificationSchema),
+            responseJsonSchema: geminiJsonSchema(z.toJSONSchema(identificationSchema)),
             temperature: 0.1,
             maxOutputTokens: 8192,
           },
         }),
       },
     );
-    if (!response.ok)
-      return NextResponse.json(
-        {
-          error:
-            response.status === 429
-              ? "Gemini is rate limited. Please try again shortly."
-              : "Gemini could not complete identification. Check the configured model and API key.",
-        },
-        { status: 502 },
-      );
+    if (!response.ok) {
+      const details = await response.json().catch(() => null);
+      const failure = identificationFailure(response.status, details);
+      console.error("Identification provider request failed", { status: response.status, model });
+      return NextResponse.json({error: failure.error}, {status: failure.status});
+    }
     const payload = await response.json();
     const text = payload.candidates?.[0]?.content?.parts
       ?.filter(
