@@ -5,15 +5,27 @@ import { openCameraStream, type CameraFacing } from "@/lib/camera";
 import cameraControls from "./camera-controls.module.css";
 import CapturedFrameDrop from "./captured-frame-drop";
 import frameStyles from "./captured-frame-drop.module.css";
-import { Camera, ScanLine, Square, RefreshCw } from "lucide-react";
+import {
+  Camera,
+  ScanLine,
+  Square,
+  Loader2,
+  ShieldCheck,
+  ScanText,
+  Check,
+  ArrowRight,
+} from "lucide-react";
+import ScanArt from "./scan-art";
 export default function LiveCamera({
   onScan,
   onError,
   stopSignal = 0,
+  onDescribe,
 }: {
   onScan: (image: string, ocr?: string) => Promise<void>;
   onError: (message: string) => void;
   stopSignal?: number;
+  onDescribe?: () => void;
 }) {
   const video = useRef<HTMLVideoElement>(null),
     stream = useRef<MediaStream | null>(null),
@@ -200,7 +212,25 @@ export default function LiveCamera({
     }
   }
   return (
-    <section className="camera-panel">
+    <section
+      className={`camera-studio ${running ? "is-live" : ""}`}
+      aria-label="Waste camera scanner"
+    >
+      <div className="camera-studio-top">
+        <span>
+          <ScanLine size={17} /> Live scanner
+        </span>
+        <span className={`camera-state ${running ? "live" : ""}`} role="status">
+          <i />
+          {starting
+            ? (switching ? "Switching camera" : "Opening camera")
+            : processing
+              ? "Analysing view"
+              : running
+                ? "Camera on"
+                : "Camera off"}
+        </span>
+      </div>
       <div className={`camera-view ${capturedFrame ? frameStyles.capturing : ""}`}>
         {running && capturedFrame && (
           <CapturedFrameDrop key={capturedFrame} frame={capturedFrame} onComplete={() => setCapturedFrame(null)} />
@@ -222,75 +252,163 @@ export default function LiveCamera({
             <SwitchCamera size={18}/><span>{switching ? "Switching…" : "Flip camera"}</span>
           </button>
         )}
-        {!running && (
-          <div className="camera-empty">
-            <Camera size={42} strokeWidth={1.3} />
-            <h2>Point. Scan. Confirm.</h2>
-            <p>Use your phone’s rear camera. Keep the waste clearly in view.</p>
+        {!running ? (
+          <div className="camera-idle">
+            <div className="camera-idle-art">
+              <ScanArt />
+            </div>
+            <h2>Your waste, in focus.</h2>
+            <p>
+              Place your items together in good light.
+              <br />
+              Open the camera when you’re ready.
+            </p>
+            <span className="camera-privacy-tag">
+              <ShieldCheck size={14} /> Camera starts with your permission
+            </span>
           </div>
-        )}
-        {running && (
-          <div
-            className={`camera-target ${processing ? "working" : ""}`}
-            aria-hidden="true"
-          >
-            <ScanLine size={44} />
-          </div>
+        ) : (
+          <>
+            <div
+              className={`camera-frame ${processing ? "working" : ""}`}
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 300 220" preserveAspectRatio="none" fill="none">
+                <path
+                  d="M2 40V12a10 10 0 0 1 10-10h28m220 0h28a10 10 0 0 1 10 10v28m0 140v28a10 10 0 0 1-10 10h-28m-220 0H12a10 10 0 0 1-10-10v-28"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+              {processing && <span className="live-scan-beam" />}
+            </div>
+            <div className="camera-live-caption">
+              {processing
+                ? "Hold steady. Checking visible items…"
+                : "Keep items and packaging labels in the frame"}
+            </div>
+          </>
         )}
       </div>
-      <div className="inline-actions">
-        {running ? (
-          <>
-            <button className="secondary" onClick={stop}>
-              <Square size={15} />
-              Stop camera
-            </button>
+      <div className="camera-control-bar">
+        <div className="camera-control-copy">
+          <strong>
+            {processing
+              ? "Taking a closer look"
+              : running
+                ? "Ready for your next scan"
+                : "Start with a quick scan"}
+          </strong>
+          <span>
+            {running
+              ? `${count} ${count === 1 ? "scan" : "scans"} analysed · review the items below`
+              : "Scan → review items → choose a pickup"}
+          </span>
+        </div>
+        <div className="camera-buttons">
+          {running ? (
+            <>
+              <button
+                type="button"
+                className="camera-stop"
+                onClick={stop}
+                aria-label="Stop camera"
+              >
+                <Square size={15} />
+                <span>Stop</span>
+              </button>
+              <button
+                type="button"
+                className="primary camera-capture"
+                disabled={processing}
+                onClick={() => {
+                  if (timer.current) clearTimeout(timer.current);
+                  void scan(generation.current, count);
+                }}
+              >
+                {processing ? (
+                  <Loader2 className="spin" size={19} />
+                ) : (
+                  <ScanLine size={19} />
+                )}
+                <span>{processing ? "Analysing…" : "Scan now"}</span>
+              </button>
+            </>
+          ) : (
             <button
-              className="primary"
-              disabled={processing}
-              onClick={() => {
-                if (timer.current) clearTimeout(timer.current);
-                void scan(generation.current, count);
-              }}
+              type="button"
+              className="primary camera-capture"
+              disabled={starting}
+              onClick={() => void start()}
             >
-              <ScanLine size={16} />
-              {processing ? "Analysing…" : "Scan this view"}
+              {starting ? (
+                <Loader2 className="spin" size={18} />
+              ) : (
+                <Camera size={18} />
+              )}
+              <span>{starting ? "Opening…" : "Open camera"}</span>
             </button>
-          </>
-        ) : (
-          <button className="primary" disabled={starting} onClick={() => void start()}>
-            <Camera size={17} />
-            Start live camera
+          )}
+        </div>
+      </div>
+      <div className="camera-preferences">
+        <div className="camera-preference">
+          <div className="camera-preference-label">
+            <ScanLine size={18} />
+            <div>
+              <strong>Automatic scanning</strong>
+              <span>Every 15 seconds after analysis · up to 8 scans</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={auto}
+            aria-label="Automatic scanning"
+            className={`camera-switch ${auto ? "on" : ""}`}
+            onClick={() => {
+              const next = !auto;
+              setAuto(next);
+              autoRef.current = next;
+              if (!next && timer.current) clearTimeout(timer.current);
+              if (next && active.current && !inFlight.current && count < 8)
+                void scan(generation.current, count);
+            }}
+          >
+            <span />
+          </button>
+        </div>
+        <div className="camera-preference">
+          <div className="camera-preference-label">
+            <ScanText size={18} />
+            <div>
+              <strong>Read packaging labels</strong>
+              <span>Extract English text to help identify materials</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={readLabels}
+            aria-label="Read packaging labels"
+            className={`camera-switch ${readLabels ? "on" : ""}`}
+            onClick={() => setReadLabels(!readLabels)}
+          >
+            <span />
+          </button>
+        </div>
+      </div>
+      <div className="camera-bottom-note">
+        <span>
+          <ShieldCheck size={14} /> Frames aren’t saved
+        </span>
+        {onDescribe && (
+          <button type="button" className="text-button" onClick={onDescribe}>
+            Describe instead <ArrowRight size={14} />
           </button>
         )}
       </div>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={auto}
-          onChange={(e) => {
-            setAuto(e.target.checked);
-            autoRef.current = e.target.checked;
-            if (!e.target.checked && timer.current) clearTimeout(timer.current);
-            if (e.target.checked && active.current && !inFlight.current)
-              void scan(generation.current, count);
-          }}
-        />
-        Analyse automatically every 15 seconds (up to 8 frames per session)
-      </label>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={readLabels}
-          onChange={(e) => setReadLabels(e.target.checked)}
-        />
-        Read packaging labels with browser OCR (English)
-      </label>
-      <small>
-        {running
-          ? `${count} frames analysed. Stop the camera to review and confirm the checklist.`
-          : "Camera starts only with your permission. Frames go to Gemini during scanning."}
-      </small>
     </section>
   );
 }

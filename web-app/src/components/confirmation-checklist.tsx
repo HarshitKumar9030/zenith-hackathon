@@ -1,169 +1,322 @@
 "use client";
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Check, Loader2, Pencil, X } from "lucide-react";
 import Dropdown from "./dropdown";
 import type { Identification } from "@/lib/rules";
-import { serviceApi } from "./service-hub";
+import { serviceApi } from "@/lib/client-api";
+const materials = [
+  "plastic",
+  "paper",
+  "cardboard",
+  "glass",
+  "metal",
+  "food_waste",
+  "garden_waste",
+  "textile",
+  "composite_or_other",
+  "unknown",
+];
 export default function ConfirmationChecklist({
   id,
   identification,
   confirmed,
   onConfirmed,
   notify,
+  onRemoved,
+  onSchedule,
 }: {
   id: string;
   identification: Identification;
   confirmed?: boolean;
   onConfirmed: (item: unknown) => void;
   notify: (text: string) => void;
+  onRemoved?: () => void;
+  onSchedule?: () => void;
 }) {
-  const [selectedItems, setSelectedItems] = useState(
-    (identification.detected_items || []).map((_, i) => i),
-  );
-  const [material, setMaterial] = useState(identification.material),
+  const [editing, setEditing] = useState(false),
+    [selected, setSelected] = useState(
+      (identification.detected_items || []).map((_, i) => i),
+    ),
+    [material, setMaterial] = useState(identification.material),
     [condition, setCondition] = useState(identification.contaminated),
     [special, setSpecial] = useState(identification.special_handling),
     [mixed, setMixed] = useState(identification.mixed_material),
-    [reviewed, setReviewed] = useState(false),
     [busy, setBusy] = useState(false);
-  return (
-    <section className="confirmation">
-      <h3>
-        {confirmed ? "Your confirmed checklist" : "Check what the camera found"}
-      </h3>
-      <p>
-        Correct the visible material and condition. Unknown is a valid answer.
-      </p>
-      {Boolean(identification.detected_items?.length) && (
-        <div className="detected-items" aria-label="Detected waste items">
-          {identification.detected_items!.map((item, i) => (
-            <label className="check-row" key={i}>
-              <input
-                type="checkbox"
-                checked={selectedItems.includes(i)}
-                onChange={(e) =>
-                  setSelectedItems((v) =>
-                    e.target.checked ? [...v, i] : v.filter((n) => n !== i),
-                  )
-                }
+  const reduce = useReducedMotion();
+  const items = identification.detected_items?.length
+    ? identification.detected_items
+    : [{ name: identification.object_name, material: identification.material }];
+  async function remove(index: number) {
+    setBusy(true);
+    try {
+      const response = await fetch("/api/history", {
+        method: identification.detected_items?.length ? "PATCH" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "remove_item", index }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw Error(data.error);
+      if (data.item) onConfirmed(data.item);
+      else onRemoved?.();
+      notify("Item removed. Existing pickup details are unchanged.");
+    } catch (e) {
+      notify((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function save() {
+    setBusy(true);
+    try {
+      const data = await serviceApi("confirm", {
+        id,
+        material,
+        contaminated: condition,
+        special_handling: special,
+        mixed_material: mixed,
+        reviewed: true,
+        selectedItems: identification.detected_items?.length
+          ? selected
+          : undefined,
+      });
+      onConfirmed(data.item);
+      setEditing(false);
+      notify(
+        data.awarded
+          ? "Confirmed. You earned today’s scan point."
+          : "Item details saved.",
+      );
+    } catch (e) {
+      notify((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  function cancel() {
+    setMaterial(identification.material);
+    setCondition(identification.contaminated);
+    setSpecial(identification.special_handling);
+    setMixed(identification.mixed_material);
+    setSelected((identification.detected_items || []).map((_, i) => i));
+    setEditing(false);
+  }
+  function choices(
+    label: string,
+    value: string,
+    onChange: (v: "yes" | "no" | "unknown") => void,
+    options: { value: "yes" | "no" | "unknown"; label: string }[],
+  ) {
+    return (
+      <div className="choice-tabs" role="radiogroup" aria-label={label}>
+        {options.map((o) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={value === o.value}
+            onClick={() => onChange(o.value)}
+            key={o.value}
+          >
+            {value === o.value && (
+              <motion.span
+                className="choice-highlight"
+                layoutId={`${id}-${label}`}
+                transition={{ duration: reduce ? 0 : 0.18 }}
               />
-              <span>
-                {item.name} · {item.material.replaceAll("_", " ")}
-                {item.special_handling !== "no"
-                  ? " · Check special handling"
-                  : ""}
-              </span>
-            </label>
-          ))}
-          <small>
-            Keep the items actually present selected. Material and condition
-            below describe the collection together.
-          </small>
+            )}
+            <span>{o.label}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+  if (confirmed && !editing)
+    return (
+      <section className="confirmed-summary">
+        <div className="section-heading">
+          <h3>
+            <Check size={18} />
+            Confirmed items
+          </h3>
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => setEditing(true)}
+          >
+            <Pencil size={14} />
+            Edit details
+          </button>
         </div>
-      )}
-      <div className="checklist-fields">
-        <div>
-          <label>Material</label>
+        {items.map((item, index) => (
+          <div className="confirmed-product" key={index}>
+            <div>
+              <strong>{item.name}</strong>
+              <small>{item.material.replaceAll("_", " ")}</small>
+            </div>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={`Remove ${item.name}`}
+              disabled={busy}
+              onClick={() => void remove(index)}
+            >
+              <X size={17} />
+            </button>
+          </div>
+        ))}
+        {onSchedule && (
+          <button type="button" className="primary" onClick={onSchedule}>
+            Schedule a pickup <ArrowRight size={16} />
+          </button>
+        )}
+      </section>
+    );
+  return (
+    <motion.section
+      className="item-editor"
+      initial={{ opacity: 0, y: reduce ? 0 : 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduce ? 0 : 0.2 }}
+      aria-label="Item details editor"
+    >
+      <header>
+        <h3>{confirmed ? "Edit item details" : "Review your items"}</h3>
+        <p>
+          {confirmed
+            ? "Update what you know. Leave anything uncertain as “Not sure”."
+            : "Keep the items you can see. Adjust the details before continuing."}
+        </p>
+      </header>
+      <div className="review-products">
+        {items.map((item, index) => (
+          <label className="review-product" key={index}>
+            <input
+              type="checkbox"
+              aria-label={`Include ${item.name}`}
+              checked={
+                !identification.detected_items?.length ||
+                selected.includes(index)
+              }
+              disabled={!identification.detected_items?.length}
+              onChange={(e) =>
+                setSelected((v) =>
+                  e.target.checked
+                    ? [...v, index]
+                    : v.filter((i) => i !== index),
+                )
+              }
+            />
+            <span>
+              <strong>{item.name}</strong>
+              <small>{item.material.replaceAll("_", " ")}</small>
+            </span>
+          </label>
+        ))}
+      </div>
+      <div className="editor-settings">
+        <div className="editor-setting">
+          <div>
+            <label>Material</label>
+            <small>The main material in this scan</small>
+          </div>
           <Dropdown
             label="Confirm material"
             value={material}
             onChange={(v) => setMaterial(v as Identification["material"])}
-            options={[
-              "plastic",
-              "paper",
-              "cardboard",
-              "glass",
-              "metal",
-              "food_waste",
-              "garden_waste",
-              "textile",
-              "composite_or_other",
-              "unknown",
-            ].map((value) => ({ value, label: value.replaceAll("_", " ") }))}
-          />
-        </div>
-        <div>
-          <label>Contaminated?</label>
-          <Dropdown
-            label="Confirm contamination"
-            value={condition}
-            onChange={(v) => setCondition(v as Identification["contaminated"])}
-            options={["yes", "no", "unknown"].map((value) => ({
+            options={materials.map((value) => ({
               value,
-              label: value,
+              label:
+                value === "composite_or_other"
+                  ? "Mixed / other"
+                  : value === "unknown"
+                    ? "Not sure"
+                    : value.replaceAll("_", " "),
             }))}
           />
         </div>
-        <div>
-          <label>Special handling?</label>
-          <Dropdown
-            label="Confirm special handling"
-            value={special}
-            onChange={(v) =>
-              setSpecial(v as Identification["special_handling"])
-            }
-            options={["yes", "no", "unknown"].map((value) => ({
-              value,
-              label: value,
-            }))}
-          />
+        <div className="editor-setting">
+          <div>
+            <label>Condition</label>
+            <small>Food, grease or other residue?</small>
+          </div>
+          {choices("Condition", condition, setCondition, [
+            { value: "no", label: "Clean" },
+            { value: "yes", label: "Has residue" },
+            { value: "unknown", label: "Not sure" },
+          ])}
+        </div>
+        <div className="editor-setting">
+          <div>
+            <label>Handling</label>
+            <small>Batteries, electronics or hazardous contents?</small>
+          </div>
+          {choices("Handling", special, setSpecial, [
+            { value: "no", label: "Ordinary" },
+            { value: "yes", label: "Special" },
+            { value: "unknown", label: "Not sure" },
+          ])}
+        </div>
+        <div className="editor-setting">
+          <div>
+            <label>Mixed materials</label>
+            <small>More than one material is present</small>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-label="Mixed materials are present"
+            aria-checked={mixed}
+            className={`editor-switch ${mixed ? "on" : ""}`}
+            onClick={() => setMixed(!mixed)}
+          >
+            <motion.span
+              animate={{ x: mixed ? 19 : 0 }}
+              transition={{ duration: reduce ? 0 : 0.18 }}
+            />
+          </button>
         </div>
       </div>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={mixed}
-          onChange={(e) => setMixed(e.target.checked)}
-        />
-        Mixed materials are present
-      </label>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={reviewed}
-          onChange={(e) => setReviewed(e.target.checked)}
-        />
-        I reviewed the suggestions and answered what I can establish
-      </label>
-      <button
-        className="primary"
-        disabled={
-          !reviewed ||
-          busy ||
-          Boolean(
-            identification.detected_items?.length && !selectedItems.length,
-          )
-        }
-        onClick={async () => {
-          setBusy(true);
-          try {
-            const data = await serviceApi("confirm", {
-              id,
-              material,
-              contaminated: condition,
-              special_handling: special,
-              mixed_material: mixed,
-              reviewed: true,
-              selectedItems: identification.detected_items?.length
-                ? selectedItems
-                : undefined,
-            });
-            onConfirmed(data.item);
-            notify(
-              data.awarded
-                ? "Confirmed. You earned today’s scan point."
-                : "Checklist saved. Daily points are awarded once per day.",
-            );
-          } catch (e) {
-            notify((e as Error).message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <Check size={16} />
-        {confirmed ? "Update confirmed checklist" : "Confirm & schedule pickup"}
-      </button>
-    </section>
+      <footer>
+        <p>
+          By confirming, you’re checking that these details match your items.
+        </p>
+        <div>
+          {confirmed && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={cancel}
+              disabled={busy}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            className="primary"
+            aria-label={
+              confirmed ? "Save item changes" : "Confirm & schedule pickup"
+            }
+            disabled={
+              busy ||
+              Boolean(identification.detected_items?.length && !selected.length)
+            }
+            onClick={() => void save()}
+          >
+            {busy ? (
+              <Loader2 className="spin" size={17} />
+            ) : (
+              <Check size={17} />
+            )}{" "}
+            {busy
+              ? "Saving…"
+              : confirmed
+                ? "Save changes"
+                : "Confirm & continue"}
+            {!confirmed && <ArrowRight size={16} />}
+          </button>
+        </div>
+      </footer>
+    </motion.section>
   );
 }

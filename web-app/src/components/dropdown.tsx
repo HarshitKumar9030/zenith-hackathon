@@ -75,6 +75,14 @@ export default function Dropdown({
             exit={{ opacity: 0, y: reduce ? 0 : -4 }}
             transition={{ duration: reduce ? 0 : 0.14 }}
             className="options"
+            style={{
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              left: 0,
+              right: 0,
+              width: "100%",
+              zIndex: 40,
+            }}
             role="listbox"
             aria-label={label}
           >

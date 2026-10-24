@@ -9,6 +9,7 @@ const inputSchema = z.object({
   preview: z.boolean().default(true),
   text: z.string().max(4000).default(""),
   ocr: z.string().max(8000).default(""),
+  observedDetails: z.object({material:identificationSchema.shape.material,residue:z.enum(["yes","no","unknown"]),mixed:z.enum(["yes","no","unknown"]),special:z.enum(["yes","no","unknown"])}).optional(),
   image: z.string().max(8000000).optional(),
   guideId: z
     .string()
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       );
     const parts: unknown[] = [
       {
-        text: JSON.stringify({ description: input.text, ocr_text: input.ocr }),
+        text: JSON.stringify({ description: input.text, ocr_text: input.ocr, observed_details: input.observedDetails }),
       },
     ];
     if (input.image) {
