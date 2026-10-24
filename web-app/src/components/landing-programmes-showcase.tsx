@@ -1,14 +1,13 @@
 "use client";
 import {useId,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'framer-motion';
-import {ArrowRight,ArrowUpRight,Building2,Leaf,ShieldCheck} from 'lucide-react';
+import {ArrowRight,ArrowUpRight,Leaf,ShieldCheck} from 'lucide-react';
 import {GOVERNMENT_PROGRAMMES} from '@/lib/government-programmes';
 import styles from './landing-programmes-showcase.module.css';
 
 const chapters=[
  {title:'Organic processing',caption:'GOBARdhan · MDA',icon:Leaf,ids:['gobardhan','mda'],color:'green'},
  {title:'Safer collection work',caption:'NAMASTE',icon:ShieldCheck,ids:['namaste'],color:'violet'},
- {title:'Startup support',caption:'Swachhata Startup Challenge',icon:Building2,ids:['startup-challenge'],color:'blue'},
 ] as const;
 
 function Journey({active}:{active:number}){return <svg className={styles.journey} viewBox="0 0 600 170" fill="none" aria-hidden="true">
@@ -43,7 +42,7 @@ export default function LandingProgrammesShowcase(){
    <AnimatePresence mode="wait" initial={false}>
     <motion.div key={selected} className={`${styles.panel} ${styles[chapter.color]}`} role="tabpanel" id={`${id}-panel-${selected}`} aria-labelledby={`${id}-tab-${selected}`} tabIndex={0} initial={{opacity:0,y:reduced?0:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:reduced?0:-6}} transition={{duration:reduced?0:.2}}>
      <div className={styles.feature}>
-      <div className={styles.featureTop}><span>{primary.status}</span><span className={styles.index}>0{selected+1} / 03</span></div>
+      <div className={styles.featureTop}><span>{primary.status}</span><span className={styles.index}>0{selected+1} / {String(chapters.length).padStart(2,'0')}</span></div>
       <Journey active={selected}/>
       <h3>{primary.name}</h3><p className={styles.authority}>{primary.authority}</p>
       <p className={styles.summary}>{primary.summary}</p>
@@ -53,7 +52,7 @@ export default function LandingProgrammesShowcase(){
      {related?<div className={styles.related}>
       <div><span className={styles.relatedStatus}>{related.status}</span><h4>{related.name}</h4><p>{related.summary}</p><p className={styles.requirement}>{related.requirement}</p></div>
       <a href={related.source} target="_blank" rel="noopener noreferrer" aria-label={`Official source for ${related.name}`}><ArrowUpRight size={22}/></a>
-     </div>:<div className={styles.related}><div><span className={styles.relatedStatus}>{primary.id==='namaste'?'For eligible helpers':'Historical funding opportunity'}</span><h4>{primary.id==='namaste'?'Recognition starts with validation':'An award is not automatic revenue'}</h4><p>{primary.requirement}</p></div>{primary.id==='namaste'?<ShieldCheck size={30} strokeWidth={1.4}/>:<Building2 size={30} strokeWidth={1.4}/>}</div>}
+     </div>:<div className={styles.related}><div><span className={styles.relatedStatus}>For eligible helpers</span><h4>Recognition starts with validation</h4><p>{primary.requirement}</p></div><ShieldCheck size={30} strokeWidth={1.4}/></div>}
     </motion.div>
    </AnimatePresence>
   </div>
