@@ -1,3 +1,6 @@
+import HelperInsights from "./helper-insights";
+import helperStyles from "./helper-insights.module.css";
+import { helperCompensation } from "@/lib/helper-pay";
 "use client";
 import ActionMoment from "./action-moment";
 import { pickupTimeLabel } from "@/lib/pickup-time";
@@ -144,8 +147,10 @@ type Job = {
   location?: { latitude: number; longitude: number };
   estimatedKg: number;
   collectorId?: string;
-  receipt?: { netKg: number; material: string; notes: string };
-  workPay?: { amountPaise: number; reference: string };
+  receipt?: { netKg: number; material: string; notes: string; sortingIncluded?: boolean; sortingReferencePaise?: number; sortingFeePaise?: number };
+  settlement?: { netPaise?: number };
+  workPayments?: { amountPaise:number;at?:string }[];
+  workPay?: { amountPaise: number; reference: string; at?: string };
 };
 export default function HelperDashboard({
   signedIn,
@@ -213,7 +218,7 @@ export default function HelperDashboard({
   const material = (v: string) =>
     t.materials[v as keyof typeof t.materials] || v;
   return (
-    <section lang={lang} className="helper-dashboard">
+    <section lang={lang} className={`helper-dashboard ${helperStyles.dashboard}`}>
       <div className="page-heading heading-actions">
         <div>
           <span className="micro">
@@ -231,6 +236,7 @@ export default function HelperDashboard({
                 : t.title}
           </h1>
           <p>{t.intro}</p>
+          <p>{lang === "hi" ? "बेसिक संग्रह: सभी सामग्रियों के लिए 2 किलो तक।" : "Basic pickups: up to 2 kg for all materials, verified at weighing."}</p>
         </div>
         <div className="inline-actions">
           <button
@@ -350,6 +356,7 @@ export default function HelperDashboard({
         </section>
       ) : (
         <>
+          <HelperInsights jobs={jobs} hindi={lang === "hi"} />
           <div className="helper-metrics">
             <div>
               <Wallet size={25} />
@@ -398,6 +405,7 @@ export default function HelperDashboard({
             : jobs
           ).map((b) => (
             <article className="booking-entry helper-job" key={b.id}>
+              {b.status === "completed" && <p>{lang === "hi" ? "अर्जित" : "Earned"}: ₹{(helperCompensation(b).earnedPaise / 100).toFixed(2)} · {lang === "hi" ? "बाकी" : "Outstanding"}: ₹{(helperCompensation(b).duePaise / 100).toFixed(2)}</p>}
               <div className="section-heading">
                 <h2>{material(b.material)}</h2>
                 <span className="status">
