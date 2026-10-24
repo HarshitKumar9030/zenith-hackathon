@@ -11,6 +11,7 @@ export async function db() {
   await client.connect();
   const database = client.db(process.env.MONGODB_DB || "wastewise");
   globalDb.indexes ??= Promise.all([
+    database.collection("email_tokens").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     database.collection("users").createIndex({ email: 1 }, { unique: true }),
     database
       .collection("sessions")
