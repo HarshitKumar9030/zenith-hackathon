@@ -10,7 +10,7 @@ import {
   MapPin,
   Repeat2,
 } from "lucide-react";
-import { pickupTimeLabel, validPickupTime } from "@/lib/pickup-time";
+import { pickupTimeLabel, validPickupTime, nextPickupSlot } from "@/lib/pickup-time";
 import { pickupPrice } from "@/lib/pickup-pricing";
 import { serviceApi } from "@/lib/client-api";
 import { PLANS } from "@/lib/catalog";
@@ -62,9 +62,9 @@ export default function QuickPickup({
   useEffect(() => {
     let active = true;
     requestId.current = crypto.randomUUID();
-    const next = new Date(Date.now() + 15 * 60000);
-    setTime(next.toLocaleTimeString("en-GB", {timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit"}));
-    setPickupDate(next.toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"}));
+    const next = nextPickupSlot();
+    setTime(next.time);
+    setPickupDate(next.date);
     Promise.all([serviceApi("service"), serviceApi("history")])
       .then(([d, h]) => {
         if (!active) return;
@@ -182,6 +182,7 @@ export default function QuickPickup({
         requestId: requestId.current,
         source: funding,
         asap: automatic,
+        quotedFeePaise: price.totalPaise,
         scanId: selectedScan,
         date: f.get("date"),
         window: time,
@@ -197,6 +198,9 @@ export default function QuickPickup({
           : "Pickup saved. Payment is required to schedule it.",
       );
     } catch (e) {
+      if((e as Error).message.includes("Pickup pricing changed")){
+        const next=nextPickupSlot();setTime(next.time);setPickupDate(next.date);
+      }
       setError((e as Error).message);
     } finally {
       setBusy(false);
@@ -370,10 +374,10 @@ export default function QuickPickup({
             <div className="booking-section">
               <h3>When should we come?</h3>
               <div className="choice-tabs" role="group" aria-label="Pickup timing">
-                <button type="button" aria-pressed={automatic} onClick={()=>setAutomatic(true)}>Next available helper</button>
+                <button type="button" aria-pressed={automatic} onClick={()=>{const next=nextPickupSlot();setTime(next.time);setPickupDate(next.date);setAutomatic(true)}}>Next available helper</button>
                 <button type="button" aria-pressed={!automatic} onClick={()=>setAutomatic(false)}>Choose a time</button>
               </div>
-              {automatic ? <><input type="hidden" name="date" value={pickupDate}/><input type="hidden" name="pickupTime" value={time}/><p>Arrival estimate pending assignment. Your helper’s live location will provide an approximate arrival range. Available 24 hours for the hackathon, with no surge.</p></> : <div className="service-columns">
+              {automatic ? <><input type="hidden" name="date" value={pickupDate}/><input type="hidden" name="pickupTime" value={time}/><p>Next request window: {pickupDate} · {pickupTimeLabel(time)} IST. Arrival remains pending until your helper accepts and shares a fresh location. Collections run 7 am–2 pm and 5–7 pm, with a 2–5 pm break. Evening charges are ₹5–₹7.</p></> : <div className="service-columns">
                 <label className="field">
                   Collection date
                   <input
@@ -545,7 +549,7 @@ export default function QuickPickup({
                     : "Confirm included pickup"}
             </button>
             <small>
-              Helper assignment is automatic for this demo.
+              A helper accepts your request before collection.
             </small>
           </aside>
         </form>

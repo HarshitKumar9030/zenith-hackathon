@@ -12,6 +12,7 @@ import {
 } from "@/lib/service";
 import {
   validPickupTime,
+  nextPickupSlot,
   surgeTime,
   pickupSurgePaise,
 } from "@/lib/pickup-time";
@@ -40,6 +41,7 @@ const input = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("book"),
     asap: z.boolean().optional(),
+    quotedFeePaise: z.number().int().nonnegative().max(1000000).optional(),
     requestId: z.uuid(),
     source: z.enum(["reward", "membership", "basic"]),
     scanId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -49,7 +51,7 @@ const input = z.discriminatedUnion("action", [
       .string()
       .refine(
         validPickupTime,
-        "Choose a valid pickup time (00:00–23:59 IST).",
+        "Choose 7 am–2 pm or 5–7 pm IST. The 2–5 pm break is unavailable.",
       ),
     segregated: z.boolean(),
   }),
@@ -89,7 +91,7 @@ export async function POST(req: Request) {
     const data = input.parse(await req.json());
     let scan = null;
     if (data.action === "book") {
-      if(data.asap){const next=new Date(Date.now()+5*60000);data.date=next.toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"});data.window=next.toLocaleTimeString("en-GB",{timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit"});}
+      if(data.asap){const requested=Date.parse(data.date+"T"+data.window+":00+05:30");if(!Number.isFinite(requested)||requested<=Date.now()){const next=nextPickupSlot();data.date=next.date;data.window=next.time;}}
       const day = new Date(data.date + "T" + data.window + ":00+05:30");
       const delta = day.getTime() - Date.now();
       if (!Number.isFinite(delta) || day.toLocaleDateString("en-CA", {timeZone:"Asia/Kolkata"}) !== data.date || delta < 0 || delta > 30 * 86400000)
@@ -154,6 +156,8 @@ export async function POST(req: Request) {
           segregated: data.segregated,
           time: data.window,
         });
+        if(data.quotedFeePaise !== undefined && data.quotedFeePaise !== pricing.totalPaise)
+          throw new Error("Pickup pricing changed. Review the next available time and confirm again.");
         const surgeFeePaise = pricing.surgePaise,
           feePaise = pricing.totalPaise;
         const booking = {

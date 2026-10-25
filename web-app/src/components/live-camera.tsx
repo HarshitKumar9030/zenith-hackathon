@@ -11,6 +11,7 @@ import {
   Square,
   Loader2,
   ShieldCheck,
+  ScanText,
   Check,
   ArrowRight,
 } from "lucide-react";
@@ -39,12 +40,16 @@ export default function LiveCamera({
     [processing, setProcessing] = useState(false),
     [count, setCount] = useState(0),
     [auto, setAuto] = useState(true);
+  const [readLabels, setReadLabels] = useState(false);
   const [starting, setStarting] = useState(false);
   const [facing, setFacing] = useState<CameraFacing>("environment");
   const [canSwitch, setCanSwitch] = useState(false);
   const [switching, setSwitching] = useState(false);
   const opening = useRef(false);
   const facingPreference = useRef<CameraFacing>("environment");
+  const labelsRef = useRef(readLabels);
+  labelsRef.current = readLabels;
+  const workerRef = useRef<import("tesseract.js").Worker | null>(null);
   const autoRef = useRef(auto);
   autoRef.current = auto;
   const active = useRef(false);
@@ -58,6 +63,10 @@ export default function LiveCamera({
     if (timer.current) clearTimeout(timer.current);
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
+    if (workerRef.current) {
+      void workerRef.current.terminate();
+      workerRef.current = null;
+    }
     if (video.current) video.current.srcObject = null;
     setRunning(false);
     setCapturedFrame(null);
@@ -76,6 +85,10 @@ export default function LiveCamera({
       active.current = false;
       if (timer.current) clearTimeout(timer.current);
       stream.current?.getTracks().forEach((t) => t.stop());
+      if (workerRef.current) {
+        void workerRef.current.terminate();
+        workerRef.current = null;
+      }
     };
   }, []);
   async function scan(epoch: number, n: number) {
@@ -101,8 +114,22 @@ export default function LiveCamera({
       canvas.getContext("2d")!.drawImage(v, 0, 0, canvas.width, canvas.height);
       const captured = canvas.toDataURL("image/jpeg", 0.8);
       setCapturedFrame(captured);
+      let labelText = "";
+      if (labelsRef.current) {
+        const { createWorker } = await import("tesseract.js");
+        if (!workerRef.current) {
+          const worker = await createWorker("eng");
+          if (!active.current || epoch !== generation.current) {
+            await worker.terminate();
+            return;
+          }
+          workerRef.current = worker;
+        }
+        const recognized = await workerRef.current.recognize(captured);
+        labelText = recognized.data.text.slice(0, 8000);
+      }
       if (!active.current || epoch !== generation.current) return;
-      await callback.current(captured);
+      await callback.current(captured, labelText);
       if (epoch === generation.current) setCount(n + 1);
     } catch (e) {
       if (epoch === generation.current) {
@@ -352,7 +379,25 @@ export default function LiveCamera({
             <span />
           </button>
         </div>
-
+        <div className="camera-preference">
+          <div className="camera-preference-label">
+            <ScanText size={18} />
+            <div>
+              <strong>Read packaging labels</strong>
+              <span>Extract English text to help identify materials</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={readLabels}
+            aria-label="Read packaging labels"
+            className={`camera-switch ${readLabels ? "on" : ""}`}
+            onClick={() => setReadLabels(!readLabels)}
+          >
+            <span />
+          </button>
+        </div>
       </div>
       <div className="camera-bottom-note">
         <span>

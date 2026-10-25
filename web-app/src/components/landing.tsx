@@ -225,15 +225,15 @@ export default function Landing() {
             ))}
           </div>
           <p className="landing-pricing-note">
-            Gold and Platinum include segregation. Basic/reward unsegregated waste: ₹5/kg after helper weighing. No surge fees during the hackathon.
+            Gold and Platinum include segregation. Basic/reward unsegregated waste: ₹5/kg after helper weighing. Evening charges: ₹5–₹7.
             Monthly plans renew manually.
           </p>
           <details className="landing-fee-details">
             <summary>See collection hours and fee details</summary>
             <p>
-              Hackathon pickups are available 24 hours, with no afternoon break or evening surge.
+              Choose 7 am–2 pm (before 2 pm), or 5–7 pm IST. We pause from 2–5 pm. Evening charges start at ₹5, plus ₹1 for unsegregated Basic/reward waste and ₹1 if measured weight exceeds 2 kg, capped at ₹7.
               Gold and Platinum cover the base pickup fee and segregation. Reward pickups cover the base fee.
-              Sorting is extra only for Basic/reward pickups; no evening fees apply during the hackathon. Collection is subject to helper
+              Sorting is extra only for Basic/reward pickups; evening charges apply separately. Collection is subject to helper
               availability. Payment is required before a paid pickup is
               scheduled.
             </p>
