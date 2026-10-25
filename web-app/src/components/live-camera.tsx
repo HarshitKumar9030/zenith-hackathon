@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SwitchCamera } from "lucide-react";
 import { openCameraStream, type CameraFacing } from "@/lib/camera";
+import flow from "./simple-flow.module.css";
 import cameraControls from "./camera-controls.module.css";
 import CapturedFrameDrop from "./captured-frame-drop";
 import frameStyles from "./captured-frame-drop.module.css";
@@ -347,18 +348,19 @@ export default function LiveCamera({
               ) : (
                 <Camera size={18} />
               )}
-              <span>{starting ? "Opening…" : "Open camera"}</span>
+              <span>{starting ? "Opening…" : "Start scanning"}</span>
             </button>
           )}
         </div>
       </div>
+      <details className={flow.details}><summary>Scan settings</summary>
       <div className="camera-preferences">
         <div className="camera-preference">
           <div className="camera-preference-label">
             <ScanLine size={18} />
             <div>
               <strong>Automatic scanning</strong>
-              <span>Every 15 seconds after analysis · up to 8 scans</span>
+              <span>Scan again automatically while the camera is open</span>
             </div>
           </div>
           <button
@@ -384,7 +386,7 @@ export default function LiveCamera({
             <ScanText size={18} />
             <div>
               <strong>Read packaging labels</strong>
-              <span>Extract English text to help identify materials</span>
+              <span>Read text printed on your items</span>
             </div>
           </div>
           <button
@@ -399,6 +401,7 @@ export default function LiveCamera({
           </button>
         </div>
       </div>
+      </details>
       <div className="camera-bottom-note">
         <span>
           <ShieldCheck size={14} /> Frames aren’t saved

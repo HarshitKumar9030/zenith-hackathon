@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 export default function Dropdown({
@@ -15,54 +15,44 @@ export default function Dropdown({
 }) {
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null),listId=useId(),focusMode=useRef<"selected"|"first"|"last">("selected");
   useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false);
-    };
+    const close = (e: MouseEvent) => {if (!root.current?.contains(e.target as Node)) setOpen(false)};
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, []);
+  useEffect(()=>{
+    if(!open)return;
+    const frame=requestAnimationFrame(()=>{
+      const buttons=Array.from(root.current?.querySelectorAll<HTMLButtonElement>("[role=option]")||[]);
+      const index=focusMode.current==="last"?buttons.length-1:focusMode.current==="first"?0:Math.max(0,options.findIndex(o=>o.value===value));
+      buttons[index]?.focus();
+    });return()=>cancelAnimationFrame(frame);
+  },[open]);
   return (
     <div
       className="dropdown"
       ref={root}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") setOpen(false);
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          if (!open) setOpen(true);
-          else {
-            const buttons =
-              root.current?.querySelectorAll<HTMLButtonElement>(
-                "[role=option]",
-              );
-            const index = Array.from(buttons || []).indexOf(
-              document.activeElement as HTMLButtonElement,
-            );
-            buttons?.[(index + 1) % (buttons.length || 1)]?.focus();
-          }
-        }
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          const buttons =
-            root.current?.querySelectorAll<HTMLButtonElement>("[role=option]");
-          const index = Array.from(buttons || []).indexOf(
-            document.activeElement as HTMLButtonElement,
-          );
-          buttons?.[
-            (index - 1 + (buttons?.length || 0)) % (buttons?.length || 1)
-          ]?.focus();
-        }
+      onBlur={e=>{if(!root.current?.contains(e.relatedTarget as Node))setOpen(false)}}
+      onKeyDown={e=>{
+        if(e.key==="Escape"&&open){e.preventDefault();e.stopPropagation();setOpen(false);trigger.current?.focus();return;}
+        if(!["ArrowDown","ArrowUp","Home","End"].includes(e.key))return;
+        if(!open){if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();focusMode.current=e.key==="ArrowUp"?"last":"first";setOpen(true)}return;}
+        e.preventDefault();
+        const buttons=Array.from(root.current?.querySelectorAll<HTMLButtonElement>("[role=option]")||[]),index=buttons.indexOf(document.activeElement as HTMLButtonElement);
+        const next=e.key==="Home"?0:e.key==="End"?buttons.length-1:e.key==="ArrowDown"?(index+1)%buttons.length:(index-1+buttons.length)%buttons.length;
+        buttons[next]?.focus();
       }}
     >
       <button
+        ref={trigger}
         type="button"
         className="select-trigger"
         aria-label={label}
+        aria-controls={listId}
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => {focusMode.current="selected";setOpen(!open)}}
       >
         {options.find((o) => o.value === value)?.label || label}
         <ChevronDown size={15} />
@@ -83,6 +73,7 @@ export default function Dropdown({
               width: "100%",
               zIndex: 40,
             }}
+            id={listId}
             role="listbox"
             aria-label={label}
           >
@@ -91,6 +82,7 @@ export default function Dropdown({
                 type="button"
                 key={option.value}
                 role="option"
+                tabIndex={value===option.value?0:-1}
                 aria-selected={value === option.value}
                 onClick={() => {
                   onChange(option.value);

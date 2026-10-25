@@ -30,6 +30,7 @@ import HistoryList from "./history-list";
 import HistoryTabs, { type HistoryView } from "./history-tabs";
 import HelpTour from "./help-tour";
 import type { Account } from "@/lib/service";
+import flow from "./simple-flow.module.css";
 import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
@@ -103,6 +104,7 @@ export default function Dashboard() {
     [authBusy, setAuthBusy] = useState(false);
   const [descriptionDetails, setDescriptionDetails] =
     useState<DescriptionDetails>(emptyDetails);
+  const [editScanId,setEditScanId]=useState<string|null>(null);
   const [pickupScanId, setPickupScanId] = useState<string | undefined>();
   const [serviceAccount, setServiceAccount] = useState<Account | null>(null);
   const [liveStop, setLiveStop] = useState(0);
@@ -319,6 +321,11 @@ export default function Dashboard() {
       h.identification.clarification_question ||
       h.identification.material === "unknown",
     );
+  function reviewScan(id:string){
+    const item=history.find(h=>h._id===id)||(result?._id===id?result:null);
+    if(!item){setMessage("That scan could not be found. Refresh your history.");return;}
+    setResult(item);setEditScanId(id);setHistoryView("scans");setPage("My history");
+  }
   function resultPanel(item: Result) {
     return (
       <Reveal className="result-panel">
@@ -332,7 +339,8 @@ export default function Dashboard() {
           </span>
         </div>
         <ConfirmationChecklist
-          key={item._id + JSON.stringify(item.identification.detected_items)}
+          key={item._id + JSON.stringify(item.identification.detected_items) + String(editScanId===item._id)}
+          startEditing={editScanId===item._id}
           id={item._id}
           identification={item.identification}
           confirmed={item.confirmed}
@@ -351,6 +359,7 @@ export default function Dashboard() {
             void refresh();
           }}
           onConfirmed={(value) => {
+            setEditScanId(null);
             scanEpoch.current++;
             setLiveStop((v) => v + 1);
             setResult(value as Result);
@@ -361,6 +370,7 @@ export default function Dashboard() {
           <QuickPickup
             key={item._id + item.identification.object_name}
             scanId={item._id}
+            onReview={reviewScan}
             onRecords={() => { setHistoryView("collections"); setPage("My history"); }}
             notify={setMessage}
             onPlans={() => setPage("Plans")}
@@ -709,8 +719,8 @@ export default function Dashboard() {
           {page === "Identify waste" && (
             <>
               <div className="page-heading">
-                <h1>What are we sorting today?</h1>
-                <p>Start with what you can see. We’ll help with the rest.</p>
+                <h1>Scan your waste.</h1>
+                <p>Show your items, check the result, and book a pickup.</p>
               </div>
               <div className="identify-grid">
                 <section>
@@ -720,9 +730,9 @@ export default function Dashboard() {
                     aria-label="Input method"
                   >
                     {[
-                      { id: "camera", label: "Live camera", Icon: ScanLine },
+                      { id: "camera", label: "Camera", Icon: ScanLine },
                       { id: "photo", label: "Photo", Icon: Camera },
-                      { id: "text", label: "Write a description", Icon: Type },
+                      { id: "text", label: "Describe", Icon: Type },
                     ].map(({ id, label, Icon }) => (
                       <button
                         role="tab"
@@ -748,7 +758,6 @@ export default function Dashboard() {
                   </div>
                   {mode === "camera" ? (
                     <LiveCamera
-                      onDescribe={() => setMode("text")}
                       stopSignal={liveStop}
                       onScan={scanLive}
                       onError={setMessage}
@@ -776,19 +785,19 @@ export default function Dashboard() {
                           <p>{fileName}</p>
                           <div className="inline-actions">
                             <button
-                              className="secondary"
+                              className="text-button"
                               onClick={() => upload.current?.click()}
                             >
                               Change image
                             </button>
-                            <button
+                            <details className={flow.details}><summary>Read packaging text</summary><button
                               className="secondary"
                               onClick={readLabel}
                               disabled={busy}
                             >
                               <FileText size={16} />
-                              Read label with OCR
-                            </button>
+                              Read text
+                            </button></details>
                           </div>
                         </>
                       ) : (
@@ -796,8 +805,7 @@ export default function Dashboard() {
                           <ScanArt busy={busy} />
                           <h2>A clearer photo. A better answer.</h2>
                           <p>
-                            Clear lighting and visible packaging labels if
-                            visible.
+                            Use good light and keep all your items in the frame.
                           </p>
                           <div className="inline-actions">
                             <button
@@ -806,13 +814,6 @@ export default function Dashboard() {
                             >
                               <Upload size={17} />
                               Choose an image
-                            </button>
-                            <button
-                              className="secondary"
-                              onClick={() => camera.current?.click()}
-                            >
-                              <Camera size={17} />
-                              Camera
                             </button>
                           </div>
                           <small>
@@ -839,10 +840,10 @@ export default function Dashboard() {
                     </label>
                   )}
                   {mode === "text" && text.trim() && (
-                    <DescriptionDetailsForm
+                    <details className={flow.details}><summary>Add details (optional)</summary><DescriptionDetailsForm
                       value={descriptionDetails}
                       onChange={setDescriptionDetails}
-                    />
+                    /></details>
                   )}
                   {mode === "photo" && (
                     <label className="field">
@@ -891,13 +892,13 @@ export default function Dashboard() {
                       ) : (
                         <ScanLine size={17} />
                       )}{" "}
-                      {busy ? progress : "Identify my item"}{" "}
+                      {busy ? progress : "Review my items"}{" "}
                       {!busy && <ArrowRight size={17} />}
                     </button>
                   )}
                   <small className="privacy-note">
-                    Frames are analysed while your camera is running. Images are
-                    not saved or used for training.
+                    Photos are sent to Google’s AI service for identification. We save
+                    the result, not the photo.
                   </small>
                 </section>
                 <aside className="scan-notes scanner-guide">
@@ -914,7 +915,7 @@ export default function Dashboard() {
             <>
               <div className="page-heading"><h1>My history.</h1><p>Your scans, collection receipts and disputes.</p></div>
               <HistoryTabs view={historyView} onChange={(view) => { setHistoryView(view); setResult(null); }}>
-                {historyView === "scans" ? (result ? <div id="history-detail" className="history-detail-view"><button className="text-button" onClick={() => setResult(null)}>Back to scans</button>{resultPanel(result)}</div> : <HistoryList hideHeading items={history} onOpen={setResult} onRefresh={() => void refresh()} onScan={() => setPage("Identify waste")} onExport={exportHistory} notify={setMessage} />) : <ServiceHub page="My history" signedIn={Boolean(user)} onSignIn={() => setAuth(true)} notify={setMessage} onRefresh={() => void refresh()} onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }} />}
+                {historyView === "scans" ? (result ? <div id="history-detail" className="history-detail-view"><button className="text-button" onClick={() => setResult(null)}>Back to scans</button>{resultPanel(result)}</div> : <HistoryList hideHeading items={history} onOpen={(item)=>{setEditScanId(null);setResult(item)}} onRefresh={() => void refresh()} onScan={() => setPage("Identify waste")} onExport={exportHistory} notify={setMessage} />) : <ServiceHub onReviewScan={reviewScan} page="My history" signedIn={Boolean(user)} onSignIn={() => setAuth(true)} notify={setMessage} onRefresh={() => void refresh()} onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }} />}
               </HistoryTabs>
             </>
           )}
@@ -928,6 +929,7 @@ export default function Dashboard() {
             <ServiceHub
               page={page}
               onNavigate={(next) => { if (next === "My history") setHistoryView("collections"); setPage(next); }}
+              onReviewScan={reviewScan}
               initialScanId={pickupScanId}
               signedIn={Boolean(user)}
               onSignIn={() => setAuth(true)}

@@ -3,6 +3,7 @@ import {useId,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Eye,EyeOff,KeyRound,Leaf,Loader2,Mail,MailCheck,ShieldCheck,TriangleAlert} from 'lucide-react';
 import Dropdown from './dropdown';
 import styles from './auth-screens.module.css';
+import flow from './simple-flow.module.css';
 export type AuthMode='login'|'signup'|'forgot-password'|'send-signin'|'resend-verification';
 export type AuthFeedback={type:'success'|'error';text:string}|null;
 const copy={
@@ -38,10 +39,10 @@ export default function AuthDialogContent({mode,busy,feedback,accountType,onAcco
    {!emailOnly&&<PasswordField newPassword={mode==='signup'} helper={mode==='signup'} disabled={busy} action={mode==='login'?<button type="button" className={styles.link} disabled={busy} onClick={()=>onMode('forgot-password')}>Forgot password?</button>:undefined}/>}
    <button type="submit" className={styles.submit} disabled={busy}>{busy?<Loader2 className="spin" size={18}/>:<ArrowRight size={17}/>} {busy?'Please wait…':content.action}</button>
   </form>}
-  {!sent&&mode==='login'&&<div className={styles.options} aria-label="Other account options">
+  {!sent&&mode==='login'&&<details className={flow.details}><summary>More sign-in options</summary><div className={styles.options} aria-label="Other account options">
    <button type="button" className={styles.option} disabled={busy} onClick={()=>onMode('send-signin')}><Mail size={17}/><span><strong>Email a sign-in link</strong><small>Continue without a password</small></span></button>
    <button type="button" className={styles.option} disabled={busy} onClick={()=>onMode('resend-verification')}><ShieldCheck size={17}/><span><strong>Verify your email</strong><small>Request a new verification link</small></span></button>
-  </div>}
+  </div></details>}
   {!sent&&<div className={styles.footer}>{emailOnly?<button type="button" className={styles.link} disabled={busy} onClick={()=>onMode('login')}><ArrowLeft size={14}/>Back to sign in</button>:<><span>{mode==='signup'?'Already have an account?':'New to Waste Right?'}</span><button type="button" className={styles.link} disabled={busy} onClick={()=>onMode(mode==='signup'?'login':'signup')}>{mode==='signup'?'Sign in':'Create an account'}</button></>}</div>}
  </>;
 }

@@ -3,6 +3,7 @@ import { selectableWaste } from "@/lib/scan-safety";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, Loader2, Pencil, X } from "lucide-react";
+import flow from "./simple-flow.module.css";
 import Dropdown from "./dropdown";
 import type { Identification } from "@/lib/rules";
 import { serviceApi } from "@/lib/client-api";
@@ -26,6 +27,7 @@ export default function ConfirmationChecklist({
   notify,
   onRemoved,
   onSchedule,
+  startEditing = false,
 }: {
   id: string;
   identification: Identification;
@@ -34,8 +36,9 @@ export default function ConfirmationChecklist({
   notify: (text: string) => void;
   onRemoved?: () => void;
   onSchedule?: () => void;
+  startEditing?: boolean;
 }) {
-  const [editing, setEditing] = useState(false),
+  const [editing, setEditing] = useState(startEditing),
     [selected, setSelected] = useState(
       (identification.detected_items || []).flatMap((item, i) => selectableWaste(item) && item.classification !== "uncertain" ? [i] : []),
     ),
@@ -216,6 +219,8 @@ export default function ConfirmationChecklist({
           </label>
         ))}
       </div>
+      <div className={flow.editorSummary}><span>{material === "unknown" ? "Material needs review" : material.replaceAll("_", " ")}</span><span>{special === "no" ? "Everyday waste" : special === "yes" ? "Special handling" : "Handling needs review"}</span></div>
+      <details className={flow.details} open={confirmed || material === "unknown" || special === "unknown" ? true : undefined}><summary>Check material and condition</summary>
       <div className="editor-settings">
         <div className="editor-setting">
           <div>
@@ -279,6 +284,7 @@ export default function ConfirmationChecklist({
           </button>
         </div>
       </div>
+      </details>
       <footer>
         <p>
           By confirming, you’re checking that these details match your items.
@@ -298,7 +304,7 @@ export default function ConfirmationChecklist({
             type="button"
             className="primary"
             aria-label={
-              confirmed ? "Save item changes" : "Confirm & schedule pickup"
+              confirmed ? "Save item changes" : "Continue to pickup"
             }
             disabled={
               busy ||
@@ -315,7 +321,7 @@ export default function ConfirmationChecklist({
               ? "Saving…"
               : confirmed
                 ? "Save changes"
-                : "Confirm & continue"}
+                : "Continue to pickup"}
             {!confirmed && <ArrowRight size={16} />}
           </button>
         </div>

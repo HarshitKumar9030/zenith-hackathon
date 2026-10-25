@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import flow from "./simple-flow.module.css";
 import { LocateFixed, Loader2, MapPin } from "lucide-react";
 type Position = { latitude: number; longitude: number; accuracy: number };
 export default function LocationPicker({
@@ -71,7 +72,7 @@ export default function LocationPicker({
           e.code === 1
             ? hi
               ? "स्थान की अनुमति नहीं मिली। पता और इलाका खुद भरें।"
-              : "Location permission was denied. Enter your address and locality manually."
+              : position ? "Your saved location is unchanged. Update your address below." : "Location access was denied. You can enter your address below."
             : hi
               ? "स्थान नहीं मिला। फिर कोशिश करें या पता खुद भरें।"
               : "Could not find your location. Retry or enter your address manually.",
@@ -93,15 +94,15 @@ export default function LocationPicker({
         ) : (
           <LocateFixed size={17} />
         )}{" "}
-        {hi ? "मेरा स्थान चुनें" : "Use my location"}
+        {position ? (hi?"स्थान बदलें":"Update location") : hi ? "मेरा स्थान चुनें" : "Use my location"}
       </button>
       <small>
         {hi
           ? "आपकी अनुमति से एक बार स्थान लिया जाता है। सही मकान और इलाके का नाम नीचे भरें।"
-          : "Uses your device location once, with permission. Add your street address and locality below."}
+          : "Add a location pin, then enter your street address below."}
       </small>
       {position && (
-        <div className="location-result">
+        <details className={flow.details}><summary><MapPin size={15}/>{hi?"स्थान जुड़ा है":"Location added"} · ±{Math.round(position.accuracy)} m</summary><div className="location-result">
           <MapPin size={16} />
           <span>
             {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)} ·{" "}
@@ -125,7 +126,7 @@ export default function LocationPicker({
           >
             {hi ? "हटाएँ" : "Remove"}
           </button>
-        </div>
+        </div></details>
       )}
       {error && <p role="alert">{error}</p>}
     </div>
