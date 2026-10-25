@@ -13,6 +13,7 @@ const bookingId=z.string().regex(/^[a-f0-9]{24}$/);
 const payload=z.discriminatedUnion('action',[
  z.object({action:z.literal('create'),bookingId}),z.object({action:z.literal('pair'),code:z.string().regex(/^[a-f0-9]{24}$/)}),
  z.object({action:z.literal('heartbeat')}),
+ z.object({action:z.literal('start'),bookingId}),
  z.object({action:z.literal('stop'),bookingId:bookingId.optional()}),
  z.object({action:z.literal('update'),latitude:z.number(),longitude:z.number(),accuracy:z.number(),timestamp:z.number()}),
 ]);
@@ -48,6 +49,16 @@ export async function GET(req:Request){
 export async function POST(req:Request){
  try{
   checkOrigin(req);const data=payload.parse(await req.json());const d=await db(),tracks=d.collection<Track>('pickup_tracking');
+  if(data.action==='start'){
+   const user=await currentUser();
+   if(!user||roleFor(user)!=='collector')return reply({error:'Approved helper access required.'},403);
+   const assignment=await allowedAssignment(data.bookingId,String(user._id));
+   if(!assignment)return reply({error:'Only your assigned pickup can share location.'},403);
+   const token=randomBytes(32).toString('hex'),expiresAt=new Date(Date.now()+TRACKING_SESSION_MS);
+   await tracks.deleteMany({helperId:String(user._id)});
+   await tracks.replaceOne({_id:data.bookingId},{_id:data.bookingId,helperId:String(user._id),ownerId:assignment.ownerId,passwordVersion:hashToken(assignment.helper.password),tokenHash:hashToken(token),expiresAt},{upsert:true});
+   return reply({token,expiresAt});
+  }
   if(data.action==='create'){
    const user=await currentUser();if(!user||roleFor(user)!=='collector')return reply({error:'Approved helper access required.'},403);
    if(!await allowedAssignment(data.bookingId,String(user._id)))return reply({error:'Only your assigned pickup can be paired.'},403);
