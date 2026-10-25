@@ -58,6 +58,7 @@ export async function GET() {
                 email: 1,
                 role: 1,
                 collectorApproved: 1,
+                specialPickupApproved: 1,
                 accountType: 1,
                 collectorRequested: 1,
               },
@@ -66,7 +67,7 @@ export async function GET() {
           .limit(100)
           .toArray()
       : [];
-    return NextResponse.json({ jobs, users, role: roleFor(u) });
+    return NextResponse.json({ jobs, users, role: roleFor(u), specialPickupApproved: u.specialPickupApproved === true });
   } catch {
     return NextResponse.json(
       { error: "Operations unavailable." },
@@ -90,6 +91,7 @@ const schema = z.discriminatedUnion("action", [
     reference: z.string().min(5).max(150),
   }),
   z.object({ action: z.literal("approve_collector"), email: z.email() }),
+  z.object({action:z.literal("set_special_pickup"),email:z.email(),enabled:z.boolean()}),
   z.object({
     action: z.literal("claim"),
     residentId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -136,6 +138,12 @@ export async function POST(req: Request) {
       );
     const data = schema.parse(await req.json());
     const admin = roleFor(u) === "admin";
+    if(data.action === "set_special_pickup") {
+      if(!admin) throw new Error("Administrator access required.");
+      const result = await (await db()).collection("users").updateOne({email:data.email.toLowerCase(),role:"collector",collectorApproved:true},{$set:{specialPickupApproved:data.enabled}});
+      if(!result.matchedCount)throw new Error("Approve this helper before changing special-pickup access.");
+      return NextResponse.json({ok:true});
+    }
     if (data.action === "approve_collector") {
       if (!admin) throw new Error("Administrator access required.");
       const result = await (await db()).collection("users").updateOne(

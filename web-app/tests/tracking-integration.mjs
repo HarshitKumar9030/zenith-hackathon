@@ -7,7 +7,7 @@ import {createRequire} from 'node:module';
 createRequire(import.meta.url)('@next/env').loadEnvConfig(process.cwd());
 const port=3112,base=`http://localhost:${port}`,name=`tracking_qa_${Date.now()}`,hash=s=>createHash('sha256').update(s).digest('hex');
 const client=new MongoClient(process.env.MONGODB_URI||'mongodb://127.0.0.1:27017');await client.connect();const db=client.db(name);
-const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--port',String(port)],{env:{...process.env,MONGODB_DB:name,SMTP_PASSWORD:'',NODE_ENV:'production'},stdio:'ignore'});
+const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--port',String(port)],{env:{...process.env,MONGODB_DB:name,SMTP_PASSWORD:'',DEMO_AUTO_ASSIGN:'false',ADMIN_EMAILS:'ops@example.test',NODE_ENV:'production'},stdio:'ignore'});
 async function request(body,cookie='',token='',path='tracking'){
  const r=await fetch(`${base}/api/${path}`,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Origin:base,...(cookie?{Cookie:cookie}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};
 }
@@ -24,7 +24,7 @@ try{
  assert.equal((await request({action:'pair',code:create.data.code})).status,401);
  assert.equal((await request({action:'update',latitude:91,longitude:77.2,accuracy:10,timestamp:Date.now()},'',token)).status,400);
  assert.equal((await request({action:'update',latitude:28.6,longitude:77.2,accuracy:10,timestamp:Date.now()},'',token)).status,200);
- let live=await request(null,resident.cookie,'','tracking?bookingId='+id);assert.equal(live.data.state,'live');assert.ok(live.data.eta);assert.equal(live.data.point.latitude,28.6);
+ let live=await request(null,resident.cookie,'','tracking?bookingId='+id);assert.equal(live.data.state,'live');assert.ok(live.data.eta);assert.equal(live.data.point.latitude,28.6);assert.deepEqual(live.data.destination,{latitude:28.61,longitude:77.2});
  assert.equal((await request({action:'heartbeat'},'',token)).status,200);
  await db.collection('service_accounts').updateOne({_id:resident.id},{$set:{'bookings.0.status':'completed'}});
  assert.equal((await request({action:'heartbeat'},'',token)).status,409);
@@ -45,12 +45,20 @@ try{
  const scan=await db.collection('history').insertOne({userId:fresh.id,identification:{...shape,object_name:'16 bottles',material:'plastic',detected_items:Array.from({length:16},(_,i)=>({name:'bottle '+i,material:'plastic',classification:'waste',special_handling:'no'}))},confirmed:false});
  const confirmation=await request({id:String(scan.insertedId),material:'plastic',contaminated:'no',mixed_material:false,special_handling:'no',reviewed:true,selectedItems:Array.from({length:16},(_,i)=>i)},fresh.cookie,'','confirm');
  assert.equal(confirmation.status,200,JSON.stringify(confirmation.data));assert.equal(confirmation.data.item.identification.detected_items.length,16);
- const booking=await request({action:'book',requestId:crypto.randomUUID(),source:'basic',scanId:String(scan.insertedId),asap:true,date:'2000-01-01',window:'14:30',segregated:true},fresh.cookie,'','service');
- assert.equal(booking.status,200,JSON.stringify(booking.data));assert.equal(booking.data.result.asap,true);assert.equal(booking.data.result.surgeFeePaise,0);assert.notEqual(booking.data.result.date,'2000-01-01');
+ const tomorrow=new Date(Date.now()+86400000).toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
+ const mismatch=await request({action:'book',requestId:crypto.randomUUID(),source:'basic',scanId:String(scan.insertedId),asap:false,date:tomorrow,window:'17:30',segregated:true,quotedFeePaise:1000},fresh.cookie,'','service');assert.equal(mismatch.status,400);assert.match(mismatch.data.error,/pricing changed/);
+ const booking=await request({action:'book',requestId:crypto.randomUUID(),source:'basic',scanId:String(scan.insertedId),asap:true,date:'2000-01-01',window:'09:00',segregated:true},fresh.cookie,'','service');
+ assert.equal(booking.status,200,JSON.stringify(booking.data));assert.equal(booking.data.result.asap,true);assert.equal(booking.data.result.surgeFeePaise,Number(booking.data.result.window.slice(0,2))>=17?500:0);assert.notEqual(booking.data.result.date,'2000-01-01');
  await db.collection('service_accounts').updateOne({_id:fresh.id},{$set:{credits:1}});
- const included=await request({action:'book',requestId:crypto.randomUUID(),source:'reward',scanId:String(scan.insertedId),asap:true,date:'2000-01-01',window:'14:30',segregated:true},fresh.cookie,'','service');
- assert.equal(included.status,200,JSON.stringify(included.data));assert.equal(included.data.result.status,'assigned');assert.equal(included.data.result.collectorId,String(helper.id));
+ const future=new Date(Date.now()+86400000).toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
+ const included=await request({action:'book',requestId:crypto.randomUUID(),source:'reward',scanId:String(scan.insertedId),asap:false,date:future,window:'09:00',segregated:true},fresh.cookie,'','service');
+ assert.equal(included.status,200,JSON.stringify(included.data));assert.equal(included.data.result.status,'scheduled');assert.equal(included.data.result.collectorId,undefined);
+ const claimed=await request({action:'claim',residentId:String(fresh.id),id:included.data.result.id},helper.cookie,'','operations');assert.equal(claimed.status,200,JSON.stringify(claimed.data));
  const cancelled=await request({action:'cancel',id:included.data.result.id},fresh.cookie,'','service');assert.equal(cancelled.status,200,JSON.stringify(cancelled.data));
  const saved=await db.collection('service_accounts').findOne({_id:fresh.id});assert.equal(saved.credits,1);assert.equal(saved.bookings.find(b=>b.id===included.data.result.id).status,'cancelled');
- console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and ASAP booking without surge, automatic helper assignment and cancellation credit restoration.');
+ const admin=await user('admin');await db.collection('users').updateOne({_id:admin.id},{$set:{email:'ops@example.test',adminApproved:true}});
+ assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},helper.cookie,'','operations')).status,400);
+ assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},admin.cookie,'','operations')).status,200);
+ const helperState=await request(null,helper.cookie,'','operations');assert.equal(helperState.data.specialPickupApproved,true);
+ console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and restored service windows and surge, manual dispatch, cancellation credit restoration and administrator-only special pickup designation.');
 }finally{app.kill('SIGTERM');await db.dropDatabase();await client.close()}

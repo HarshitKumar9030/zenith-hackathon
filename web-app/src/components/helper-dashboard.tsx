@@ -22,7 +22,7 @@ const copy = {
   en: {
     title: "Your work. Clearly recorded.",
     intro:
-      "Collection jobs, measured handovers and payment records in one place.",
+      "Your collections and earnings.",
     language: "हिन्दी",
     refresh: "Refresh jobs",
     signin: "Sign in to your helper account",
@@ -81,7 +81,7 @@ const copy = {
   },
   hi: {
     title: "आपका काम। पूरा हिसाब।",
-    intro: "कचरा संग्रह, तौल की रसीद और भुगतान का रिकॉर्ड एक जगह।",
+    intro: "आपके संग्रह और कमाई।",
     language: "English",
     refresh: "काम फिर देखें",
     signin: "अपने सहायक खाते में साइन इन करें",
@@ -171,6 +171,7 @@ export default function HelperDashboard({
   const [lang, setLang] = useState<"en" | "hi">("en"),
     [jobs, setJobs] = useState<Job[]>([]),
     [approved, setApproved] = useState(false),
+    [specialPickup, setSpecialPickup] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [profile, setProfile] = useState({
@@ -194,6 +195,7 @@ export default function HelperDashboard({
       const result = await serviceApi("operations");
       setJobs(result.jobs);
       setApproved(true);
+      setSpecialPickup(result.specialPickupApproved === true);
       setError("");
     } catch (e) {
       const message=e instanceof Error?e.message:"";
@@ -243,7 +245,7 @@ export default function HelperDashboard({
                 : view === "Helper collections" ? (lang === "hi" ? "आपके संग्रह।" : "Your collections.") : t.title}
           </h1>
           <p>{t.intro}</p>
-          <p>{lang === "hi" ? "बेसिक संग्रह: सभी सामग्रियों के लिए 2 किलो तक।" : "Basic pickups: up to 2 kg for all materials, verified at weighing."}</p>
+          <div className={helperStyles.badges}><span className={helperStyles.badge}>{lang === "hi" ? "बेसिक · 2 किलो शामिल" : "Basic · 2 kg included"}</span>{approved&&specialPickup&&<span className={helperStyles.badge}><ShieldCheck size={14}/>{lang === "hi" ? "विशेष संग्रह सहायक" : "Special pickup helper"}</span>}</div>
         </div>
         <div className="inline-actions">
           <button
