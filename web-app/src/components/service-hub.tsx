@@ -25,24 +25,9 @@ import {
 import Dropdown from "./dropdown";
 import { PLANS } from "@/lib/catalog";
 import type { Account } from "@/lib/service";
+import {openWasteCheckout} from "@/lib/checkout-client";
 import { serviceApi } from "@/lib/client-api";
 export { serviceApi } from "@/lib/client-api";
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
-  }
-}
-async function loadCheckout() {
-  if (window.Razorpay) return;
-  await new Promise<void>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new Error("Checkout could not load. Check your connection."));
-    document.head.appendChild(script);
-  });
-}
 export default function ServiceHub({
   page,
   signedIn,
@@ -51,6 +36,7 @@ export default function ServiceHub({
   onRefresh,
   onNavigate,
   initialScanId,
+  onReviewScan,
 }: {
   page: string;
   signedIn: boolean;
@@ -59,6 +45,7 @@ export default function ServiceHub({
   onRefresh: () => void;
   onNavigate?: (page: string) => void;
   initialScanId?: string;
+  onReviewScan?: (id:string)=>void;
 }) {
   const [a, setAccount] = useState<Account | null>(null),
     [role, setRole] = useState("resident"),
@@ -111,50 +98,15 @@ export default function ServiceHub({
       setBusy(false);
     }
   }
-  async function checkout(plan: string, bookingId?: string) {
-    setBusy(true);
-    try {
-      const order = await serviceApi("payments/order", { plan, bookingId });
-      await loadCheckout();
-      new window.Razorpay!({
-        key: order.key,
-        order_id: order.orderId,
-        amount: order.amount,
-        currency: "INR",
-        name: "Waste Right",
-        description:
-          plan === "basic" ? "Basic waste pickup" : `${plan} one-month pass`,
-        prefill: { name: order.name, email: order.email },
-        theme: { color: "#5658A5" },
-        handler: async (data: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          try {
-            const verified = await serviceApi("payments/verify", {
-              orderId: data.razorpay_order_id,
-              paymentId: data.razorpay_payment_id,
-              signature: data.razorpay_signature,
-            });
-            await refresh();
-            onRefresh();
-            notify(
-              verified.outcome === "review_needed"
-                ? "Payment captured but needs Operations review before fulfillment."
-                : "Payment verified. Your service allowance has been updated.",
-            );
-          } catch (e) {
-            notify((e as Error).message);
-          }
-        },
-      }).open();
-    } catch (e) {
-      notify((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+  async function checkout(plan:string,bookingId?:string){
+    if(busy)return;setBusy(true);
+    try{
+      const result=await openWasteCheckout(plan,bookingId);
+      await refresh();onRefresh();
+      notify(result.paid?(result.outcome==='review_needed'?"Payment received. Operations will review it.":"Payment confirmed."):"Payment not completed. You can try again from this screen.");
+    }catch(e){notify((e as Error).message)}finally{setBusy(false)}
   }
+
   const bookings = a?.bookings || [];
   const titles: Record<string, [string, string]> = {
     Plans: [
@@ -281,6 +233,7 @@ export default function ServiceHub({
           {bookings.filter(b=>b.status === "assigned").map(b=><PickupTracking key={b.id} bookingId={b.id}/>)}
           <QuickPickup
             notify={notify}
+            onReview={onReviewScan}
             initialScanId={initialScanId}
             onScan={() => onNavigate?.("Identify waste")}
             onRecords={() => onNavigate?.("My history")}

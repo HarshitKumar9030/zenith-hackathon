@@ -1,4 +1,6 @@
 "use client";
+import flow from "./simple-flow.module.css";
+import {openWasteCheckout} from "@/lib/checkout-client";
 import ActionMoment from "./action-moment";
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -16,7 +18,6 @@ import { serviceApi } from "@/lib/client-api";
 import { PLANS } from "@/lib/catalog";
 import type { Account } from "@/lib/service";
 import PickupTimeInput from "./pickup-time-input";
-import WorkflowArt from "./workflow-art";
 import Dropdown from "./dropdown";
 import LocationPicker from "./location-picker";
 type Scan = {
@@ -31,6 +32,7 @@ export default function QuickPickup({
   onPlans,
   onScan,
   onBooked,
+  onReview,
 }: {
   scanId?: string;
   initialScanId?: string;
@@ -39,6 +41,7 @@ export default function QuickPickup({
   onPlans?: () => void;
   onScan?: () => void;
   onBooked?: () => void;
+  onReview?: (id:string)=>void;
 }) {
   const [account, setAccount] = useState<Account | null>(null),
     [scans, setScans] = useState<Scan[]>([]),
@@ -52,6 +55,9 @@ export default function QuickPickup({
     [error, setError] = useState(""),
     [booking, setBooking] = useState<Account["bookings"][number] | null>(null);
   const [bookingMotion, setBookingMotion] = useState(false);
+  const [checkoutAvailable,setCheckoutAvailable]=useState(false);
+  const form = useRef<HTMLFormElement>(null);
+  const [address,setAddress]=useState(""),[locality,setLocality]=useState("");
   const heading = useRef<HTMLHeadingElement>(null),
     requestId = useRef("");
   const reduce = useReducedMotion();
@@ -69,6 +75,8 @@ export default function QuickPickup({
       .then(([d, h]) => {
         if (!active) return;
         setAccount(d.account);
+        setCheckoutAvailable(d.checkoutAvailable===true);
+        setAddress(d.account.profile.address);setLocality(d.account.profile.locality);
         const items = h.items.filter(
           (s: { confirmed?: boolean }) => s.confirmed,
         );
@@ -151,15 +159,29 @@ export default function QuickPickup({
   const special =
     scans.find((s) => s._id === selectedScan)?.identification
       .special_handling !== "no";
+  async function pay(id:string){
+    const result=await openWasteCheckout("basic",id);
+    const fresh=await serviceApi("service");setAccount(fresh.account);setBooking(fresh.account.bookings.find((b:Account["bookings"][number])=>b.id===id)||null);onBooked?.();
+    notify(result.paid?(result.outcome==="review_needed"?"Payment received. Operations will review it.":"Payment confirmed. Your pickup is requested."):"Payment not completed. Your pickup is saved.");
+  }
   async function book(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!account) return;
+    if (!account || busy) return;
+    if(!selectedScan){onScan?.();return;}
+    if(special){if(onReview)onReview(selectedScan);else onRecords();return;}
+    if(!price.valid){setAutomatic(false);setError("Choose a collection time within our service hours.");return;}
     const f = new FormData(e.currentTarget);
     const submittedTime = String(f.get("pickupTime") || time);
     if (submittedTime !== time) {
       setTime(submittedTime);
       setError("Review the price for your updated time, then confirm.");
       return;
+    }
+    const street=String(f.get("address")||"").trim(),area=String(f.get("locality")||"").trim();
+    if(street.length<8||area.length<2){
+      const field=form.current?.elements.namedItem(street.length<8?"address":"locality") as HTMLElement|null;
+      const details=field?.closest("details");if(details)details.open=true;
+      field?.focus();setError("Add your full street address and locality so your helper can find you.");return;
     }
     setBusy(true);
     setError("");
@@ -192,6 +214,7 @@ export default function QuickPickup({
       setBookingMotion(true);
       if (d.account) setAccount(d.account);
       onBooked?.();
+      if(d.result.status === "payment_due" && checkoutAvailable){await pay(d.result.id);return;}
       notify(
         ["scheduled", "assigned"].includes(d.result.status)
           ? "Pickup requested."
@@ -209,16 +232,16 @@ export default function QuickPickup({
   const money = (v: number) =>
     `₹${(v / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
   return (
-    <section className="booking-composer" aria-label="Schedule this scan">
+    <section className={`booking-composer ${flow.booking}`} aria-label="Schedule this scan">
       <div
         className={
           scanId ? "booking-heading" : "booking-heading screen-reader-only"
         }
       >
         <h2 ref={heading} tabIndex={-1}>
-          Schedule this pickup
+          Book a pickup
         </h2>
-        <p>Your items, your time. See the full price before you book.</p>
+        <p>Choose when and where. We’ll handle the weighing.</p>
       </div>
       {booking ? (
         <div className="booking-complete">
@@ -256,15 +279,12 @@ export default function QuickPickup({
           </p>
           {booking.status === "payment_due" ? (
             <p>
-              Your pickup is saved. Continue to your pickup record to pay and
-              schedule the collection.
+              {checkoutAvailable?"Complete payment to request collection.":"Your pickup is saved. Payments are currently unavailable; it has not been scheduled."}
             </p>
           ) : (
             <p>Track your pickup and collection receipt in one place.</p>
           )}
-          <button className="primary" type="button" onClick={onRecords}>
-            View in My history <ArrowRight size={16} />
-          </button>
+          {booking.status==="payment_due" && checkoutAvailable ? <button className="primary" type="button" disabled={busy} onClick={()=>{setBusy(true);void pay(booking.id).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>{busy?"Opening payment…":`Pay ${money(booking.feePaise||0)}`} <ArrowRight size={16}/></button> : <button className="primary" type="button" onClick={onRecords}>View pickup <ArrowRight size={16}/></button>}
           {!scanId && (
             <button
               className="text-button"
@@ -279,12 +299,16 @@ export default function QuickPickup({
             </button>
           )}
         </div>
+      ) : account && !scans.length ? (
+        <div className={flow.empty}><h3>Start with a quick scan.</h3><p>Show us your waste, confirm the items, then choose a pickup.</p><button type="button" className="primary" onClick={onScan}>Scan waste <ArrowRight size={17}/></button></div>
       ) : account ? (
-        <form className="booking-workspace" onSubmit={book}>
+        <form ref={form} className="booking-workspace" onSubmit={book} noValidate aria-busy={busy}>
+          <fieldset disabled={busy} style={{display:"contents",border:0,padding:0,margin:0}}>
+
           <div className="booking-fields">
             <div className="booking-section">
               <div className="collection-section-heading">
-                <h3>What are we collecting?</h3>
+                <h3>Your items</h3>
                 {!scanId && previous && (
                   <button
                     type="button"
@@ -331,7 +355,7 @@ export default function QuickPickup({
               {funding === "membership" ? <p className="weight-note">We segregate your waste. Sorting is included in your {planName} plan.</p> : <>
               <div className="packing-choice">
                 <div className="field">
-                  <span>How is it packed?</span>
+                  <span>Is your waste separated?</span>
                   <div
                     className="choice-tabs"
                     role="radiogroup"
@@ -339,7 +363,7 @@ export default function QuickPickup({
                   >
                     {[
                       { value: true, label: "Separated" },
-                      { value: false, label: "Unsegregated" },
+                      { value: false, label: "Mixed together" },
                     ].map((o) => (
                       <button
                         type="button"
@@ -364,20 +388,19 @@ export default function QuickPickup({
               <small>
                 {segregated
                   ? "Keep food waste and dry materials in separate bags."
-                  : "Your helper weighs it. Sorting is ₹5/kg, billed after you approve the receipt."}
+                  : "Mixed waste is sorted at our hub for ₹5/kg after weighing."}
               </small></>}
               <p className="weight-note">
-                No weighing needed at home. Your helper records the weight at
-                collection. This pickup includes {cap} kg; extra weight costs ₹3/kg after weighing.
+                {cap} kg included. Your helper weighs it; extra weight costs ₹3/kg.
               </p>
             </div>
             <div className="booking-section">
-              <h3>When should we come?</h3>
+              <h3>Pickup time</h3>
               <div className="choice-tabs" role="group" aria-label="Pickup timing">
-                <button type="button" aria-pressed={automatic} onClick={()=>{const next=nextPickupSlot();setTime(next.time);setPickupDate(next.date);setAutomatic(true)}}>Next available helper</button>
+                <button type="button" aria-pressed={automatic} onClick={()=>{const next=nextPickupSlot();setTime(next.time);setPickupDate(next.date);setAutomatic(true)}}>Next available</button>
                 <button type="button" aria-pressed={!automatic} onClick={()=>setAutomatic(false)}>Choose a time</button>
               </div>
-              {automatic ? <><input type="hidden" name="date" value={pickupDate}/><input type="hidden" name="pickupTime" value={time}/><p>Next request window: {pickupDate} · {pickupTimeLabel(time)} IST. Arrival remains pending until your helper accepts and shares a fresh location. Collections run 7 am–2 pm and 5–7 pm, with a 2–5 pm break. Evening charges are ₹5–₹7.</p></> : <div className="service-columns">
+              {automatic ? <><input type="hidden" name="date" value={pickupDate}/><input type="hidden" name="pickupTime" value={time}/><p>{new Date(pickupDate+"T12:00:00+05:30").toLocaleDateString("en-IN",{day:"numeric",month:"short",timeZone:"Asia/Kolkata"})} · {pickupTimeLabel(time)} IST. Your helper confirms arrival.</p></> : <div className="service-columns">
                 <label className="field">
                   Collection date
                   <input
@@ -390,7 +413,6 @@ export default function QuickPickup({
                     max={day(30)}
                   />
                 </label>
-                <p className="muted">Your helper’s live location will provide an arrival estimate after assignment. You can choose your preferred time below.</p>
                 <PickupTimeInput
                   value={time}
                   onChange={setTime}
@@ -406,9 +428,9 @@ export default function QuickPickup({
               <summary>
                 <MapPin size={18} />
                 <span>
-                  {account.profile.address || "Add your collection address"}
+                  {address || "Where should we collect?"}
                   <small>
-                    {account.profile.locality ||
+                    {locality ||
                       "Use your location or enter an address"}
                   </small>
                 </span>
@@ -423,7 +445,9 @@ export default function QuickPickup({
                   minLength={8}
                   maxLength={500}
                   rows={2}
-                  defaultValue={account.profile.address}
+                  value={address}
+                  onChange={e=>{setAddress(e.target.value);setError("")}}
+                  autoComplete="street-address"
                 />
               </label>
               <label className="field">
@@ -433,31 +457,29 @@ export default function QuickPickup({
                   required
                   minLength={2}
                   maxLength={100}
-                  defaultValue={account.profile.locality}
+                  value={locality}
+                  onChange={e=>{setLocality(e.target.value);setError("")}}
+                  autoComplete="address-level2"
                 />
               </label>
             </details>
           </div>
           <aside className="booking-price">
-            <WorkflowArt scene="pickup" className="booking-art" />
             <div className="plan-at-booking">
               <span>Your plan</span>
               <strong>
                 {planName}
-                {!plan && " · Pay as you go"}
               </strong>
               <p>
                 {plan
                   ? `${plan.remainingPickups} pickups · ${plan.remainingKg} kg left`
                   : `₹${PLANS.basic.price} per pickup · Up to ${PLANS.basic.perPickupKg} kg`}
               </p>
-              <button type="button" className="text-button" onClick={onPlans}>
-                {plan ? "View plan" : "Explore Gold & Platinum"}
-                <ArrowRight size={14} />
-              </button>
+
             </div>
+            {(account.credits>0 || plan?.remainingPickups>0) && <details className={flow.details}><summary>{funding==="membership"?"Using your plan":funding==="reward"?"Using a free pickup":"Pay per pickup"} · Change</summary>
             <div className="field">
-              <label>Use for this pickup</label>
+              <label>Payment option</label>
               <Dropdown
                 label="Quick pickup funding"
                 value={funding}
@@ -483,9 +505,9 @@ export default function QuickPickup({
                 ]}
               />
             </div>
+            </details>}
             <div className="automatic-price" aria-live="polite">
-              <h3>Your price</h3>
-              <p>Extra weight above the included allowance: ₹3/kg, measured by your helper.</p>
+              <h3>Pickup summary</h3>
               <dl>
                 <div>
                   <dt>
@@ -519,21 +541,21 @@ export default function QuickPickup({
               <small>
                 {price.valid
                   ? price.sortingPending
-                    ? "Sorting is added at ₹5/kg after the helper weighs your waste and you approve the receipt."
-                    : price.sortingIncluded ? "Segregation is included. Your helper confirms the weight at collection." : "Your helper confirms the weight at collection."
+                    ? "You approve any weight-based charges after collection."
+                    : price.sortingIncluded ? "Sorting is included. Extra weight is ₹3/kg after your approval." : "Extra weight is ₹3/kg after your approval."
                   : "Choose an available pickup time."}
               </small>
             </div>
             {special && selectedScan && (
-              <p role="status">
-                This scan needs a special-handling check. Review the item or
-                open Help before booking.
+              <p role="status" className={flow.notice}>
+                This scan needs a handling check. Review the item details to continue.
               </p>
             )}
             <button
               className="primary booking-submit"
-              aria-label="Request this pickup"
-              disabled={busy || !selectedScan || !price.valid || special}
+              aria-label={!selectedScan?"Scan waste":special?"Review item details":!price.valid?"Choose pickup time":"Request this pickup"}
+              disabled={busy}
+              aria-describedby={error?"booking-error":undefined}
             >
               {busy ? (
                 <Loader2 className="spin" size={18} />
@@ -542,22 +564,23 @@ export default function QuickPickup({
               )}{" "}
               {busy
                 ? "Saving…"
-                : !price.valid
-                  ? "Choose a pickup time"
+                : !selectedScan ? "Scan waste" : special ? "Review item details" : !price.valid
+                  ? "Choose a time"
                   : price.totalPaise > 0
-                    ? `Confirm pickup · ${money(price.totalPaise)}`
-                    : "Confirm included pickup"}
+                    ? checkoutAvailable ? `Continue to payment · ${money(price.totalPaise)}` : `Save pickup · ${money(price.totalPaise)}`
+                    : "Book included pickup"}
             </button>
             <small>
               A helper accepts your request before collection.
             </small>
           </aside>
+          </fieldset>
         </form>
       ) : !error ? (
         <p>Loading your pickup options…</p>
       ) : null}
       {error && (
-        <p role="alert" className="service-notice">
+        <p role="alert" className={flow.error} id="booking-error">
           {error}
         </p>
       )}
