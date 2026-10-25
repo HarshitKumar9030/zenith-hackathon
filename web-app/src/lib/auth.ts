@@ -1,3 +1,4 @@
+import {unverifiedSignupAllowed} from "./production";
 import { randomBytes, createHash, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies, headers } from "next/headers";
@@ -31,9 +32,10 @@ export async function currentUser() {
     expiresAt: { $gt: new Date() },
   });
   if (!session) return null;
-  return database
+  const user = await database
     .collection("users")
     .findOne({ _id: session.userId }, { projection: { password: 0 } });
+  return !unverifiedSignupAllowed() && !user?.emailVerifiedAt ? null : user;
 }
 export async function createSession(userId: unknown, method = "Password") {
   const token = randomBytes(32).toString("hex");

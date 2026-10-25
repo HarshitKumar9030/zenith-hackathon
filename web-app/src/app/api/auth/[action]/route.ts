@@ -1,3 +1,4 @@
+import {unverifiedSignupAllowed} from "@/lib/production";
 import { issueEmailToken, consumeEmailToken, type EmailPurpose } from "@/lib/email-auth";
 import { emailConfigured } from "@/lib/email";
 import { NextResponse } from "next/server";
@@ -32,7 +33,7 @@ export async function GET() {
     });
   } catch {
     return NextResponse.json(
-      { error: "MongoDB is unavailable. Start your local database." },
+      { error: "The account service is temporarily unavailable. Please try again." },
       { status: 503 },
     );
   }
@@ -102,6 +103,7 @@ export async function POST(
         { status: 429 },
       );
     if (action === "signup") {
+      if(!emailConfigured()&&!unverifiedSignupAllowed())return NextResponse.json({error:"Account creation is temporarily unavailable. Please try again later."},{status:503});
       const user = await database.collection("users").insertOne({
         email,
         name: data.name || email.split("@")[0],
@@ -132,7 +134,7 @@ export async function POST(
           { error: "Email or password is incorrect." },
           { status: 401 },
         );
-      if (user.emailVerificationRequired && !user.emailVerifiedAt)
+      if ((user.emailVerificationRequired || !unverifiedSignupAllowed()) && !user.emailVerifiedAt)
         return NextResponse.json({ error: "Verify your email before signing in. Use Resend verification if needed." }, { status: 403 });
       await createSession(user._id);
     }
@@ -149,7 +151,7 @@ export async function POST(
         { status: 409 },
       );
     return NextResponse.json(
-      { error: "Unable to authenticate. Check your local MongoDB connection." },
+      { error: "Unable to sign in right now. Please try again shortly." },
       { status: 503 },
     );
   }

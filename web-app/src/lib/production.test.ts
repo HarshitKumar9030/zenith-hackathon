@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {unverifiedSignupAllowed} from './production';
+test('production signup cannot silently skip email verification',()=>{assert.equal(unverifiedSignupAllowed({NODE_ENV:'production'}),false);assert.equal(unverifiedSignupAllowed({NODE_ENV:'production',ALLOW_UNVERIFIED_SIGNUP:'false'}),false);assert.equal(unverifiedSignupAllowed({NODE_ENV:'development'}),true);assert.equal(unverifiedSignupAllowed({NODE_ENV:'production',ALLOW_UNVERIFIED_SIGNUP:'true'}),true)});
