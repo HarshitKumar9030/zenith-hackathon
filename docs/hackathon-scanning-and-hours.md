@@ -1,15 +1,23 @@
-# Hackathon scan and collection policy
+# Current scanning, collection hours and pricing
 
-The image/text identification request explicitly asks for up to 16 distinct objects in the same scene. Each object is labelled waste, not waste, or uncertain. People, faces, body parts and animals are excluded by the model instruction; an additional server guard removes human-labelled items. Non-waste objects are disabled in review and rejected by confirmation on the server. Uncertain objects require the user to actively select them. Empty results cannot be confirmed or earn scan rewards. Missing classification is treated as uncertain.
+Restored on 25 October 2026 after the hackathon demonstration.
 
-This is application support for 16 objects, not a measured claim that every photograph will identify all 16 correctly. Occlusion, lighting and incorrect AI labels still require user review; no new multi-object model benchmark was run.
+## Scanning
 
-During the hackathon only, booking accepts any minute from 00:00 through 23:59 IST. The 2–5 pm break and all evening surge charges are disabled in pricing and server validation. Existing historical receipts retain their original recorded amounts. New bookings default to **Next available helper**. Arrival stays pending until a helper is assigned and shares a fresh fix. The server records the earliest requested time five minutes ahead, including date rollover; this is queue timing, not a promised arrival. Users can switch to Choose a time; that form initializes 15 minutes ahead and requires a future appointment within 30 days. Once assigned, a fresh helper location supplies the separate live approximate arrival range described in `helper-location-tracking.md`.
+Image/text identification supports up to 16 distinct objects in one scene. Waste, non-waste and uncertainty flags remain active. People are excluded by the prompt and a server label filter; non-waste/empty results cannot be confirmed, and uncertain objects require user selection. This is application support, not a measured claim of perfect 16-object recognition.
 
-Basic stays at its existing price and 2 kg allowance. Existing measured sorting/excess-weight rules remain in effect. The hackathon time policy does not imply guaranteed helper availability around the clock.
+The optional **Read packaging labels** control and separate English OCR worker are restored in the live camera. OCR is off until the user enables it. Automatic scanning and front/back camera switching remain available.
 
-## Automatic helper assignment
+## Collection hours and prices
 
-Hackathon dispatch automatically assigns any approved helper account to a pickup once it becomes scheduled. It ignores distance, shifts and helper workload for the demonstration. Included/reward pickups assign on booking; paid pickups assign after verified payment capture. Pending payment is never silently marked paid. If no approved helper exists, the real pickup remains scheduled for manual assignment rather than inventing a collector. `DEMO_AUTO_ASSIGN=false` disables this shortcut. The repeated availability/payment disclaimer is replaced with a short automatic-assignment note. Live GPS and ETA still require that actual assigned helper to pair and start sharing.
+Collections run 7 am to before 2 pm, then 5–7 pm IST. The 2–5 pm break is restored, with no overnight bookings. Evening charges are ₹5 + ₹1 for unsegregated Basic/reward waste + ₹1 when measured weight exceeds 2 kg, capped at ₹7. Gold/Platinum include sorting, so the unsegregated penalty does not apply to their allowance pickups. Existing recorded orders/receipts are not rewritten.
 
-The live camera’s optional “Read packaging labels” control and its separate OCR worker are temporarily removed. Live scans send the captured frame directly for identification. Automatic scanning and front/back camera switching are unchanged.
+Basic remains ₹10 with 2 kg included. Gold is restored to ₹399/month (14 pickups, 8 kg each), Platinum to ₹469/month (24 pickups, 10 kg each). The separate helper-measured ₹3/kg excess-weight rule remains. Prices are pilot terms, not evidence of profitable operation.
+
+**Next available** selects the next valid service window, skipping the break and overnight closure. It is a requested collection window, not a promised helper arrival. Live arrival ranges remain pending until the assigned helper shares a fresh, sufficiently accurate location. Users can choose a future service time within 30 days.
+
+## Dispatch and special pickups
+
+Automatic assignment to an arbitrary helper is disabled by default and explicitly disabled in the local environment. Approved helpers accept scheduled jobs; paid jobs enter that queue only after verified payment capture. `DEMO_AUTO_ASSIGN=true` is an explicit opt-in demo shortcut, never the regular default.
+
+Helper headings now say “Your collections and earnings”, with a compact “Basic · 2 kg included” badge. Operations administrators can enable/disable a **Special pickup helper** designation on approved helper accounts. The existing single approved local helper has been designated as requested. This application designation is not a professional certification or government authorization, and does not bypass the existing special-handling review requirement for booking.

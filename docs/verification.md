@@ -72,3 +72,14 @@ The new `node tests/email-auth-integration.mjs` suite passed against a local TLS
 Gold and Platinum now cost ₹1 each in the shared catalog used by display and server-side checkout. Basic remains ₹10 per pickup. This is the requested hackathon price, not validated unit economics. Existing paid orders and active entitlements are not rewritten. Manage plan now navigates through a real link to the Plans screen, which displays current allowance, expiry and manual renewal terms.
 
 Browser checks with a mock membership passed at 1440px and 390px: Manage plan navigation, both ₹1 prices, aligned price baselines, a 32px gap below the active-pass summary, and no horizontal mobile overflow. Signed-out browser checks covered Plans navigation, Forgot password and email sign-in controls. Desktop and mobile screenshots were visually inspected. Final TypeScript, production build, all 39 unit tests, email integration and service integration checks passed. No real payment, reset email or signup email was sent during these checks.
+
+
+## 25 October 2026 — regular service restoration and live map
+
+Gold/Platinum restored to ₹399/₹469; Basic remains ₹10. Service windows and ₹5–₹7 evening pricing restored. Next-available scheduling skips the break and overnight closure. Arbitrary demo dispatch is now opt-in and disabled locally. Live-camera label OCR is restored. Existing paid order amounts are preserved.
+
+Live map verified at desktop width and 390×844 using a temporary development-only preview with synthetic coordinates. Both markers and OSM attribution rendered; new-fix updates, approximate/stale states, destination removal/restoration, panning/follow/recenter and phone layout were checked. The temporary preview route was removed. Screenshots: `/tmp/waste-right-live-map-desktop.png`, `/tmp/waste-right-live-map-mobile.png`. No real helper location was captured and no real phone background GPS run was performed.
+
+Operations now exposes an administrator-only special-pickup designation and the helper dashboard shows its badge. The existing single approved local helper was designated at the user's request. This does not bypass special-handling review or certify hazardous-waste training.
+
+TypeScript, 53 unit tests, production build, isolated tracking/service integrations passed before final cleanup; the service integration ran with `QA_SKIP_BROWSER=1`, while UI verification used the app browser. Final cleanup is followed by another production build. Tests use isolated MongoDB databases and synthetic data, with external email disabled.
