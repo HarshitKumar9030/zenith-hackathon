@@ -11,14 +11,22 @@ const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--p
 async function request(body,cookie='',token='',path='tracking'){
  const r=await fetch(`${base}/api/${path}`,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Origin:base,...(cookie?{Cookie:cookie}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};
 }
-async function user(role){const id=new ObjectId(),token=randomBytes(32).toString('hex');await db.collection('users').insertOne({_id:id,email:`${id}@example.test`,password:'qa-password-version',role,collectorApproved:role==='collector'});await db.collection('sessions').insertOne({_id:hash(token),userId:id,expiresAt:new Date(Date.now()+600000)});return {id,cookie:`ww_session=${token}`}}
+async function user(role){const id=new ObjectId(),token=randomBytes(32).toString('hex');await db.collection('users').insertOne({_id:id,email:`${id}@example.test`,password:'qa-password-version',emailVerifiedAt:new Date(),role,collectorApproved:role==='collector'});await db.collection('sessions').insertOne({_id:hash(token),userId:id,expiresAt:new Date(Date.now()+600000)});return {id,cookie:`ww_session=${token}`}}
 try{
  for(let i=0;i<80;i++){try{if((await fetch(base+'/api/auth/session')).ok)break}catch{}await new Promise(r=>setTimeout(r,250));if(i===79)throw Error('QA app failed to start')}
+ const security=await fetch(base+'/api/auth/session');assert.equal(security.headers.get('x-content-type-options'),'nosniff');assert.match(security.headers.get('cache-control')||'',/no-store/);assert.match(security.headers.get('content-security-policy')||'',/frame-ancestors 'none'/);
+ const blockedSignup=await request({name:'Launch check',email:'unverified@example.test',password:'qa-password-1234',accountType:'user'},'','','auth/signup');assert.equal(blockedSignup.status,503);assert.equal(await db.collection('users').countDocuments({email:'unverified@example.test'}),0);
+ const legacyUser=await user('resident');await db.collection('users').updateOne({_id:legacyUser.id},{$unset:{emailVerifiedAt:''}});assert.equal((await request(null,legacyUser.cookie,'','auth/session')).data.user,null);
  const resident=await user('resident'),helper=await user('collector'),stranger=await user('resident'),id=new ObjectId().toString();
  await db.collection('service_accounts').insertOne({_id:resident.id,profile:{location:{latitude:28.61,longitude:77.2}},bookings:[{id,status:'assigned',collectorId:String(helper.id),item:'QA bottle'}]});
  assert.equal((await request(null,'','','tracking?bookingId='+id)).status,401);
  assert.equal((await request(null,stranger.cookie,'','tracking?bookingId='+id)).status,404);
  assert.equal((await request({action:'create',bookingId:id},resident.cookie)).status,403);
+ assert.equal((await request({action:'start',bookingId:id},resident.cookie)).status,403);
+ assert.equal((await request({action:'start',bookingId:id},stranger.cookie)).status,403);
+ const browser=await request({action:'start',bookingId:id},helper.cookie);assert.equal(browser.status,200);assert.match(browser.data.token,/^[a-f0-9]{64}$/);
+ assert.equal((await request({action:'update',latitude:28.6,longitude:77.2,accuracy:12,timestamp:Date.now()},'',browser.data.token)).status,200);
+ assert.equal((await request({action:'stop'},'',browser.data.token)).status,200);
  const create=await request({action:'create',bookingId:id},helper.cookie);assert.equal(create.status,200);
  const pair=await request({action:'pair',code:create.data.code});assert.equal(pair.status,200);const token=pair.data.token;
  assert.equal((await request({action:'pair',code:create.data.code})).status,401);

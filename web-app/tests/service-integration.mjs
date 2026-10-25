@@ -25,6 +25,7 @@ const server = spawn(
     env: {
       ...process.env,
       NODE_ENV: "production",
+      ALLOW_UNVERIFIED_SIGNUP: "true", // Isolated test accounts; never enable for a public deployment.
       SMTP_PASSWORD: "", // Service QA never sends real email.
       MONGODB_DB: testDb,
       ADMIN_EMAILS: adminEmail,

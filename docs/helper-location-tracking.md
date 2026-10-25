@@ -1,6 +1,6 @@
 # Helper location tracking and Android demo
 
-The Android companion shares location only after an approved helper pairs an assigned pickup, grants location/notification permission, and taps **Start sharing**. A visible foreground notification includes Stop. English and Hindi are supported. Residents see only their assigned helper. There is no public helper-location directory.
+The website now offers a one-button **Share location** action for foreground tracking; the Android companion remains available for background sharing. Both require explicit permission and an active assignment. The Android companion shares location only after an approved helper pairs an assigned pickup, grants location/notification permission, and taps **Start sharing**. A visible foreground notification includes Stop. English and Hindi are supported. Residents see only their assigned helper. There is no public helper-location directory.
 
 ## Install and pair
 
@@ -20,3 +20,6 @@ Verification: `npm test`, `npm run build`, and `node tests/tracking-integration.
 
 
 Implementation references: [Leaflet 1.9.4 API](https://leafletjs.com/reference.html), [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/). The default tile service is best effort, with no uptime guarantee; use a contracted tile provider before production-scale traffic. Precise GPS accuracy and Android background delivery still require physical-device testing. The map does not promise Apple Find My accuracy.
+
+
+Browser sharing setup and lifecycle tests are documented in [production readiness](production-readiness.md). Browser tokens stay in memory, Stop/navigation clear the watcher and attempt session revocation, and failed permission/setup never starts a watcher. Keep the web screen open; use Android for background operation.
