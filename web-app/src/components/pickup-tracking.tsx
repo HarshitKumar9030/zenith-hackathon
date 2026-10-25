@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState} from 'react';
 import {Copy,MapPin,ShieldCheck,Smartphone,Square} from 'lucide-react';
+import LivePickupMap, {type Destination} from "./live-pickup-map";
 import {type TrackingPoint} from '@/lib/tracking';
 import styles from './pickup-tracking.module.css';
 async function api(bookingId:string,body?:unknown){
@@ -8,7 +9,8 @@ async function api(bookingId:string,body?:unknown){
  const data=await r.json();if(!r.ok)throw new Error(data.error||'Tracking is unavailable.');return data;
 }
 export function PickupTracking({bookingId}:{bookingId:string}){
- const [data,setData]=useState<{state:string;eta?:{minMinutes:number;maxMinutes:number}|null;point?:TrackingPoint|null}|null>(null),[error,setError]=useState(''),[now,setNow]=useState(Date.now());
+ const [showMap,setShowMap]=useState(false);
+ const [data,setData]=useState<{state:string;destination?:Destination|null;eta?:{minMinutes:number;maxMinutes:number}|null;point?:TrackingPoint|null}|null>(null),[error,setError]=useState(''),[now,setNow]=useState(Date.now());
  useEffect(()=>{let cancelled=false;let timer:ReturnType<typeof setTimeout>;
   const poll=async()=>{try{const value=await api(bookingId);if(!cancelled){setData(value);setError('');setNow(Date.now())}}catch(e){if(!cancelled){setError((e as Error).message);setNow(Date.now())}}finally{if(!cancelled)timer=setTimeout(()=>void poll(),5000)}};
   void poll();return()=>{cancelled=true;clearTimeout(timer)};
@@ -18,7 +20,8 @@ export function PickupTracking({bookingId}:{bookingId:string}){
  return <section className={styles.card} aria-label="Pickup tracking"><header><div className={styles.icon}><MapPin size={22}/></div><div><h3>Your helper’s location</h3><p role="status">{status}</p></div></header>
   {data?.eta && point && age<=30 && !error ? <p><strong>Estimated arrival: {data.eta.minMinutes}–{data.eta.maxMinutes} minutes</strong><br/><small>Based on your helper’s current distance. Approximate; road routes and traffic are not included.</small></p> : <p className={styles.note}>Arrival estimate pending a fresh, precise helper location and saved collection coordinates.</p>}
   {point?<><div className={styles.metrics}><div><strong>±{Math.ceil(point.accuracy)} m</strong><span>Device-reported accuracy</span></div><div><strong>{age<5?'Just now':`${age}s ago`}</strong><span>Last GPS fix</span></div></div>
-   <p className={styles.note}>Map view is disabled for this demo. Live location status and arrival estimates remain available.</p>
+   {age<=120 && (showMap ? <><LivePickupMap point={point} destination={data?.destination} stale={age>30||Boolean(error)}/><button type="button" className={styles.link} onClick={()=>setShowMap(false)}>Hide map</button></> : <button type="button" className={styles.button} onClick={()=>setShowMap(true)}><MapPin size={16}/>View live map</button>)}
+   <p className={styles.note}>The circle shows your helper’s reported GPS accuracy. Map tiles load from OpenStreetMap when you open the map.</p>
   </>:<p className={styles.note}>{data?.state==='ended'?'Sharing is available only while your pickup is assigned.':'Your helper can share their location using the Android app. It appears here after sharing starts.'}</p>}
   {error&&<p className={styles.note} role="alert">{error} Last known positions are not a live fix.</p>}
  </section>;

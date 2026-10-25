@@ -39,8 +39,10 @@ export async function GET(req:Request){
   if(!permitted||hashToken(permitted.helper.password)!==t.passwordVersion){await tracks.deleteOne({_id:id});return reply({state:'ended'});}
   const point=t.point&&Date.now()-t.point.timestamp<=120000?t.point:null;
   const account=await (await db()).collection('service_accounts').findOne({_id:new ObjectId(b.ownerId)},{projection:{'profile.location':1}});
-  const eta=point?estimateArrival(point,b.job.location||account?.profile?.location||null):null;
-  return reply({eta,state:point?trackingQuality(point):'waiting',point,receivedAt:t.receivedAt||null,expiresAt:t.expiresAt});
+  const rawDestination=b.job.location||account?.profile?.location||null;
+  const destination=rawDestination&&[rawDestination.latitude,rawDestination.longitude].every(Number.isFinite)&&Math.abs(rawDestination.latitude)<=90&&Math.abs(rawDestination.longitude)<=180?{latitude:rawDestination.latitude,longitude:rawDestination.longitude}:null;
+  const eta=point?estimateArrival(point,destination):null;
+  return reply({destination,eta,state:point?trackingQuality(point):'waiting',point,receivedAt:t.receivedAt||null,expiresAt:t.expiresAt});
  }catch{return reply({error:'Tracking is temporarily unavailable.'},400);}
 }
 export async function POST(req:Request){
