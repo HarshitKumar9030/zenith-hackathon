@@ -1,8 +1,50 @@
-import {test} from 'node:test';
-import assert from 'node:assert/strict';
-import {validPickupTime,surgeTime,pickupTimeLabel,pickupSurgePaise} from './pickup-time';
-test('hackathon pickups accept all 24 hours including the former break',()=>{
- for(const t of ['00:00','06:59','14:00','16:59','19:01','23:59'])assert.equal(validPickupTime(t),true,t);
- for(const t of ['24:00','07:60','7:00','09:00–12:00',''])assert.equal(validPickupTime(t),false,t);
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  validPickupTime,
+  surgeTime,
+  pickupTimeLabel,
+  pickupSurgePaise,
+} from "./pickup-time";
+test("pickup times allow exact minutes within service hours and exclude the break", () => {
+  for (const time of ["07:00", "09:37", "13:59", "17:00", "18:43", "19:00"])
+    assert.equal(validPickupTime(time), true, time);
+  for (const time of [
+    "06:59",
+    "14:00",
+    "14:35",
+    "16:59",
+    "19:01",
+    "23:00",
+    "07:60",
+    "7:00",
+    "09:00–12:00",
+  ])
+    assert.equal(validPickupTime(time), false, time);
 });
-test('no time or sorting combination adds surge',()=>{for(const t of ['00:00','14:30','17:30','23:59'])for(const kg of [0,1,5,20])for(const sorted of [true,false]){assert.equal(surgeTime(t),false);assert.equal(pickupSurgePaise(t,kg,sorted),0)}assert.equal(pickupTimeLabel('17:35'),'5:35 pm')});
+test("evening hours carry a surge flag", () => {
+  assert.equal(surgeTime("13:59"), false);
+  assert.equal(surgeTime("16:59"), false);
+  assert.equal(surgeTime("17:00"), true);
+  assert.equal(surgeTime("19:00"), true);
+  assert.equal(pickupTimeLabel("17:35"), "5:35 pm");
+});
+
+test("evening surcharge stays between five and seven rupees using disclosed factors", () => {
+  assert.equal(pickupSurgePaise("13:30", 5, false), 0);
+  assert.equal(pickupSurgePaise("17:30", 1, true), 500);
+  assert.equal(pickupSurgePaise("17:30", 3, true), 600);
+  assert.equal(pickupSurgePaise("18:05", 1, false), 600);
+  assert.equal(pickupSurgePaise("18:05", 3, false), 700);
+});
+
+import {nextPickupSlot} from './pickup-time';
+test('next available slots skip breaks, closed hours and handle India date rollover',()=>{
+ for(const [now,date,time] of [
+  ['2026-10-25T13:50:00+05:30','2026-10-25','17:00'],
+  ['2026-10-25T18:50:00+05:30','2026-10-26','07:00'],
+  ['2026-10-25T00:10:00+05:30','2026-10-25','07:00'],
+  ['2026-12-31T23:50:00+05:30','2027-01-01','07:00'],
+  ['2026-10-25T09:00:00+05:30','2026-10-25','09:15'],
+ ])assert.deepEqual(nextPickupSlot(Date.parse(now)),{date,time});
+});

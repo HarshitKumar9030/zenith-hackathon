@@ -1,15 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { pickupPrice } from "./pickup-pricing";
-test("instant prices itemise sorting without hackathon surge for all funding sources", () => {
+test("instant prices itemise sorting and evening fees for all funding sources", () => {
   const base = { weightKg: 1.5, segregated: false, time: "17:35" };
   const p = pickupPrice({ ...base, source: "basic" });
   assert.equal(p.collectionPaise, 1000);
   assert.equal(p.sortingPaise, 750);
-  assert.equal(p.surgePaise, 0);
-  assert.equal(p.totalPaise, 1750);
-  assert.equal(pickupPrice({ ...base, source: "reward" }).totalPaise, 750);
-  assert.equal(pickupPrice({ ...base, source: "membership" }).totalPaise, 0);
+  assert.equal(p.surgePaise, 600);
+  assert.equal(p.totalPaise, 2350);
+  assert.equal(pickupPrice({ ...base, source: "reward" }).totalPaise, 1350);
+  assert.equal(pickupPrice({ ...base, source: "membership" }).totalPaise, 500);
   assert.equal(
     pickupPrice({ ...base, source: "reward", segregated: true, time: "09:37" })
       .totalPaise,
@@ -27,7 +27,7 @@ test("Gold and Platinum allowance pickups include sorting before and after weigh
   }
   const evening = pickupPrice({ source: "membership", weightKg: 8, segregated: false, time: "17:30" });
   assert.equal(evening.sortingPaise, 0);
-  assert.equal(evening.surgePaise, 0); // Hackathon policy disables all evening surcharges.
+  assert.equal(evening.surgePaise, 600); // Time/weight surcharge only; no segregation penalty.
   assert.equal(pickupPrice({ source: "basic", weightKg: 2, segregated: false, time: "09:00" }).sortingPaise, 1000);
 });
 test("a quote needs a valid weight and an available time", () => {
@@ -46,7 +46,7 @@ test("a quote needs a valid weight and an available time", () => {
       source: "basic",
       weightKg: 1,
       segregated: true,
-      time: "25:00",
+      time: "15:00",
     }).valid,
     false,
   );
