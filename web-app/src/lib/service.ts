@@ -11,7 +11,7 @@ export const REWARD_COST = 10,
 export function roleFor(user: Document) {
   const email = String(user.email).toLowerCase();
   if (
-    user.adminApproved === true &&
+    (user.adminApproved === true || Boolean(user.emailVerifiedAt)) &&
     (process.env.ADMIN_EMAILS || "")
       .split(",")
       .map((x) => x.trim().toLowerCase())
