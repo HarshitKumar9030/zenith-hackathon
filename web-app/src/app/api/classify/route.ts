@@ -1,3 +1,5 @@
+import { fingerprintScan } from "@/lib/scan-fingerprint";
+import { recordDiscoveryScan, discoveryScanMessage } from "@/lib/discovery-scans";
 import { scannerGenerationConfig } from "@/lib/scanner-config";
 import { geminiJsonSchema, identificationFailure } from "@/lib/gemini-response";
 import { safeIdentification } from "@/lib/scan-safety";
@@ -61,6 +63,7 @@ export async function POST(request: Request) {
         { error: "Daily identification limit reached. Try again tomorrow." },
         { status: 429 },
       );
+    let evidence: Awaited<ReturnType<typeof fingerprintScan>> | undefined;
     const parts: unknown[] = [
       {
         text: JSON.stringify({ description: input.text, ocr_text: input.ocr, observed_details: input.observedDetails }),
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
           { error: "Invalid or oversized image." },
           { status: 400 },
         );
+      try { evidence = await fingerprintScan(input.image); } catch { return NextResponse.json({error:"This photo could not be read. Try a fresh JPEG, PNG or WebP image."},{status:422}); }
       parts.push({ inlineData: { mimeType: match[1], data: match[2] } });
     }
     const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
@@ -167,17 +171,17 @@ export async function POST(request: Request) {
       createdAt: new Date(),
     };
     const saved = await database.collection("history").insertOne(record);
-    // Separate immutable ledger: history expiry/deletion never removes earned points.
-    // Scan ID is the unique key, so replaying this award cannot count it twice.
-    await database.collection("discovery_points").updateOne(
-      { _id: saved.insertedId },
-      { $setOnInsert: { userId: user._id, createdAt: record.createdAt } },
-      { upsert: true },
-    );
+    let discovery: {awarded:number;deducted:number;reason:string;message:string;balance:number|null}={awarded:0,deducted:0,reason:'unavailable',message:'Your scan is saved. Discovery Points could not be updated; ask Operations to review this scan.',balance:null};
+    try {
+      const movement=await recordDiscoveryScan({userId:user._id,scanId:saved.insertedId,fingerprint:evidence?.fingerprint,thumbnail:evidence?.thumbnail,hasWaste:Boolean(identification.detected_items?.some(item=>item.classification==='waste'))});
+      discovery={awarded:Math.max(0,movement.result.delta),deducted:Math.max(0,-movement.result.delta),reason:movement.result.reason,balance:movement.balance,message:discoveryScanMessage(movement.result.reason,movement.result.delta)};
+      await database.collection('history').updateOne({_id:saved.insertedId},{$set:{discovery}});
+    } catch {console.error('Discovery points update needs Operations review', {scanId:String(saved.insertedId)});}
     return NextResponse.json({
       ...record,
       _id: String(saved.insertedId),
-      discoveryPointsAwarded: 1,
+      discoveryPointsAwarded: discovery.awarded,
+      discovery,
       userId: undefined,
     });
   } catch (error) {

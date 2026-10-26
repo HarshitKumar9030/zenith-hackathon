@@ -24,6 +24,9 @@ export async function db() {
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     database.collection("history").createIndex({ userId: 1, createdAt: -1 }),
     database.collection("discovery_points").createIndex({ userId: 1 }),
+    database.collection('discovery_wallets').createIndex({balance:-1}),
+    database.collection('discovery_image_registry').createIndex({expiresAt:1},{expireAfterSeconds:0}),
+    database.collection('discovery_review_images').createIndex({expiresAt:1},{expireAfterSeconds:0}),
     database
       .collection("history")
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
