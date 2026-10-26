@@ -16,10 +16,10 @@ export async function participationPdf(input:{name:string;record:ParticipationRe
  page.drawCircle({x:842,y:595,size:110,color:violet});
  page.drawCircle({x:726,y:535,size:18,color:gold});
  const text=(value:string,x:number,y:number,size:number,color=ink)=>page.drawText(value,{x,y,size,font,color});
- text('Waste Right',58,536,24,teal);text('ORGANIC COLLECTIONS',58,510,9,muted);
+ text('EcoMitra',58,536,24,teal);text('ORGANIC COLLECTIONS',58,510,9,muted);
  text('Certificate of',58,450,30);text('Participation',58,402,42,violet);
  text('PRESENTED TO',58,360,9,muted);
- const name=Array.from(input.name.replace(/[\r\n\t\u0000-\u001f\u007f]/g,' ').trim()).slice(0,100).join('')||'Waste Right participant';
+ const name=Array.from(input.name.replace(/[\r\n\t\u0000-\u001f\u007f]/g,' ').trim()).slice(0,100).join('')||'EcoMitra participant';
  const nameFont=/[\u0900-\u097f]/.test(name)?await pdf.embedFont(await readFile(new URL('../assets/NotoSansDevanagari-Regular.ttf',import.meta.url)),{subset:true}):font;
  let nameSize=32;while(nameFont.widthOfTextAtSize(name,nameSize)>722&&nameSize>10)nameSize--;
  page.drawText(name,{x:58,y:316,size:nameSize,font:nameFont,color:ink});
@@ -33,7 +33,7 @@ export async function participationPdf(input:{name:string;record:ParticipationRe
  const date=(value:string|Date)=>new Date(value).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'});
  text(`Issued ${date(input.record.issuedAt)}   |   Activity as of ${date(input.now||new Date())}`,58,106,10,muted);
  page.drawRectangle({x:58,y:77,width:42,height:3,color:gold});
- text('Independent participation record. Issued by Waste Right using your account name.',58,52,9,muted);
- pdf.setTitle('Waste Right participation certificate');pdf.setAuthor('Waste Right');pdf.setSubject('Independent record of completed measured organic collections');
+ text('Independent participation record. Issued by EcoMitra using your account name.',58,52,9,muted);
+ pdf.setTitle('EcoMitra participation certificate');pdf.setAuthor('EcoMitra');pdf.setSubject('Independent record of completed measured organic collections');
  return pdf.save();
 }

@@ -34,7 +34,7 @@ export default function BenefitsPanel() {
     {error ? <p className={styles.error} role="alert">{error}</p> : null}
     {!data ? <p role="status">{busy ? "Loading your verified records…" : "Your record is unavailable. Try refreshing."}</p> : <>
       <dl className={styles.values}>
-        <div><dt>Fee reductions</dt><dd>{money(data.benefits.feeReductionPaise)}</dd><span>Waste Right pricing benefit</span></div>
+        <div><dt>Fee reductions</dt><dd>{money(data.benefits.feeReductionPaise)}</dd><span>EcoMitra pricing benefit</span></div>
         <div><dt>Included segregation</dt><dd>{money(data.benefits.includedSortingPaise)}</dd><span>Gold & Platinum service value</span></div>
         <div><dt>Government benefits</dt><dd>{money(data.benefits.governmentSavingsPaise)}</dd><span>{data.benefits.governmentSavingsPaise ? "Recorded resident credits" : "No support credited yet"}</span></div>
       </dl>
@@ -60,7 +60,7 @@ export default function BenefitsPanel() {
           </> : <a className={styles.book} href="/app?view=Pickups">Schedule a pickup <ArrowRight size={16} /></a>}
         </div>
       </div>
-      <p className={styles.disclosure}>Issued by Waste Right. Government collaboration is proposed; official government credentials and Aadhaar linking are not available.</p>
+      <p className={styles.disclosure}>Issued by EcoMitra. Government collaboration is proposed; official government credentials and Aadhaar linking are not available.</p>
     </>}
   </section>;
 }

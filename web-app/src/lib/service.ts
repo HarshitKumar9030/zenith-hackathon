@@ -74,7 +74,7 @@ export async function account(userId: ObjectId) {
   return saved;
 }
 function newParticipation(qualifyingPickupId: string, existingId?: string): ParticipationRecord {
-  return { id: existingId || `WR-${randomUUID().toUpperCase()}`, issuer: "Waste Right", issuedAt: new Date().toISOString(), governmentIssued: false, aadhaarLinked: false, qualifyingPickupId };
+  return { id: existingId || `WR-${randomUUID().toUpperCase()}`, issuer: "EcoMitra", issuedAt: new Date().toISOString(), governmentIssued: false, aadhaarLinked: false, qualifyingPickupId };
 }
 // Each user's entitlements, points, bookings and payment grants share one atomic document.
 export async function changeAccount<T>(

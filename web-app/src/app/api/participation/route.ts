@@ -16,13 +16,13 @@ export async function GET(request: Request) {
       eligibility: { qualifies, status: qualifies && a.participation ? "issued" : "awaiting_organic_pickup" },
       benefits: a.benefits,
       government: { status: "proposed", credentialIssued: false, aadhaarLinked: false },
-      statement: "Issued by Waste Right. Government collaboration proposed; no government endorsement is claimed. This ID is not recorded in Aadhaar.",
+      statement: "Issued by EcoMitra. Government collaboration proposed; no government endorsement is claimed. This ID is not recorded in Aadhaar.",
       calculatedAt: new Date().toISOString(),
     };
     const headers: Record<string, string> = { "Cache-Control": "private, no-store", "Vary": "Cookie" };
     if (new URL(request.url).searchParams.get("format") === "pdf") {
       if (!qualifies || !a.participation) return NextResponse.json({error:"Complete an accepted, measured organic pickup first."},{status:409,headers});
-      const bytes=await participationPdf({name:String(user.name||"Waste Right participant"),record:a.participation,benefits:a.benefits});
+      const bytes=await participationPdf({name:String(user.name||"EcoMitra participant"),record:a.participation,benefits:a.benefits});
       return new Response(Buffer.from(bytes),{headers:{...headers,"Content-Type":"application/pdf","Content-Disposition":`attachment; filename="${a.participation.id}.pdf"`,"X-Content-Type-Options":"nosniff"}});
     }
     if (new URL(request.url).searchParams.get("download") === "1") {

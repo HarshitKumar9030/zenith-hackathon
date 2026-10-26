@@ -1,6 +1,6 @@
 export type ParticipationRecord = {
   id: string;
-  issuer: "Waste Right";
+  issuer: "EcoMitra";
   issuedAt: string;
   governmentIssued: false;
   aadhaarLinked: false;
