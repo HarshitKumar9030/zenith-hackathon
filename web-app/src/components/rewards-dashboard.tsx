@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronDown, MapPin, ReceiptText } from "lucide-react";
 import type { Account } from "@/lib/service";
 import { activityDay } from "@/lib/streak";
+import DiscoveryLeaderboard from "./discovery-leaderboard";
 import BenefitsPanel from "./benefits-panel";
 import ActionMoment from "./action-moment";
 import styles from "./rewards-dashboard.module.css";
@@ -94,6 +95,7 @@ export default function RewardsDashboard({ account, ranking, busy, onRedeem, onN
       ["Confirm", "Review your items. Earn one point on your first confirmed scan each day."],
       ["Redeem", "Use 10 points for a pickup credit. Up to two per calendar month."],
     ].map(([title, text], i) => <li key={title}><span>{i + 1}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol>
+    <DiscoveryLeaderboard />
     <div className={styles.secondaryGrid}>
       <section className={styles.secondary}><h2>Recent activity</h2>{events.length ? <ul className={styles.events}>{events.map((event) => <li key={event.id}><div><strong>{event.label}</strong><time dateTime={event.date}>{new Date(event.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" })}</time></div><span>{event.value}</span></li>)}</ul> : <div className={styles.empty}><ReceiptText size={30} /><p>Your first confirmed scan starts the story.</p><button className="text-button" onClick={() => onNavigate("Identify waste")}>Start a scan <ArrowRight size={14} /></button></div>}</section>
       <section className={styles.secondary}><h2>Your locality</h2>{ranking.length ? <ol className={styles.ranking}>{ranking.slice(0, 4).map((r) => <li key={r.rank}><span>{r.rank}</span><strong>{r.alias}{r.isYou ? " · you" : ""}</strong><small>{r.days} scan days</small></li>)}</ol> : <div className={styles.empty}><MapPin size={30} /><p>{account.profile.locality ? "Your community leaderboard starts with a confirmed scan and an opt-in alias." : "Add your locality to join the leaderboard."}</p><button className="text-button" onClick={() => onNavigate("Pickups")}>Set locality <ArrowRight size={14} /></button></div>}</section>

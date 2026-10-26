@@ -23,6 +23,7 @@ export async function db() {
       .collection("auth_attempts")
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
     database.collection("history").createIndex({ userId: 1, createdAt: -1 }),
+    database.collection("discovery_points").createIndex({ userId: 1 }),
     database
       .collection("history")
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),

@@ -167,9 +167,17 @@ export async function POST(request: Request) {
       createdAt: new Date(),
     };
     const saved = await database.collection("history").insertOne(record);
+    // Separate immutable ledger: history expiry/deletion never removes earned points.
+    // Scan ID is the unique key, so replaying this award cannot count it twice.
+    await database.collection("discovery_points").updateOne(
+      { _id: saved.insertedId },
+      { $setOnInsert: { userId: user._id, createdAt: record.createdAt } },
+      { upsert: true },
+    );
     return NextResponse.json({
       ...record,
       _id: String(saved.insertedId),
+      discoveryPointsAwarded: 1,
       userId: undefined,
     });
   } catch (error) {
