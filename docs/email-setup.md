@@ -64,3 +64,5 @@ Android 0.3 registers the exact HTTPS `/account` path as an App Link. The websit
 Validation uses a local TLS SMTP sink: verified helper signup, deliberate SMTP rejection with honest failure feedback and no usable token left behind, successful resend recovery, email normalization, one-use/replay/expiry behaviour and sign-in notification counts. No real recipient was contacted by these tests.
 
 References: [Android App Links](https://developer.android.com/training/app-links/add-applinks), [edge-to-edge and insets](https://developer.android.com/develop/ui/views/layout/edge-to-edge).
+
+A correct password for an unverified account now opens the verification-resend form directly, retaining the entered email. The user no longer has to find verification inside More sign-in options. The server signals this case with `EMAIL_UNVERIFIED`; authentication checks remain enforced.

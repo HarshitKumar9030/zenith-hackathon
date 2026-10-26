@@ -66,7 +66,7 @@ try {
   assert.equal(messages.length, 1);
   let token = tokenFromLastEmail();
   assert.equal((await db.collection("email_tokens").findOne({ _id: hash(token) })).purpose, "verify");
-  assert.equal((await request("login", { email, password })).response.status, 403);
+  const unverified=await request("login", { email, password });assert.equal(unverified.response.status,403);assert.equal(unverified.data.code,"EMAIL_UNVERIFIED");
   assert.equal((await request("reset", { token, password })).response.status, 400, "Wrong purpose cannot consume verification");
   result = await request("verify", { token }); assert.equal(result.response.status, 200);
   const cookie = result.response.headers.get("set-cookie").split(";")[0];

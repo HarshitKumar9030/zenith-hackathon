@@ -80,7 +80,7 @@ async function api(path: string, method = "GET", body?: unknown) {
   });
   const data = await response.json();
   if (!response.ok)
-    throw new Error(data.error || "Something went wrong. Please try again.");
+    throw Object.assign(new Error(data.error || "Something went wrong. Please try again."), { code: data.code, status: response.status });
   return data;
 }
 export default function Dashboard() {
@@ -301,6 +301,7 @@ export default function Dashboard() {
       setAuth(false);
       await refresh();
     } catch (e) {
+      if ((e as {code?: string}).code === "EMAIL_UNVERIFIED") { setSignup(false); setEmailAction("resend-verification"); }
       setAuthFeedback({type:"error",text:e instanceof TypeError?"Could not connect. Check your connection and try again.":(e as Error).message});
     } finally {
       setAuthBusy(false);

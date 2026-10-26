@@ -135,7 +135,7 @@ export async function POST(
           { status: 401 },
         );
       if ((user.emailVerificationRequired || !unverifiedSignupAllowed()) && !user.emailVerifiedAt)
-        return NextResponse.json({ error: "Verify your email before signing in. Use Resend verification if needed." }, { status: 403 });
+        return NextResponse.json({ code: "EMAIL_UNVERIFIED", error: "Verify your email before signing in. Request a fresh verification link below." }, { status: 403 });
       await createSession(user._id);
     }
     return GET();
