@@ -36,6 +36,7 @@ import QuickPickup from "./quick-pickup";
 import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
+import DiscoveryLeaderboard from "./discovery-leaderboard";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
@@ -266,7 +267,7 @@ export default function Dashboard() {
         image: mode === "photo" ? image : undefined,
       });
       setResult(data);
-      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Rewards.");
+      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Discovery Points.");
       void refresh();
     } catch (e) {
       setMessage((e as Error).message);
@@ -289,7 +290,7 @@ export default function Dashboard() {
     });
     if (currentPage.current === "Identify waste" && epoch === scanEpoch.current) {
       setResult(data);
-      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Rewards.");
+      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Discovery Points.");
     }
   }
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
@@ -954,6 +955,7 @@ export default function Dashboard() {
               </HistoryTabs>
             </>
           )}
+          {page === "Discovery Points" && <><div className="page-heading"><h1>Every discovery counts.</h1><p>Your scans. Your score. One community challenge.</p></div>{user ? <DiscoveryLeaderboard /> : <button className="primary" onClick={() => setAuth(true)}>Sign in to see your score</button>}<button className="primary" onClick={() => setPage("Identify waste")}>Scan to earn a point <ScanLine size={18} /></button></>}
           {[
             "Plans",
             "Pickups",

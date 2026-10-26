@@ -3,6 +3,7 @@ import SidebarPlanCard from "./sidebar-plan-card";
 import { useState } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
+  Trophy,
   Home,
   ScanLine,
   Clock3,
@@ -23,6 +24,7 @@ const items = [
   { label: "Plans", Icon: CreditCard },
   { label: "Pickups", Icon: CalendarDays },
   { label: "Rewards", Icon: Gift },
+  { label: "Discovery Points", Icon: Trophy },
   { label: "Settings", Icon: Settings },
 ];
 export default function AnimatedSidebar({

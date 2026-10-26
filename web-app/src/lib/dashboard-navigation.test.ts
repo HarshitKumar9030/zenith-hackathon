@@ -20,3 +20,10 @@ test('Admin authority requires the server allowlist and verified email or explic
   assert.equal(roleFor({email:'ops@example.test',adminApproved:true}),'admin');
  }finally{if(previous===undefined)delete process.env.ADMIN_EMAILS;else process.env.ADMIN_EMAILS=previous}
 });
+
+test('Discovery Points has its own resident route, separate from Rewards',()=>{
+ assert.equal(dashboardPage('Discovery Points',{accountType:'user'}),'Discovery Points');
+ assert.equal(dashboardPage('Discovery Points',null),'Discovery Points');
+ assert.equal(dashboardPage('Rewards',{accountType:'user'}),'Rewards');
+ assert.equal(dashboardPage('Discovery Points',{accountType:'helper'}),'Helper dashboard');
+});
