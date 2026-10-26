@@ -31,3 +31,5 @@ Verification: 73 unit tests and production build passed. A browser run completed
 Provider compatibility fix: a live API comparison returned HTTP 400 for nested per-item environmental-property objects, while both the previous schema and group-only environmental labels returned HTTP 200. Environmental properties are therefore requested only at scan/group level; individual items retain their existing material and special-handling fields.
 
 Final scanner verification: the actual production prompt and repaired schema processed a supplied banana-peel photograph successfully (HTTP 200, STOP, valid schema, food_waste, biodegradable) in 4195 ms. This is one compatibility smoke, not an accuracy benchmark. All 74 unit tests and the production build passed after the schema repair.
+
+Scanner presentation: display one primary label, prioritising Special collection when handling requires it, then supported Recyclable, Biodegradable or Non-biodegradable properties. Unknown/mixed evidence stays internal and displays the concrete action Separate for sorting. It does not become a fabricated recycling or biodegradability claim. The helper sorts such items at collection.
