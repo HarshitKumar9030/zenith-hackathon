@@ -76,3 +76,5 @@ It requires local MongoDB, creates a uniquely named temporary database and synth
 ## Separate public leaderboard
 
 `discovery-leaderboard/` remains a static website. `npm start` runs it locally on port 3002; `?source=local` selects the local API on port 3001. Vercel uses the explicit static build in that folder. The app's personal page is `/app?view=Discovery%20Points`; pickup rewards remain on Rewards; the unrelated quiz is `/quiz`.
+
+Verification completed: 83 unit tests, TypeScript checks and the production build passed. The isolated integration run also passed private-image access/expiry checks, HTTP review approval and penalty restoration retries, in addition to the concurrency and balance cases above. Browser QA verified the shop with synthetic accounts and completed all 20 auto-advancing quiz answers through confetti/results; completing that quiz created no Discovery credits or deductions. No production points or prize inventory were changed.
