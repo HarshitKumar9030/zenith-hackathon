@@ -1,25 +1,64 @@
 "use client";
-import {useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,Check,RotateCcw,GraduationCap,X} from 'lucide-react';
-import Dropdown from './dropdown';
-import {makeQuiz,gradeQuiz,quizImage,answerLabel,typeOptions,categoryOptions,type QuizItem,type QuizAnswer} from '@/lib/waste-quiz';
+import {useEffect,useMemo,useRef,useState} from 'react';
+import {ArrowRight,Check,RotateCcw,GraduationCap,X,Trophy,Volume2,VolumeX,Triangle,Square,Circle,Diamond,Zap} from 'lucide-react';
+import {makeQuiz,gradeQuiz,quizImage,answerLabel,typeOptions,quizCategoryChoices,type QuizItem,type QuizAnswer} from '@/lib/waste-quiz';
+import {useQuizSounds} from './use-quiz-sounds';
 import styles from './waste-quiz.module.css';
+const shapes=[Triangle,Diamond,Circle,Square];
+const feedbackTitles=['Nice one!','You nailed it!','Great sorting!','Good eye!'];
 export default function WasteQuiz(){
- const [questions,setQuestions]=useState<QuizItem[]>([]),[answers,setAnswers]=useState<Record<string,QuizAnswer>>({}),[index,setIndex]=useState(0),[finished,setFinished]=useState(false);
- const heading=useRef<HTMLHeadingElement>(null);
- function start(){setQuestions(makeQuiz());setAnswers({});setIndex(0);setFinished(false);}
- function move(next:number){setIndex(next);requestAnimationFrame(()=>heading.current?.focus());}
- const question=questions[index];const answer=question?answers[question.id]:undefined;
- function change(key:keyof QuizAnswer,value:string){setAnswers(previous=>({...previous,[question.id]:{type:previous[question.id]?.type??'',category:previous[question.id]?.category??'',[key]:value}}));}
- const result=finished?gradeQuiz(questions,answers):null;
+ const [questions,setQuestions]=useState<QuizItem[]>([]),[answers,setAnswers]=useState<Record<string,QuizAnswer>>({}),[index,setIndex]=useState(0),[step,setStep]=useState<'type'|'category'>('type'),[locked,setLocked]=useState(false),[finished,setFinished]=useState(false),[streak,setStreak]=useState(0),[confetti,setConfetti]=useState(false);
+ const answerLock=useRef(false),heading=useRef<HTMLHeadingElement>(null);
+ const sound=useQuizSounds();
+ const categoryChoices=useMemo(()=>questions.map(q=>quizCategoryChoices(q)),[questions]);
+ const grade=useMemo(()=>gradeQuiz(questions,answers),[questions,answers]);
+ useEffect(()=>{if(!finished)return;setConfetti(true);const timer=setTimeout(()=>setConfetti(false),4500);return()=>clearTimeout(timer);},[finished]);
+ const question=questions[index],answer=question?answers[question.id]:undefined;
+ const currentValue=answer?.[step];
+ const accepted=question?(step==='type'?question.types:question.categories):[];
+ const correct=Boolean(currentValue&&accepted.includes(currentValue));
+ function start(){sound.play('start');setQuestions(makeQuiz());setAnswers({});setIndex(0);setStep('type');setFinished(false);setLocked(false);answerLock.current=false;setStreak(0);setConfetti(false);}
+ function select(value:string){
+  if(answerLock.current||locked||finished)return;
+  answerLock.current=true;setLocked(true);
+  setAnswers(previous=>({...previous,[question.id]:{type:previous[question.id]?.type??'',category:previous[question.id]?.category??'',[step]:value}}));
+  const right=accepted.includes(value);
+  const fullCorrect=step==='category'&&right&&question.types.includes(answer?.type??'');
+  if(step==='category')setStreak(previous=>fullCorrect?previous+1:0);
+  sound.play(right?'correct':'try-again',fullCorrect?'Good job!':undefined);
+ }
+ function next(){
+  if(!answerLock.current)return;
+  sound.stop();
+  if(step==='type')setStep('category');
+  else if(index===questions.length-1){setFinished(true);sound.play('complete',grade.points>=14?'Amazing work! Well done!':'Good job finishing! Keep exploring!');window.scrollTo({top:0,behavior:'instant'});return;}
+  else {setIndex(previous=>previous+1);setStep('type');}
+  answerLock.current=false;setLocked(false);requestAnimationFrame(()=>heading.current?.focus());
+ }
+ useEffect(()=>{
+  if(!locked||finished)return;
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  const schedule=()=>{if(timer)clearTimeout(timer);if(!document.hidden)timer=setTimeout(()=>next(),correct?1100:2200);};
+  schedule();document.addEventListener('visibilitychange',schedule);
+  return()=>{if(timer)clearTimeout(timer);document.removeEventListener('visibilitychange',schedule);};
+ },[locked,finished,index,step,correct,grade.points]);
+ const choices=step==='type'?typeOptions:categoryChoices[index]??[];
  return <div className={styles.root}>
-  {!questions.length?<section className={styles.welcome}><span className={styles.icon}><GraduationCap size={32}/></span><p className={styles.eyebrow}>THE ECOMITRA QUIZ</p><h1>Know it. Sort it.</h1><p>Ten photos. Two answers each.<br/>How well do you know your everyday waste?</p><button className="primary" onClick={start}>Start quiz <ArrowRight size={17}/></button><small>20 points available · No timer · Fresh random selection each round</small><details><summary>How answers work</summary><p>Choose an item’s waste type and category. Some items fit more than one type; all accepted alternatives earn credit. Assume clean, empty items unless the question says otherwise. “Recyclable” includes suitable specialist facilities; actual local acceptance varies.</p><p>Quiz scores are separate from Discovery Points and pickup rewards.</p></details></section>:result?<section className={styles.results}>
-   <p className={styles.eyebrow}>ROUND COMPLETE</p><h1>{result.points===20?'Perfect sorting.':result.points>=14?'Good eye. Keep going.':'Every answer is a chance to learn.'}</h1><div className={styles.finalScore}><strong>{result.points}</strong><span>/ {result.maximum}</span></div><p>{result.fullyCorrect} of 10 images fully correct · 1 point for each correct answer.</p><button className="primary" onClick={start}><RotateCcw size={16}/> Play a new round</button><h2>{result.points===20?'All answers correct':'Your answer review'}</h2><p>Review each missed answer and the accepted alternatives.</p>
-   {result.results.filter(r=>r.points<2).map((r,i)=><article className={styles.review} key={r.question.id}><img src={quizImage(r.question)} alt={r.question.name}/><div><p className={styles.eyebrow}>{r.question.difficulty} · {r.points}/2 points</p><h3>{r.question.name}</h3>{(['type','category']as const).map(kind=>{const correct=kind==='type'?r.typeCorrect:r.categoryCorrect;return <div key={kind} className={styles.reviewAnswer} data-correct={correct}>{correct?<Check size={15}/>:<X size={15}/>}<span>{kind==='type'?'Is this?':'This comes under?'} <strong>{answerLabel(r.answer?.[kind]??'',kind)}</strong>{!correct&&<small>Accepted: {(kind==='type'?r.question.types:r.question.categories).map(v=>answerLabel(v,kind)).join(' or ')}</small>}</span></div>})}<p>{r.question.explanation}</p></div></article>)}
-   {result.points===20&&<div className={styles.perfect}><Check size={22}/> All ten images, both answers. Nicely done.</div>}
-  </section>:<section className={styles.question}>
-   <header><p className={styles.eyebrow}>QUESTION {index+1} OF 10</p><span className={styles.difficulty} data-level={question.difficulty}>{question.difficulty}</span></header><div className={styles.progress} aria-label={`Question ${index+1} of 10`}>{questions.map((q,i)=><span key={q.id} data-active={i===index} data-done={Boolean(answers[q.id]?.type&&answers[q.id]?.category)}/>)}</div>
-   <div className={styles.questionGrid}><div className={styles.photo}><img key={question.id} src={quizImage(question)} alt={question.name} onError={e=>{e.currentTarget.alt=`Photo unavailable: ${question.name}. Use the item name to answer.`;}}/><span>{question.name}</span></div><div className={styles.form}><h1 ref={heading} tabIndex={-1}>{question.name}</h1><p>Choose the best fit for this item.</p><div className={styles.field}><label>1. Is this?</label><Dropdown label="Choose waste type" value={answer?.type??''} onChange={v=>change('type',v)} options={typeOptions}/></div><div className={styles.field}><label>2. This comes under?</label><Dropdown label="Choose waste category" value={answer?.category??''} onChange={v=>change('category',v)} options={categoryOptions}/></div><small>Clean and empty unless stated. Some types overlap; valid alternatives earn full credit.</small><div className={styles.controls}><button className="text-button" disabled={index===0} onClick={()=>move(index-1)}><ArrowLeft size={15}/> Back</button><button className="primary" disabled={!answer?.type||!answer?.category} onClick={()=>index===9?(setFinished(true),window.scrollTo({top:0,behavior:'instant'})):move(index+1)}>{index===9?'See my score':'Next image'} <ArrowRight size={16}/></button></div>{(!answer?.type||!answer?.category)&&<p className={styles.hint}>Choose both answers to continue.</p>}</div></div>
-  </section>}
+  <div className={styles.gameBar}><span className={styles.gameBrand}><GraduationCap size={17}/> THE ECOMITRA CHALLENGE</span><button className={styles.sound} onClick={sound.toggle} aria-label={sound.muted?'Turn sound on':'Mute quiz sounds'} aria-pressed={sound.muted}>{sound.muted?<VolumeX size={17}/>:<Volume2 size={17}/>}<span>Sound {sound.muted?'off':'on'}</span></button></div>
+  {!questions.length?<section className={styles.welcome}>
+    <div className={styles.welcomeShapes} aria-hidden="true"><Triangle/><Diamond/><Circle/><Square/></div><span className={styles.icon}><GraduationCap size={34}/></span><p className={styles.eyebrow}>A QUICK QUIZ. A FRESH PERSPECTIVE.</p><h1>Ready, set,<br/><em>sort.</em></h1><p>See the photo. Pick your answer.<br/>Let’s turn everyday waste into a little friendly competition.</p><button className={styles.primary} onClick={start}>Let’s play <ArrowRight size={19}/></button><small>10 photos · 20 points · No timer</small><details><summary>How to play</summary><p>Each photo has two quick picks: waste type, then material. Every correct pick earns one point. Valid overlaps count, so paper can be biodegradable or recyclable. Assume clean, empty items unless stated; recycling may require a specialist facility.</p><p>Quiz scores stay separate from Discovery Points and pickup rewards.</p><p>Sound effects by <a href="https://kenney.nl/assets/interface-sounds" target="_blank" rel="noreferrer">Kenney · CC0</a>. Mute at any time.</p></details>
+   </section>:finished?<section className={styles.results}>
+    {confetti&&<div className={styles.confetti} aria-hidden="true">{Array.from({length:64},(_,i)=><i key={i} style={{'--x':`${(i*37)%100}%`,'--delay':`${(i%8)*.07}s`,'--duration':`${2.5+(i%5)*.3}s`,'--sway':`${((i*19)%160)-80}px`,'--turn':`${(i%2?1:-1)*(360+i*11)}deg`,background:['#b8d886','#a68bdf','#f1b7cc','#8acbd1','#ecd486'][i%5]} as React.CSSProperties}/>)}</div>}
+    <div className={styles.resultHero}><span className={styles.trophy}><Trophy size={39}/></span><p className={styles.eyebrow}>YOU DID IT!</p><h1>{grade.points===20?'Perfect sorting!':grade.points>=14?'You’ve got a good eye!':'Good job showing up!'}</h1><div className={styles.finalScore}><strong>{grade.points}</strong><span>/ {grade.maximum}<small>POINTS EARNED</small></span></div><p>{grade.fullyCorrect} of 10 photos fully correct. {grade.points===20?'Every single pick. Brilliant.':'A little more knowledge for your next round.'}</p><button className={styles.primary} onClick={start}><RotateCcw size={17}/> Play again</button></div>
+    <div className={styles.reviewHeading}><h2>{grade.points===20?'A clean sweep.':'Your learning moments'}</h2><p>{grade.points===20?'All 20 answers correct. Nicely done.':'Here’s what to remember for next time.'}</p></div>
+    {grade.results.filter(r=>r.points<2).map(r=><article className={styles.review} key={r.question.id}><img src={quizImage(r.question)} alt={r.question.name}/><div><small>{r.points}/2 POINTS</small><h3>{r.question.name}</h3>{(['type','category']as const).map(kind=>{const right=kind==='type'?r.typeCorrect:r.categoryCorrect;return <div key={kind} className={styles.reviewAnswer} data-correct={right}>{right?<Check size={15}/>:<X size={15}/>}<span>{kind==='type'?'Waste type':'Category'}: <strong>{answerLabel(r.answer?.[kind]??'',kind)}</strong>{!right&&<small>Accepted: {(kind==='type'?r.question.types:r.question.categories).map(value=>answerLabel(value,kind)).join(' or ')}</small>}</span></div>})}<p>{r.question.explanation}</p></div></article>)}
+   </section>:<section className={styles.question}>
+    <div className={styles.roundBar}><span>PHOTO <b>{String(index+1).padStart(2,'0')}</b> / 10</span><div>{streak>1&&<span className={styles.streak}><Zap size={13}/>{streak} in a row</span>}<span className={styles.scorePill}>{grade.points} pts</span></div></div>
+    <div className={styles.progress} aria-label={`Photo ${index+1} of 10`}>{questions.map((q,i)=><span key={q.id} data-active={i===index} data-done={Boolean(answers[q.id]?.category)}/>)}</div>
+    <div className={styles.playArea}><div className={styles.photo}><img key={question.id} src={quizImage(question)} alt={question.name}/><span>{question.name}</span></div><div className={styles.answerArea}><div className={styles.promptStep}><span data-current={step==='type'}>1 · Waste type</span><span data-current={step==='category'}>2 · Category</span></div><h1 ref={heading} tabIndex={-1}>{step==='type'?'What kind of waste is this?':'Which category does it belong to?'}</h1><p className={styles.promptHelp}>Tap your answer to lock it in.</p>
+    <div className={styles.choices} role="group" aria-label={step==='type'?'Waste type answers':'Category answers'}>{choices.map((option,i)=>{const Shape=shapes[i%4];const isRight=accepted.includes(option.value);const selected=currentValue===option.value;return <button key={option.value} className={styles.answerCard} data-color={i} data-result={locked?(isRight?'correct':selected?'wrong':'dim'):undefined} aria-pressed={Boolean(selected)} disabled={locked} onClick={()=>select(option.value)}><Shape size={20} fill="currentColor" strokeWidth={1.5}/><span>{option.label}</span>{locked&&isRight?<Check size={20}/>:locked&&selected?<X size={20}/>:null}</button>})}</div>
+    <div className={styles.feedback} aria-live="polite" aria-atomic="true">{locked&&<><div className={styles.feedbackTitle} data-correct={correct}>{correct?<Check size={20}/>:<RotateCcw size={18}/>}<strong>{correct?feedbackTitles[(index+(step==='category'?1:0))%feedbackTitles.length]:'You’re learning. Keep going!'}</strong><span>{correct?'+1 point':'0 points'}</span></div><p>{correct?(step==='category'?question.explanation:'Great choice. Now find its material category.'):`Accepted: ${accepted.map(value=>answerLabel(value,step)).join(' or ')}. ${step==='category'?question.explanation:''}`}</p><div className={styles.autoNext}><span>{step==='type'?'Category up next':index===9?'Your score is next':'Next photo coming up'}</span><div style={{animationDuration:correct?'1.1s':'2.2s'}}/></div></>}</div>
+    </div></div>
+   </section>}
  </div>;
 }

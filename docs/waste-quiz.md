@@ -2,9 +2,9 @@
 
 Open `/quiz` (no sign-in required). The quiz is a standalone page and is not embedded in the dashboard. Each round samples five unique easy, two medium and three hard images, then shuffles their display order. Fresh sampling can legitimately repeat images across separate rounds; no image repeats within one round. The supplied bank contains 50 easy, 20 medium and 30 hard images.
 
-Every image shows its cleaned-up filename as its name. Two custom, keyboard-accessible dropdowns collect waste type (biodegradable / non-biodegradable / recyclable) and material/category. Categories include the scanner's existing materials plus wood, rubber, ceramic, electronic, hazardous, sanitary and oil streams for items that cannot sensibly be labelled just plastic or glass.
+Every image shows its cleaned-up filename as its name. The game asks one prompt at a time with large, keyboard-accessible coloured answer cards: waste type first (biodegradable / non-biodegradable / recyclable), then a material/category question with four random choices. Categories include the scanner's existing materials plus wood, rubber, ceramic, electronic, hazardous, sanitary and oil streams for items that cannot sensibly be labelled just plastic or glass.
 
-Each answer earns one point: 20 maximum across 10 images. Both selections are required before continuing; Back retains answers. Results show total score, fully correct images, each missed image, both submitted answers, accepted alternatives and an explanation. Play a new round draws a new random set. Quiz scores do not award Discovery Points or pickup credits.
+Each answer earns one point: 20 maximum across 10 images. A selection locks immediately, shows correct choices and supportive feedback, then advances automatically. Answers cannot be changed after seeing feedback. Category choices contain one accepted answer and three distinct wrong alternatives; all valid type overlaps still earn credit. Results show total score, fully correct images, each missed image, both submitted answers, accepted alternatives and an explanation. Play a new round draws a new random set. Quiz scores do not award Discovery Points or pickup credits.
 
 ## Answer-key conventions
 
@@ -14,7 +14,7 @@ Biodegradable and recyclable overlap: clean uncoated paper/cardboard accepts bot
 
 Reference background: [EPA common recyclables](https://www.epa.gov/recycle/how-do-i-recycle-common-recyclables) distinguishes container and other glass, plastic acceptance, and compostable plastics; [EPA household hazardous waste](https://www.epa.gov/large-scale-residential-demolition/household-hazardous-waste-and-demolition) supports separate handling for contaminated chemical/oil containers; [EPA battery FAQ](https://www.epa.gov/hw/lithium-ion-battery-recycling-frequently-asked-questions) explains separate battery recovery. These sources supply educational context, not Indian locality disposal rules. Image ownership/licence evidence was not supplied; keep the supplied files' provenance for public use.
 
-Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 generated rounds, no duplicate questions, non-mutating selection, partial credit and overlap handling. No timer or external API is required.
+Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 generated rounds, no duplicate questions, non-mutating selection, partial credit and overlap handling. No answer countdown or external API is required.
 
 ## EcoMitra domain and QR
 
@@ -39,3 +39,13 @@ Routing correction: the QR destination was updated to `/quiz` so the root URL ca
 The single primary label is paired with a short fixed sorting instruction. Provider uncertainty prose is not repeated in the visible label panel; unknown evidence is retained in the saved record rather than presented as false certainty.
 
 QR visual revision: a forest-green poster with EcoMitra leaf branding, a centred code mark, rounded modules/finder frames and a lilac Scan to play call to action. PNG size is 1000 × 1360; SVG remains scalable. Independent decoding confirmed the exact `/quiz` URL at rendered widths of 1000, 600, 400 and 300 pixels.
+
+## Interactive game revision — 26 October 2026
+
+The quiz has a game welcome screen, coloured shape-marked answer cards, one prompt at a time, a live points counter and a consecutive-perfect-photo indicator. The photo count remains ten and the 5/2/3 difficulty mix stays internal. There is no countdown or speed bonus. The final score screen runs a short CSS confetti burst, celebrates completion at every score, and retains the wrong-answer review. Reduced-motion users do not see falling confetti. No Kahoot branding, assets or recordings are copied.
+
+Four locally hosted sound files come from [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds), licensed CC0. Source mapping and the pack licence are in `web-app/public/audio/quiz/`. Sounds are requested only after a user interaction. A persistent mute control stops playback and speech; leaving or hiding the page cancels them. Optional system speech synthesis says short phrases such as “Good job!” and “Amazing work! Well done!” when supported. This is generated browser speech, not a downloaded actor recording. Audio/speech failure cannot block scoring or navigation. No music loops or third-party audio requests are needed during play.
+
+Tests additionally validate that each of the 100 category questions offers exactly four distinct choices with exactly one accepted category. Visible and audible feedback use the same answer-key check. Audio files were verified as Ogg/Vorbis; browser playback is subject to the user's autoplay policy and codec/voice support.
+
+Automatic progression: correct feedback stays for 1.1 seconds; incorrect feedback stays for 2.2 seconds before the next prompt/photo. A small progress indicator explains the transition. Timers are cancelled on navigation/unmount and paused while the tab is hidden; returning restarts the feedback interval. Answers lock synchronously so rapid repeated taps cannot award twice or skip prompts. The last category answer automatically opens the final score.

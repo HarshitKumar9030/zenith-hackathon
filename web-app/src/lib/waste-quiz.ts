@@ -22,3 +22,9 @@ export function gradeQuiz(questions:QuizItem[],answers:Record<string,QuizAnswer>
 }
 export function quizImage(item:QuizItem){return '/quiz%20images/'+item.id.split('/').map(encodeURIComponent).join('/');}
 export function answerLabel(value:string,kind:'type'|'category'){return (kind==='type'?typeOptions:categoryOptions).find(o=>o.value===value)?.label??'Not answered';}
+/** Four readable choices: one accepted category plus three genuinely wrong alternatives. */
+export function quizCategoryChoices(question:QuizItem,random:()=>number=Math.random){
+ const correct=categoryOptions.find(o=>o.value===question.categories[0]);
+ if(!correct)throw new Error('Quiz category is not available');
+ return shuffle([correct,...shuffle(categoryOptions.filter(o=>!question.categories.includes(o.value)),random).slice(0,3)],random);
+}
