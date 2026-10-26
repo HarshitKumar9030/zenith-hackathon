@@ -266,6 +266,7 @@ export default function Dashboard() {
         image: mode === "photo" ? image : undefined,
       });
       setResult(data);
+      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Rewards.");
       void refresh();
     } catch (e) {
       setMessage((e as Error).message);
@@ -286,8 +287,10 @@ export default function Dashboard() {
       text,
       ocr: labelText,
     });
-    if (currentPage.current === "Identify waste" && epoch === scanEpoch.current)
+    if (currentPage.current === "Identify waste" && epoch === scanEpoch.current) {
       setResult(data);
+      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Rewards.");
+    }
   }
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
