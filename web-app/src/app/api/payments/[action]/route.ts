@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { currentUser, checkOrigin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { account, PLANS } from "@/lib/service";
-import { gateway, signatureValid, applyCapture } from "@/lib/payments";
+import { gateway, signatureValid, applyCapture, reconcileBookingPayment } from "@/lib/payments";
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ action: string }> },
@@ -54,6 +54,10 @@ export async function POST(
     const u = await currentUser();
     if (!u)
       return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+    if (action === "status") {
+      const {bookingId} = z.object({bookingId:z.string().min(1).max(100)}).parse(await req.json());
+      return NextResponse.json({state:await reconcileBookingPayment(u._id,bookingId)});
+    }
     const client = gateway();
     if (action === "order") {
       const data = z
@@ -62,6 +66,11 @@ export async function POST(
           bookingId: z.string().optional(),
         })
         .parse(await req.json());
+      if (data.plan === "basic" && data.bookingId) {
+        const state = await reconcileBookingPayment(u._id, data.bookingId);
+        if (state === "paid") return NextResponse.json({alreadyPaid:true,outcome:"captured"});
+        if (state !== "unpaid") return NextResponse.json({pending:true,outcome:state});
+      }
       const a = await account(u._id);
       if (data.plan === "basic") {
         const b = a.bookings.find((b) => b.id === data.bookingId);
@@ -94,6 +103,10 @@ export async function POST(
                 : b.feePaise;
             })()
           : PLANS[data.plan].price * 100;
+      const stage=data.plan === "basic" && a.bookings.find(b=>b.id===data.bookingId)?.status === "payment_due_after_collection" ? "final" : "initial";
+      // Reuse an unpaid attempt for this exact booking/stage/amount instead of making duplicate orders.
+      const existing=data.plan === "basic" ? await database.collection("payment_orders").findOne({userId:String(u._id),bookingId:data.bookingId,stage,amount,currency:"INR",status:"created"},{sort:{createdAt:-1}}) : null;
+      if(existing)return NextResponse.json({orderId:existing.orderId,key:process.env.RAZORPAY_KEY_ID,amount,currency:"INR",name:u.name,email:u.email});
       const id = new ObjectId();
       const order = await client.orders.create({
         amount,

@@ -336,6 +336,8 @@ try {
     currency: "INR",
     status: "created",
   });
+  // Legacy pickups may lack a timeline; capture must still schedule them.
+  await database.collection("service_accounts").updateOne({_id:new ObjectId(resident.id)},{$unset:{"bookings.$[booking].events":""}},{arrayFilters:[{"booking.id":payBooking.id}]});
   const raw = JSON.stringify({
     event: "payment.captured",
     payload: {
@@ -370,6 +372,10 @@ try {
     a.bookings.find((b) => b.id === payBooking.id).status,
     "scheduled",
   );
+  assert.equal((await resident.req("payments/status",{bookingId:payBooking.id})).data.state,"paid");
+  assert.equal((await collector.req("payments/status",{bookingId:payBooking.id})).status,400,"Another account cannot reconcile this pickup");
+  const orderCount=await database.collection("payment_orders").countDocuments({bookingId:payBooking.id});
+  const paidAgain=await resident.req("payments/order",{plan:"basic",bookingId:payBooking.id});assert.equal(paidAgain.data.alreadyPaid,true);assert.equal(await database.collection("payment_orders").countDocuments({bookingId:payBooking.id}),orderCount,"Paid pickups never create another checkout order");
   const quote = (
     await resident.req("service", {
       ...booking,

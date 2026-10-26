@@ -3,7 +3,8 @@ import Razorpay from "razorpay";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ObjectId } from "mongodb";
 import { db } from "./db";
-import { changeAccount, PLANS, type Plan } from "./service";
+import { inspectPaymentAttempts, type GatewayPayment, type PaymentState } from "./payment-status";
+import { account, changeAccount, PLANS, type Plan } from "./service";
 export function gateway() {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET)
     throw new Error(
@@ -66,14 +67,14 @@ export async function applyCapture(
         b.finalPaymentId = paymentId;
         b.finalPaidPaise = (b.finalPaidPaise || 0) + amount;
         b.balanceDuePaise = 0;
-        b.events.push({
+        (b.events ??= []).push({
           status: "final_payment_received",
           at: new Date().toISOString(),
         });
       } else {
         b.status = "scheduled";
         b.paymentId = paymentId;
-        b.events.push({ status: "paid", at: new Date().toISOString() });
+        (b.events ??= []).push({ status: "paid", at: new Date().toISOString() });
         assignDemoHelper(b, helper);
       }
     } else {
@@ -115,4 +116,37 @@ export async function applyCapture(
       },
     );
   return outcome;
+}
+
+/** Reconcile owned, recorded orders after a delayed callback/webhook, without charging. */
+export async function reconcileBookingPayment(userId: ObjectId, bookingId: string): Promise<PaymentState> {
+  const a = await account(userId), booking = a.bookings.find(b => b.id === bookingId);
+  if (!booking) throw new Error("Pickup not found.");
+  if (["cancelled", "quote_requested"].includes(booking.status)) return "review_needed";
+  if (!["payment_due", "quote_ready", "payment_due_after_collection"].includes(booking.status)) return "paid";
+  const final = booking.status === "payment_due_after_collection";
+  const orders = await (await db()).collection("payment_orders").find({
+    userId: String(userId), bookingId,
+    ...(final ? { stage: "final" } : { $or: [{ stage: "initial" }, { stage: { $exists: false } }] }),
+  }).sort({createdAt:-1}).limit(5).toArray();
+  if (!orders.length) return "unpaid";
+  if (orders.some(order => a.payments.some(p => p.orderId === order.orderId && ["captured", "review_needed", "refunded", "partially_refunded"].includes(p.status)))) return "review_needed";
+  const state = await inspectPaymentAttempts(orders.map(order=>({orderId:order.orderId,amount:order.amount})), async orderId => {
+    // A bounded read from Razorpay; no capture or new order is requested here.
+    const response = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(orderId)}/payments`, {
+      headers: { Authorization: `Basic ${Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64")}` },
+      cache: "no-store", signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error("Payment status temporarily unavailable.");
+    const data = await response.json();
+    if (!Array.isArray(data.items)) throw new Error("Invalid payment status response.");
+    return data.items as GatewayPayment[];
+  }, (order, payment) => applyCapture(order.orderId, payment.id, Number(payment.amount), payment.currency));
+  if (state === "paid") {
+    const updated = (await account(userId)).bookings.find(b=>b.id===bookingId);
+    if (!updated || ["payment_due", "quote_ready", "payment_due_after_collection", "cancelled"].includes(updated.status)) return "review_needed";
+  }
+  // Older installations may have created many separate attempts for one booking.
+  // Do not invite another charge if the bounded scan cannot rule out an older capture.
+  return state === "unpaid" && orders.length === 5 ? "unknown" : state;
 }
