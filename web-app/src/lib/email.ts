@@ -17,12 +17,12 @@ export function accountLink(action: string, token: string) {
 export async function sendAccountEmail(to: string, purpose: string, link: string) {
   if (!emailConfigured()) throw new Error("Email delivery is not configured.");
   const transport = createEmailTransport();
-  const title = purpose === "reset" ? "Reset your password" : purpose === "verify" ? "Verify your email" : "Sign in to Waste Right";
+  const title = purpose === "reset" ? "Reset your password" : purpose === "verify" ? "Verify your email" : "Sign in to EcoMitra";
   await transport.sendMail({
-    from: { name: "Waste Right", address: process.env.SMTP_FROM! },
+    from: { name: "EcoMitra", address: process.env.SMTP_FROM! },
     to,
-    subject: `${title} — Waste Right`,
-    text: `${title}\n\nOpen this link to continue:\n${link}\n\nThis link expires in 15 minutes and works only once. If you did not request this email, ignore it.\n\nWaste Right`,
+    subject: `${title} — EcoMitra`,
+    text: `${title}\n\nOpen this link to continue:\n${link}\n\nThis link expires in 15 minutes and works only once. If you did not request this email, ignore it.\n\nEcoMitra`,
   });
 }
 
