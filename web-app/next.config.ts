@@ -3,6 +3,9 @@ const config: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
   turbopack: { root: process.cwd() },
+  async rewrites(){return {beforeFiles:[
+    {source:"/",has:[{type:"host",value:"ecomitra.harshit.page"}],destination:"/quiz"},
+  ]}},
   async headers(){return [
     {source:"/:path*",headers:[
       {key:"X-Content-Type-Options",value:"nosniff"},
