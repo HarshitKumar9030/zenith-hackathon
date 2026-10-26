@@ -1,5 +1,5 @@
 export type NavigationUser = { role?: string; accountType?: string } | null;
-const residentPages = ["Overview", "Identify waste", "My history", "Plans", "Pickups", "Rewards", "Discovery Points", "Settings"];
+const residentPages = ["Overview", "Identify waste", "My history", "Plans", "Pickups", "Rewards", "Discovery Points", "Waste quiz", "Settings"];
 const helperPages = ["Helper dashboard", "Helper collections", "Helper earnings", "Service area", "Settings"];
 export function dashboardPage(requested: string | null, user: NavigationUser) {
   const fallback = user?.accountType === "helper" ? "Helper dashboard" : "Overview";

@@ -37,6 +37,7 @@ import HelperDashboard from "./helper-dashboard";
 import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
 import DiscoveryLeaderboard from "./discovery-leaderboard";
+import WasteQuiz from "./waste-quiz";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
@@ -955,6 +956,7 @@ export default function Dashboard() {
               </HistoryTabs>
             </>
           )}
+          {page === "Waste quiz" && <WasteQuiz />}
           {page === "Discovery Points" && <><div className="page-heading"><h1>Every discovery counts.</h1><p>Your scans. Your score. One community challenge.</p></div>{user ? <DiscoveryLeaderboard /> : <button className="primary" onClick={() => setAuth(true)}>Sign in to see your score</button>}<button className="primary" onClick={() => setPage("Identify waste")}>Scan to earn a point <ScanLine size={18} /></button></>}
           {[
             "Plans",

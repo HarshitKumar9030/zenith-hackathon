@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
   Trophy,
+  GraduationCap,
   Home,
   ScanLine,
   Clock3,
@@ -25,6 +26,7 @@ const items = [
   { label: "Pickups", Icon: CalendarDays },
   { label: "Rewards", Icon: Gift },
   { label: "Discovery Points", Icon: Trophy },
+  { label: "Waste quiz", Icon: GraduationCap },
   { label: "Settings", Icon: Settings },
 ];
 export default function AnimatedSidebar({
