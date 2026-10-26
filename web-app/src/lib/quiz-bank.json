@@ -1,0 +1,1239 @@
+[
+  {
+    "id": "easy/aluminium drink can.jpeg",
+    "name": "Aluminium drink can",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "easy/apple core.jfif",
+    "name": "Apple core",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/banana peel.jfif",
+    "name": "Banana peel",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/bread crust.jfif",
+    "name": "Bread crust",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/broken ceramic mug.webp",
+    "name": "Broken ceramic mug",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "ceramic"
+    ],
+    "explanation": "Ceramic is non-biodegradable and is not ordinary glass recycling."
+  },
+  {
+    "id": "easy/broken glass cup.jpg",
+    "name": "Broken glass cup",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "Drinking glass is not necessarily container glass. Keep sharp fragments separate; ordinary bottle-glass recycling may reject it."
+  },
+  {
+    "id": "easy/cardboard box.jfif",
+    "name": "Cardboard box",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "cardboard"
+    ],
+    "explanation": "Clean, uncoated cardboard is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "easy/ceramic floor tile.jfif",
+    "name": "Ceramic floor tile",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "ceramic"
+    ],
+    "explanation": "Ceramic is non-biodegradable and is not ordinary glass recycling."
+  },
+  {
+    "id": "easy/ceramic plate.jfif",
+    "name": "Ceramic plate",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "ceramic"
+    ],
+    "explanation": "Ceramic is non-biodegradable and is not ordinary glass recycling."
+  },
+  {
+    "id": "easy/disposable lighter.jfif",
+    "name": "Disposable lighter",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "easy/disposable plastic razor.webp",
+    "name": "Disposable plastic razor",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "easy/dry leaves pile.webp",
+    "name": "Dry leaves pile",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "garden_waste"
+    ],
+    "explanation": "Plant material is biodegradable; suitable processing still depends on its condition."
+  },
+  {
+    "id": "easy/eggshells.jfif",
+    "name": "Eggshells",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/fresh flowers.avif",
+    "name": "Fresh flowers",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "garden_waste"
+    ],
+    "explanation": "Plant material is biodegradable; suitable processing still depends on its condition."
+  },
+  {
+    "id": "easy/glass bottle.jpeg",
+    "name": "Glass bottle",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "Glass is non-biodegradable. Only accepted glass types belong in glass recycling."
+  },
+  {
+    "id": "easy/grass clippings.jfif",
+    "name": "Grass clippings",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "garden_waste"
+    ],
+    "explanation": "Plant material is biodegradable; suitable processing still depends on its condition."
+  },
+  {
+    "id": "easy/ice cream wooden stick.jfif",
+    "name": "Ice cream wooden stick",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "wood"
+    ],
+    "explanation": "Assume untreated wood. It is biodegradable; paints and coatings can change suitable treatment."
+  },
+  {
+    "id": "easy/insulated electric wire.jfif",
+    "name": "Insulated electric wire",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste",
+      "composite_or_other"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "easy/leftover rice.jpg",
+    "name": "Leftover rice",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/metal bottle cap.png",
+    "name": "Metal bottle cap",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "easy/newspaper.jfif",
+    "name": "Newspaper",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume clean, uncoated paper. It is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "easy/nylon rope.jfif",
+    "name": "Nylon rope",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/office paper.jfif",
+    "name": "Office paper",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume clean, uncoated paper. It is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "easy/onion peel.jpg",
+    "name": "Onion peel",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/orange peel.jfif",
+    "name": "Orange peel",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/paper bag.webp",
+    "name": "Paper bag",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume clean, uncoated paper. It is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "easy/peanut shells.jfif",
+    "name": "Peanut shells",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/pet softdrink bottle.jfif",
+    "name": "PET soft-drink bottle",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic bag.jpg",
+    "name": "Plastic bag",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic ball point pen.jfif",
+    "name": "Plastic ball point pen",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "easy/plastic bottle.jpg",
+    "name": "Plastic bottle",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic bucket.jfif",
+    "name": "Plastic bucket",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic comb.jfif",
+    "name": "Plastic comb",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic container.jpg",
+    "name": "Plastic container",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic packaging.jpg",
+    "name": "Plastic packaging",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "This photo shows a mixture of plastic packaging types. Recycling acceptance depends on the polymer and local facility."
+  },
+  {
+    "id": "easy/plastic spoon.webp",
+    "name": "Plastic spoon",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic straw.jfif",
+    "name": "Plastic straw",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/plastic toy.jfif",
+    "name": "Plastic toy",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/polyester cloth.jpg",
+    "name": "Polyester cloth",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "textile"
+    ],
+    "explanation": "Assume a synthetic polyester textile. It is non-biodegradable; textile recovery is a separate route."
+  },
+  {
+    "id": "easy/polysterene foam cup.jpg",
+    "name": "Polystyrene foam cup",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/potato peel.jfif",
+    "name": "Potato peel",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/rubber slipper.webp",
+    "name": "Rubber slipper",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "rubber"
+    ],
+    "explanation": "Assume conventional synthetic rubber. It is non-biodegradable and may require a specialist recovery route."
+  },
+  {
+    "id": "easy/rust iron nail.webp",
+    "name": "Rusty iron nail",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "easy/shampoo plastic bottle.jfif",
+    "name": "Shampoo plastic bottle",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/steel food can.jfif",
+    "name": "Steel food can",
+    "difficulty": "easy",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "easy/synthetic sponge.jfif",
+    "name": "Synthetic sponge",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "easy/toothbrush.jfif",
+    "name": "Toothbrush",
+    "difficulty": "easy",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "easy/used coffee grounds.jfif",
+    "name": "Used coffee grounds",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/veggie scraps.jpg",
+    "name": "Vegetable scraps",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "easy/waste tea leaves.jfif",
+    "name": "Waste tea leaves",
+    "difficulty": "easy",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "hard/broken light bulb.jfif",
+    "name": "Broken light bulb",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "Glass is non-biodegradable. Only accepted glass types belong in glass recycling."
+  },
+  {
+    "id": "hard/broken mirror.jfif",
+    "name": "Broken mirror",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "Glass is non-biodegradable. Only accepted glass types belong in glass recycling."
+  },
+  {
+    "id": "hard/broken phone screen.jfif",
+    "name": "Broken phone screen",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "A phone screen is an electronic assembly with glass and other layers, not ordinary bottle glass."
+  },
+  {
+    "id": "hard/broken tv.jfif",
+    "name": "Broken tv",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "hard/ceramic coated cookware.jfif",
+    "name": "Ceramic coated cookware",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/chewing gum.jfif",
+    "name": "Chewing gum",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/ciggeratte butt.jfif",
+    "name": "Cigarette butt",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "A cigarette filter is usually cellulose acetate plastic. The complete butt is mixed and contaminated, not compostable food waste."
+  },
+  {
+    "id": "hard/circuit board.jfif",
+    "name": "Circuit board",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "hard/compostable plastic cutlery.jfif",
+    "name": "Compostable plastic cutlery",
+    "difficulty": "hard",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Assume certified compostable plastic. It needs the conditions specified on its certification, often industrial composting; do not mix it into plastic recycling."
+  },
+  {
+    "id": "hard/deodrant can.jfif",
+    "name": "Deodorant aerosol can",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Assume an aerosol can with unknown remaining contents. Keep it out of ordinary collection until empty-state and local acceptance are checked."
+  },
+  {
+    "id": "hard/disposable coffee cup.jfif",
+    "name": "Disposable coffee cup",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/disposable diaper.jfif",
+    "name": "Disposable diaper",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "sanitary"
+    ],
+    "explanation": "Sanitary products commonly contain plastic and mixed fibres and require separate handling."
+  },
+  {
+    "id": "hard/electric toothbrush.jfif",
+    "name": "Electric toothbrush",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "hard/expired prescription medicine.jfif",
+    "name": "Expired prescription medicine",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "This item needs specialist handling. Its hazard takes priority over ordinary material sorting."
+  },
+  {
+    "id": "hard/face mask.jfif",
+    "name": "Face mask",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "sanitary"
+    ],
+    "explanation": "Sanitary products commonly contain plastic and mixed fibres and require separate handling."
+  },
+  {
+    "id": "hard/fibreglass insulation.jfif",
+    "name": "Fibreglass insulation",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/flouroscent tube.jfif",
+    "name": "Fluorescent tube",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "A fluorescent tube can contain mercury. Use a specialist collection route, not a household glass bin."
+  },
+  {
+    "id": "hard/juice carton.jfif",
+    "name": "Juice carton",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "A beverage carton combines paperboard with plastic and sometimes aluminium. Dedicated carton recycling may exist."
+  },
+  {
+    "id": "hard/paint soaked cloth.jfif",
+    "name": "Paint soaked cloth",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "This item needs specialist handling. Its hazard takes priority over ordinary material sorting."
+  },
+  {
+    "id": "hard/paper reciept.jfif",
+    "name": "Paper receipt",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume a thermal-paper receipt. Its coating makes it unsuitable for ordinary paper recycling; the main material is still paper."
+  },
+  {
+    "id": "hard/pesticide container.jfif",
+    "name": "Pesticide container",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "Assume pesticide residue remains. Contamination requires specialist handling regardless of the container material."
+  },
+  {
+    "id": "hard/plastic bottle with metal component.jfif",
+    "name": "Plastic bottle with metal component",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "Mixed plastic and metal parts must be separated where possible; the combined item is a composite."
+  },
+  {
+    "id": "hard/power bank.jfif",
+    "name": "Power bank",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "hard/printer ink cartridge.jfif",
+    "name": "Printer ink cartridge",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "hard/sanitary pad.jfif",
+    "name": "Sanitary pad",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "sanitary"
+    ],
+    "explanation": "Sanitary products commonly contain plastic and mixed fibres and require separate handling."
+  },
+  {
+    "id": "hard/snack packet.jfif",
+    "name": "Snack packet",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/toothpaste tube.jfif",
+    "name": "Toothpaste tube",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "hard/used cooking oil.jfif",
+    "name": "Used cooking oil",
+    "difficulty": "hard",
+    "types": [
+      "biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "oil"
+    ],
+    "explanation": "Cooking oil is organic and can be recovered through dedicated collection. It is not suitable for pouring into drains or routine home composting."
+  },
+  {
+    "id": "hard/used motor oil.jfif",
+    "name": "Used motor oil",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "Motor oil requires a dedicated hazardous-waste or oil-recovery route, not ordinary mixed recycling."
+  },
+  {
+    "id": "hard/wax coated card board box.jfif",
+    "name": "Wax-coated cardboard box",
+    "difficulty": "hard",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "medium/aluminium foil tray.jfif",
+    "name": "Aluminium foil tray",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "medium/aluminium food container.jfif",
+    "name": "Aluminium food container",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "medium/broken glass jar.jfif",
+    "name": "Broken glass jar",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "This is container glass, but sharp fragments need safe separate handling and local recycler approval."
+  },
+  {
+    "id": "medium/broken keyboard.jfif",
+    "name": "Broken keyboard",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "medium/cotton bedsheet.jfif",
+    "name": "Cotton bedsheet",
+    "difficulty": "medium",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "textile"
+    ],
+    "explanation": "Assume 100% cotton without a synthetic blend. Cotton is biodegradable under appropriate conditions; reuse or textile collection is preferable."
+  },
+  {
+    "id": "medium/damaged charging cable.jfif",
+    "name": "Damaged charging cable",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "medium/empty glass perfume bottle.jfif",
+    "name": "Empty glass perfume bottle",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "glass"
+    ],
+    "explanation": "Glass is non-biodegradable. Only accepted glass types belong in glass recycling."
+  },
+  {
+    "id": "medium/expired bread.jfif",
+    "name": "Expired bread",
+    "difficulty": "medium",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "medium/fish bones.jfif",
+    "name": "Fish bones",
+    "difficulty": "medium",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "medium/leftover cooked dal.jfif",
+    "name": "Leftover cooked dal",
+    "difficulty": "medium",
+    "types": [
+      "biodegradable"
+    ],
+    "categories": [
+      "food_waste"
+    ],
+    "explanation": "Food residues are biodegradable. Biodegradable does not mean safe to leave as litter."
+  },
+  {
+    "id": "medium/old mobile phone.jfif",
+    "name": "Old mobile phone",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "e_waste"
+    ],
+    "explanation": "Electronic waste is non-biodegradable and may be recyclable through an authorised specialist route, not a household recycling bin."
+  },
+  {
+    "id": "medium/old newspaper.jfif",
+    "name": "Old newspaper",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume clean, uncoated paper. It is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "medium/paper egg carton.jfif",
+    "name": "Paper egg carton",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "biodegradable"
+    ],
+    "categories": [
+      "paper"
+    ],
+    "explanation": "Assume clean, uncoated paper. It is both biodegradable and potentially recyclable."
+  },
+  {
+    "id": "medium/plastc shampoo sachet.jfif",
+    "name": "Plastic shampoo sachet",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "medium/plastic bubble wrap.jfif",
+    "name": "Plastic bubble wrap",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "plastic"
+    ],
+    "explanation": "Conventional plastic is non-biodegradable. Recyclability depends on the item, polymer and available collection."
+  },
+  {
+    "id": "medium/polyester tshirt.jfif",
+    "name": "Polyester tshirt",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "textile"
+    ],
+    "explanation": "Assume a synthetic polyester textile. It is non-biodegradable; textile recovery is a separate route."
+  },
+  {
+    "id": "medium/rusty iron screw.jfif",
+    "name": "Rusty iron screw",
+    "difficulty": "medium",
+    "types": [
+      "recyclable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "metal"
+    ],
+    "explanation": "Metal is non-biodegradable. Clean accepted metal can also be recycled."
+  },
+  {
+    "id": "medium/toothpase container.jfif",
+    "name": "Toothpaste container",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other"
+    ],
+    "explanation": "This item combines materials or coatings; do not assume it belongs in ordinary single-material recycling."
+  },
+  {
+    "id": "medium/used aa battery.jfif",
+    "name": "Used aa battery",
+    "difficulty": "medium",
+    "types": [
+      "non_biodegradable",
+      "recyclable"
+    ],
+    "categories": [
+      "hazardous"
+    ],
+    "explanation": "This item needs specialist handling. Its hazard takes priority over ordinary material sorting."
+  },
+  {
+    "id": "medium/used tea bag.jfif",
+    "name": "Used tea bag",
+    "difficulty": "medium",
+    "types": [
+      "biodegradable",
+      "non_biodegradable"
+    ],
+    "categories": [
+      "composite_or_other",
+      "food_waste"
+    ],
+    "explanation": "The tea is biodegradable, but a bag can include plastic fibres, string or staples. Accept food waste or mixed materials; remove the bag before composting the tea."
+  }
+]
