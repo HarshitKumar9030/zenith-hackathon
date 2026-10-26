@@ -55,6 +55,7 @@ export async function POST(req: Request) {
       (data.selectedItems && JSON.stringify(data.selectedItems) !== JSON.stringify((detected || []).map((_: unknown, i: number) => i)));
     const identification = identificationSchema.parse({
       ...record.identification,
+      waste_properties: record.identification.waste_properties ?? undefined,
       ...(data.selectedItems
         ? {
             detected_items: data.selectedItems.map((i) => detected[i]),
@@ -72,9 +73,9 @@ export async function POST(req: Request) {
       // Corrections invalidate environmental claims from the original observation.
       ...(classificationChanged ? {
         waste_properties: undefined,
-        detected_items: (data.selectedItems ? data.selectedItems.map(i => detected[i]) : detected)?.map((item: Record<string, unknown>) => ({...item, waste_properties: undefined})),
       } : {}),
     });
+    if (!identification.waste_properties) delete identification.waste_properties;
     const guide = record.guideId
       ? await database
           .collection("guides")

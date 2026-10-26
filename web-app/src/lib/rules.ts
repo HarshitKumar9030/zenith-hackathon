@@ -19,7 +19,6 @@ export const identificationSchema = z.object({
     .array(
       z.object({
         name: z.string().min(1).max(200),
-        waste_properties: wastePropertiesSchema.optional(),
         material: materialSchema,
         classification: z.enum(["waste", "not_waste", "uncertain"]).optional(),
         special_handling: z.enum(["yes", "no", "unknown"]),

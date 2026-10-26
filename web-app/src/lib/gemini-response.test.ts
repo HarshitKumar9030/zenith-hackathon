@@ -14,3 +14,10 @@ test('provider failures distinguish access, quota, model, schema and outage with
  assert.match(identificationFailure(503,{error:{message:'private-key'}}).error,/temporarily unavailable/);
  assert.ok(!identificationFailure(403,{error:{message:'private-key'}}).error.includes('private-key'));
 });
+
+test('environmental scan labels do not reintroduce rejected nested item objects',()=>{
+ const schema=geminiJsonSchema(z.toJSONSchema(identificationSchema)) as any;
+ assert.ok(schema.properties.waste_properties.properties.biodegradability);
+ assert.equal(schema.properties.detected_items.items.properties.waste_properties,undefined);
+ assert.equal(schema.properties.detected_items.maxItems,16);
+});
