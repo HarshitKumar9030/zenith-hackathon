@@ -18,9 +18,9 @@ Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 
 
 ## EcoMitra domain and QR
 
-The host-specific Next.js rewrite routes `https://ecomitra.harshit.page/` directly to `/quiz`; the existing application domain keeps its normal home page. Public page branding is EcoMitra. Existing internal database identifiers, native helper identifiers, certificate IDs and authentication domains are retained for compatibility.
+`https://ecomitra.harshit.page/` serves the landing page. `https://ecomitra.harshit.page/quiz` serves the standalone quiz; no host-specific root rewrite is used. Public page branding is EcoMitra. Existing internal database identifiers, native helper identifiers, certificate IDs and authentication domains are retained for compatibility.
 
-Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page` with high error correction and a four-module quiet zone. The artwork surrounds the intact code rather than covering its data modules. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
+Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page/quiz` with high error correction and a four-module quiet zone. The artwork surrounds the intact code rather than covering its data modules. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
 
 Scanner results also show independent biodegradability and potential-recyclability properties, including unknown and mixed cases, at scan/group level. The provider supplies these within the same classification request. Legacy records remain readable; an identification correction invalidates the original environmental claims. Potential recycling is not a local acceptance guarantee.
 
@@ -33,3 +33,5 @@ Provider compatibility fix: a live API comparison returned HTTP 400 for nested p
 Final scanner verification: the actual production prompt and repaired schema processed a supplied banana-peel photograph successfully (HTTP 200, STOP, valid schema, food_waste, biodegradable) in 4195 ms. This is one compatibility smoke, not an accuracy benchmark. All 74 unit tests and the production build passed after the schema repair.
 
 Scanner presentation: display one primary label, prioritising Special collection when handling requires it, then supported Recyclable, Biodegradable or Non-biodegradable properties. Unknown/mixed evidence stays internal and displays the concrete action Separate for sorting. It does not become a fabricated recycling or biodegradability claim. The helper sorts such items at collection.
+
+Routing correction: the QR destination was updated to `/quiz` so the root URL can remain the EcoMitra landing page. Reprint the updated QR artwork rather than using the earlier homepage-targeting copy.

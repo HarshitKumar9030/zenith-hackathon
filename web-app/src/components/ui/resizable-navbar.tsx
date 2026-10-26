@@ -14,6 +14,7 @@ const links = [
   { name: "How it works", href: "#how-it-works" },
   { name: "Plans", href: "#plans" },
   { name: "For helpers", href: "#helpers" },
+  { name: "Quiz", href: "/quiz" },
 ];
 export default function ResizableNavbar() {
   const [compact, setCompact] = useState(false),
