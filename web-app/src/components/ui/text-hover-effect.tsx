@@ -56,7 +56,7 @@ export default function TextHoverEffect() {
         stroke="#496653"
         strokeWidth="1"
       >
-        Waste Right.
+        EcoMitra.
       </text>
       <text
         x="500"
@@ -71,7 +71,7 @@ export default function TextHoverEffect() {
         mask={`url(#${id}-mask)`}
         opacity={hovered ? 1 : 0.35}
       >
-        Waste Right.
+        EcoMitra.
       </text>
     </svg>
   );

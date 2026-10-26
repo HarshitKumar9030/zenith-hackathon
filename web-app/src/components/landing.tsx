@@ -284,7 +284,7 @@ export default function Landing() {
               for everyday waste.
             </h2>
             <a className="primary" href="/app">
-              Open Waste Right <ArrowRight size={17} />
+              Open EcoMitra <ArrowRight size={17} />
             </a>
           </motion.div>
         </section>
@@ -295,7 +295,7 @@ export default function Landing() {
             <a className="landing-brand" href="/">
               <Leaf size={29} />
               <span>
-                Waste Right<span className="brand-dot">.</span>
+                EcoMitra<span className="brand-dot">.</span>
               </span>
             </a>
             <p>
@@ -321,7 +321,7 @@ export default function Landing() {
         </div>
         <TextHoverEffect />
         <div className="footer-bottom">
-          <small>© {new Date().getFullYear()} Waste Right</small>
+          <small>© {new Date().getFullYear()} EcoMitra</small>
           <span>
             <span className="footer-status" /> Scan. Confirm. Collect.
           </span>

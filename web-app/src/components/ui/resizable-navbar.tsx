@@ -29,10 +29,10 @@ export default function ResizableNavbar() {
         animate={{ maxWidth: compact ? 1080 : 1340 }}
         transition={{ duration: reduce ? 0 : 0.35 }}
       >
-        <a className="landing-brand" href="/" aria-label="Waste Right home">
+        <a className="landing-brand" href="/" aria-label="EcoMitra home">
           <Leaf size={29} strokeWidth={1.8} />
           <span>
-            Waste Right<span className="brand-dot">.</span>
+            EcoMitra<span className="brand-dot">.</span>
           </span>
         </a>
         <nav

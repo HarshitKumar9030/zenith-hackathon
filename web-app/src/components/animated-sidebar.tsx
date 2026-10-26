@@ -4,7 +4,6 @@ import { useState } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
   Trophy,
-  GraduationCap,
   Home,
   ScanLine,
   Clock3,
@@ -26,7 +25,6 @@ const items = [
   { label: "Pickups", Icon: CalendarDays },
   { label: "Rewards", Icon: Gift },
   { label: "Discovery Points", Icon: Trophy },
-  { label: "Waste quiz", Icon: GraduationCap },
   { label: "Settings", Icon: Settings },
 ];
 export default function AnimatedSidebar({
@@ -58,7 +56,7 @@ export default function AnimatedSidebar({
       <motion.a
         className="brand"
         href="/"
-        aria-label="Waste Right home"
+        aria-label="EcoMitra home"
         initial={{ opacity: 0, y: reduce ? 0 : -7 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduce ? 0 : 0.4 }}
@@ -66,7 +64,7 @@ export default function AnimatedSidebar({
       >
         <Leaf size={30} strokeWidth={2.2} />
         <span>
-          Waste Right<span className="brand-dot">.</span>
+          EcoMitra<span className="brand-dot">.</span>
         </span>
       </motion.a>
       <LayoutGroup id="sidebar-navigation">
