@@ -12,6 +12,7 @@ function render(){
     const row=document.createElement('li');row.className='row';row.dataset.rank=String(entry.rank);row.style.animationDelay=`${i*20}ms`;
     const rank=document.createElement('span');rank.className='rank';rank.textContent=String(entry.rank).padStart(2,'0');
     const name=document.createElement('span');name.className='name';name.textContent=entry.alias;
+    const level=document.createElement('small');level.className='level';level.textContent=entry.points>=50?'Pathfinder':entry.points>=25?'Trailblazer':entry.points>=10?'Explorer':entry.points>=1?'First find':'New explorer';name.append(level);
     const score=document.createElement('strong');score.className='score';score.textContent=String(entry.points);score.setAttribute('aria-label',`${entry.points} points`);
     row.append(rank,name,score);fragment.append(row);
   });
