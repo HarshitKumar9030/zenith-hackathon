@@ -48,6 +48,11 @@ export async function POST(req: Request) {
       const chosen = data.selectedItems ? data.selectedItems.map(i=>detected[i]) : detected;
       if (!chosen.length || chosen.some(item=>!selectableWaste(item))) throw new Error("Choose waste items only. People and non-waste objects cannot be collected.");
     }
+    const classificationChanged = data.material !== record.identification.material ||
+      data.contaminated !== record.identification.contaminated ||
+      data.mixed_material !== record.identification.mixed_material ||
+      data.special_handling !== record.identification.special_handling ||
+      (data.selectedItems && JSON.stringify(data.selectedItems) !== JSON.stringify((detected || []).map((_: unknown, i: number) => i)));
     const identification = identificationSchema.parse({
       ...record.identification,
       ...(data.selectedItems
@@ -64,6 +69,11 @@ export async function POST(req: Request) {
       mixed_material: data.mixed_material,
       special_handling: data.special_handling,
       clarification_question: null,
+      // Corrections invalidate environmental claims from the original observation.
+      ...(classificationChanged ? {
+        waste_properties: undefined,
+        detected_items: (data.selectedItems ? data.selectedItems.map(i => detected[i]) : detected)?.map((item: Record<string, unknown>) => ({...item, waste_properties: undefined})),
+      } : {}),
     });
     const guide = record.guideId
       ? await database

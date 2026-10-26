@@ -1,3 +1,4 @@
+import { wastePropertiesSchema } from "./waste-properties";
 import { z } from "zod";
 const materialSchema = z.enum([
   "plastic",
@@ -12,11 +13,13 @@ const materialSchema = z.enum([
   "unknown",
 ]);
 export const identificationSchema = z.object({
+  waste_properties: wastePropertiesSchema.optional(),
   object_name: z.string().max(200),
   detected_items: z
     .array(
       z.object({
         name: z.string().min(1).max(200),
+        waste_properties: wastePropertiesSchema.optional(),
         material: materialSchema,
         classification: z.enum(["waste", "not_waste", "uncertain"]).optional(),
         special_handling: z.enum(["yes", "no", "unknown"]),

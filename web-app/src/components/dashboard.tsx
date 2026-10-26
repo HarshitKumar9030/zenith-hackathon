@@ -38,6 +38,7 @@ import LiveCamera from "./live-camera";
 import ServiceHub from "./service-hub";
 import DiscoveryLeaderboard from "./discovery-leaderboard";
 import WasteQuiz from "./waste-quiz";
+import WasteProperties from "./waste-properties";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
@@ -367,6 +368,7 @@ export default function Dashboard() {
             {item.confirmed ? "Confirmed" : "Review checklist"}
           </span>
         </div>
+        <WasteProperties identification={item.identification} />
         <ConfirmationChecklist
           key={item._id + JSON.stringify(item.identification.detected_items) + String(editScanId===item._id)}
           startEditing={editScanId===item._id}
