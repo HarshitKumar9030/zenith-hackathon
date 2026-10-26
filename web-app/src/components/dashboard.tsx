@@ -362,7 +362,14 @@ export default function Dashboard() {
             setEditScanId(null);
             scanEpoch.current++;
             setLiveStop((v) => v + 1);
-            setResult(value as Result);
+            const saved = value as Result;
+            setResult(saved);
+            setHistory((items) => items.map((scan) => scan._id === saved._id ? saved : scan));
+            if (editScanId === item._id && saved.identification.special_handling === "no") {
+              setPickupScanId(saved._id);
+              setPage("Pickups");
+              setResult(null);
+            }
             void refresh();
           }}
         />

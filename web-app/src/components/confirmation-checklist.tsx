@@ -1,6 +1,6 @@
 "use client";
 import { selectableWaste } from "@/lib/scan-safety";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, Loader2, Pencil, X } from "lucide-react";
 import flow from "./simple-flow.module.css";
@@ -48,6 +48,8 @@ export default function ConfirmationChecklist({
     [mixed, setMixed] = useState(identification.mixed_material),
     [busy, setBusy] = useState(false);
   const reduce = useReducedMotion();
+  const handlingSection = useRef<HTMLDivElement>(null);
+  const [handlingError, setHandlingError] = useState("");
   const items = identification.detected_items?.length
     ? identification.detected_items
     : identification.detected_items ? [] : [{ name: identification.object_name, material: identification.material, classification: undefined }];
@@ -71,6 +73,15 @@ export default function ConfirmationChecklist({
     }
   }
   async function save() {
+    if (special === "unknown") {
+      setHandlingError("Choose Ordinary for everyday household waste, or Special for batteries, electronics or hazardous items.");
+      const details = handlingSection.current?.closest("details");
+      if (details) details.open = true;
+      handlingSection.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      handlingSection.current?.focus();
+      return;
+    }
+    setHandlingError("");
     setBusy(true);
     try {
       const data = await serviceApi("confirm", {
@@ -253,12 +264,12 @@ export default function ConfirmationChecklist({
             { value: "unknown", label: "Not sure" },
           ])}
         </div>
-        <div className="editor-setting">
+        <div className="editor-setting" ref={handlingSection} tabIndex={-1}>
           <div>
             <label>Handling</label>
             <small>Batteries, electronics or hazardous contents?</small>
           </div>
-          {choices("Handling", special, setSpecial, [
+          {choices("Handling", special, (value) => { setSpecial(value); setHandlingError(""); }, [
             { value: "no", label: "Ordinary" },
             { value: "yes", label: "Special" },
             { value: "unknown", label: "Not sure" },
@@ -285,6 +296,8 @@ export default function ConfirmationChecklist({
         </div>
       </div>
       </details>
+      {handlingError && <p role="alert">{handlingError}</p>}
+      {special === "yes" && <p role="status">These items need a specialist collection. Save the details, then use Help to arrange safe handling. Ordinary pickup booking is unavailable for this scan.</p>}
       <footer>
         <p>
           By confirming, you’re checking that these details match your items.
@@ -321,7 +334,7 @@ export default function ConfirmationChecklist({
               ? "Saving…"
               : confirmed
                 ? "Save changes"
-                : "Continue to pickup"}
+                : special === "yes" ? "Save special item details" : "Continue to pickup"}
             {!confirmed && <ArrowRight size={16} />}
           </button>
         </div>

@@ -548,7 +548,7 @@ export default function QuickPickup({
             </div>
             {special && selectedScan && (
               <p role="status" className={flow.notice}>
-                This scan needs a handling check. Review the item details to continue.
+                This scan is marked as needing special or uncertain handling. In Review item details, choose Ordinary only for everyday household waste. For batteries, electronics or hazardous items, keep Special and contact Help.
               </p>
             )}
             <button
