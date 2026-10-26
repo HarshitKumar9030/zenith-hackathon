@@ -156,9 +156,9 @@ export default function QuickPickup({
       "Last pickup details loaded. Review the items and choose your new date.",
     );
   }
-  const special =
-    scans.find((s) => s._id === selectedScan)?.identification
-      .special_handling !== "no";
+  const handling = scans.find((s) => s._id === selectedScan)?.identification.special_handling;
+  const special = handling === "unknown";
+  const specialist = handling === "yes";
   async function pay(id:string){
     const result=await openWasteCheckout("basic",id);
     const fresh=await serviceApi("service");setAccount(fresh.account);setBooking(fresh.account.bookings.find((b:Account["bookings"][number])=>b.id===id)||null);onBooked?.();
@@ -218,7 +218,7 @@ export default function QuickPickup({
       notify(
         ["scheduled", "assigned"].includes(d.result.status)
           ? "Pickup requested."
-          : "Pickup saved. Payment is required to schedule it.",
+          : d.result.status === "quote_requested" ? "Special collection requested. Operations will review handling and price before scheduling." : "Pickup saved. Payment is required to schedule it.",
       );
     } catch (e) {
       if((e as Error).message.includes("Pickup pricing changed")){
@@ -257,8 +257,8 @@ export default function QuickPickup({
                 receipt_pending: "Your receipt is ready",
                 completed: "Collection completed",
                 disputed: "Receipt under review",
-                quote_requested: "Previous quote request",
-                quote_ready: "Previous quote ready",
+                quote_requested: "Special collection under review",
+                quote_ready: "Special collection estimate ready",
               } as Record<string, string>
             )[booking.status] || "Pickup details"}
           </h3>
@@ -267,22 +267,22 @@ export default function QuickPickup({
               "en-IN",
               { day: "numeric", month: "long", timeZone: "Asia/Kolkata" },
             )}{" "}
-            · {booking.asap ? "Next available helper · arrival estimate pending live location" : pickupTimeLabel(booking.window)} · Weight checked at collection
+            · {booking.source === "quote" ? `Requested time · ${pickupTimeLabel(booking.window)}` : booking.asap ? "Next available helper · arrival estimate pending live location" : pickupTimeLabel(booking.window)} · Weight checked at collection
           </p>
           <p>
-            {booking.source === "membership"
+            {booking.source === "quote" ? "Special collection · price agreed after review" : <>{booking.source === "membership"
               ? "Plan allowance"
               : booking.source === "reward"
                 ? "Reward credit"
                 : "Basic pickup"}{" "}
-            · {money(booking.feePaise || 0)} collection fee
+            · {money(booking.feePaise || 0)} collection fee</>}
           </p>
           {booking.status === "payment_due" ? (
             <p>
               {checkoutAvailable?"Complete payment to request collection.":"Your pickup is saved. Payments are currently unavailable; it has not been scheduled."}
             </p>
           ) : (
-            <p>Track your pickup and collection receipt in one place.</p>
+            <p>{booking.status === "quote_requested" ? "Operations will review the materials and collection requirements. You can review the price and instructions before accepting. Collection is not scheduled yet." : "Track your pickup and collection receipt in one place."}</p>
           )}
           {booking.status==="payment_due" && checkoutAvailable ? <button className="primary" type="button" disabled={busy} onClick={()=>{setBusy(true);void pay(booking.id).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>{busy?"Opening payment…":`Pay ${money(booking.feePaise||0)}`} <ArrowRight size={16}/></button> : <button className="primary" type="button" onClick={onRecords}>View pickup <ArrowRight size={16}/></button>}
           {!scanId && (
@@ -352,7 +352,7 @@ export default function QuickPickup({
                   )}
                 </>
               )}
-              {funding === "membership" ? <p className="weight-note">We segregate your waste. Sorting is included in your {planName} plan.</p> : <>
+              {specialist ? <p className="weight-note">Keep special items separate from ordinary waste. Operations will confirm safe packing, the weight limit and collection arrangements.</p> : funding === "membership" ? <p className="weight-note">We segregate your waste. Sorting is included in your {planName} plan.</p> : <>
               <div className="packing-choice">
                 <div className="field">
                   <span>Is your waste separated?</span>
@@ -390,9 +390,9 @@ export default function QuickPickup({
                   ? "Keep food waste and dry materials in separate bags."
                   : "Mixed waste is sorted at our hub for ₹5/kg after weighing."}
               </small></>}
-              <p className="weight-note">
+              {!specialist && <p className="weight-note">
                 {cap} kg included. Your helper weighs it; extra weight costs ₹3/kg.
-              </p>
+              </p>}
             </div>
             <div className="booking-section">
               <h3>Pickup time</h3>
@@ -477,7 +477,7 @@ export default function QuickPickup({
               </p>
 
             </div>
-            {(account.credits>0 || plan?.remainingPickups>0) && <details className={flow.details}><summary>{funding==="membership"?"Using your plan":funding==="reward"?"Using a free pickup":"Pay per pickup"} · Change</summary>
+            {!specialist && (account.credits>0 || plan?.remainingPickups>0) && <details className={flow.details}><summary>{funding==="membership"?"Using your plan":funding==="reward"?"Using a free pickup":"Pay per pickup"} · Change</summary>
             <div className="field">
               <label>Payment option</label>
               <Dropdown
@@ -506,7 +506,7 @@ export default function QuickPickup({
               />
             </div>
             </details>}
-            <div className="automatic-price" aria-live="polite">
+            {specialist ? <div className="automatic-price"><h3>Special collection review</h3><p>Operations checks the items and required handling before offering a price. Your plan allowance and reward credits stay unchanged.</p><strong>No payment now</strong></div> : <div className="automatic-price" aria-live="polite">
               <h3>Pickup summary</h3>
               <dl>
                 <div>
@@ -545,7 +545,7 @@ export default function QuickPickup({
                     : price.sortingIncluded ? "Sorting is included. Extra weight is ₹3/kg after your approval." : "Extra weight is ₹3/kg after your approval."
                   : "Choose an available pickup time."}
               </small>
-            </div>
+            </div>}
             {special && selectedScan && (
               <p role="status" className={flow.notice}>
                 This scan is marked as needing special or uncertain handling. In Review item details, choose Ordinary only for everyday household waste. For batteries, electronics or hazardous items, keep Special and contact Help.
@@ -553,7 +553,7 @@ export default function QuickPickup({
             )}
             <button
               className="primary booking-submit"
-              aria-label={!selectedScan?"Scan waste":special?"Review item details":!price.valid?"Choose pickup time":"Request this pickup"}
+              aria-label={!selectedScan?"Scan waste":special?"Review item details":!price.valid?"Choose pickup time":specialist?"Request special collection review":"Request this pickup"}
               disabled={busy}
               aria-describedby={error?"booking-error":undefined}
             >
@@ -566,12 +566,12 @@ export default function QuickPickup({
                 ? "Saving…"
                 : !selectedScan ? "Scan waste" : special ? "Review item details" : !price.valid
                   ? "Choose a time"
-                  : price.totalPaise > 0
+                  : specialist ? "Request special collection review" : price.totalPaise > 0
                     ? checkoutAvailable ? `Continue to payment · ${money(price.totalPaise)}` : `Save pickup · ${money(price.totalPaise)}`
                     : "Book included pickup"}
             </button>
             <small>
-              A helper accepts your request before collection.
+              {specialist ? "Subject to Operations review and approved specialist handling." : "A helper accepts your request before collection."}
             </small>
           </aside>
           </fieldset>

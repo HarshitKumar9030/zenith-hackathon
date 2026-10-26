@@ -297,7 +297,7 @@ export default function ConfirmationChecklist({
       </div>
       </details>
       {handlingError && <p role="alert">{handlingError}</p>}
-      {special === "yes" && <p role="status">These items need a specialist collection. Save the details, then use Help to arrange safe handling. Ordinary pickup booking is unavailable for this scan.</p>}
+      {special === "yes" && <p role="status">These items need special handling. Continue to request an Operations review. You’ll see the collection terms and price before accepting.</p>}
       <footer>
         <p>
           By confirming, you’re checking that these details match your items.
@@ -334,7 +334,7 @@ export default function ConfirmationChecklist({
               ? "Saving…"
               : confirmed
                 ? "Save changes"
-                : special === "yes" ? "Save special item details" : "Continue to pickup"}
+                : special === "yes" ? "Continue to special collection" : "Continue to pickup"}
             {!confirmed && <ArrowRight size={16} />}
           </button>
         </div>

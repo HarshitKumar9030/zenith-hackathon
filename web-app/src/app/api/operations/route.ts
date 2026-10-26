@@ -163,6 +163,10 @@ export async function POST(req: Request) {
       if (data.action === "claim") {
         if (b.status !== "scheduled")
           throw new Error("Another collector has claimed this pickup.");
+        if ((b.specialHandling === "yes" || b.source === "quote") && !admin && u.specialPickupApproved !== true)
+          throw new Error("This collection requires an approved special-pickup helper.");
+        if (b.specialHandling === "unknown")
+          throw new Error("Operations must resolve handling before this collection can be accepted.");
         b.collectorId = String(u._id);
         b.status = "assigned";
       } else if (data.action === "weigh") {

@@ -68,5 +68,22 @@ try{
  assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},helper.cookie,'','operations')).status,400);
  assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},admin.cookie,'','operations')).status,200);
  const helperState=await request(null,helper.cookie,'','operations');assert.equal(helperState.data.specialPickupApproved,true);
- console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and restored service windows and surge, manual dispatch, cancellation credit restoration and administrator-only special pickup designation.');
+ const specialResident=await user('resident');await request(null,specialResident.cookie,'','service');
+ await request({action:'profile',address:'Synthetic special residence',locality:'QA campus',alias:'',leaderboard:false},specialResident.cookie,'','service');
+ await db.collection('service_accounts').updateOne({_id:specialResident.id},{$set:{credits:1}});
+ const specialScan=await db.collection('history').insertOne({userId:specialResident.id,confirmed:true,identification:{...shape,object_name:'Used battery',special_handling:'yes'}});
+ const specialRequest=await request({action:'book',requestId:crypto.randomUUID(),source:'reward',scanId:String(specialScan.insertedId),date:future,window:'09:00',segregated:true},specialResident.cookie,'','service');
+ assert.equal(specialRequest.status,200,JSON.stringify(specialRequest.data));assert.equal(specialRequest.data.result.status,'quote_requested');assert.equal(specialRequest.data.result.source,'quote');assert.equal(specialRequest.data.result.feePaise,0);assert.equal(specialRequest.data.result.collectorId,undefined);assert.equal((await db.collection('service_accounts').findOne({_id:specialResident.id})).credits,1);
+ // Special handling is visible in jobs and enforced when claiming, not just a badge.
+ const specialistJob={id:new ObjectId().toString(),status:'scheduled',specialHandling:'yes',source:'quote',events:[],item:'Used battery',material:'metal',date:future,window:'09:00',locality:'QA campus'};
+ const unresolved={...specialistJob,id:new ObjectId().toString(),specialHandling:'unknown'};
+ await db.collection('service_accounts').updateOne({_id:fresh.id},{$push:{bookings:{$each:[specialistJob,unresolved]}}});
+ const ordinaryHelper=await user('collector');
+ const visible=await request(null,ordinaryHelper.cookie,'','operations');assert.equal(visible.data.jobs.find(j=>j.id===specialistJob.id).specialHandling,'yes');
+ const denied=await request({action:'claim',residentId:String(fresh.id),id:specialistJob.id},ordinaryHelper.cookie,'','operations');assert.equal(denied.status,400);assert.match(denied.data.error,/approved special-pickup/);
+ const unresolvedClaim=await request({action:'claim',residentId:String(fresh.id),id:unresolved.id},helper.cookie,'','operations');assert.equal(unresolvedClaim.status,400);assert.match(unresolvedClaim.data.error,/resolve handling/);
+ const specialClaim=await request({action:'claim',residentId:String(fresh.id),id:specialistJob.id},helper.cookie,'','operations');assert.equal(specialClaim.status,200,JSON.stringify(specialClaim.data));
+ const afterClaim=await db.collection('service_accounts').findOne({_id:fresh.id});assert.equal(afterClaim.bookings.find(j=>j.id===specialistJob.id).collectorId,String(helper.id));
+
+ console.log('Tracking integration passed: access, one-use pairing, coordinate validation, live ETA, heartbeat, completion/password revocation, non-waste rejection, sixteen-item confirmation and restored service windows and surge, manual dispatch, cancellation credit restoration and administrator-only special pickup designation, specialist review without consuming credits and enforced special-helper claim permissions.');
 }finally{app.kill('SIGTERM');await db.dropDatabase();await client.close()}

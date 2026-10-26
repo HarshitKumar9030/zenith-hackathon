@@ -132,7 +132,8 @@ export async function POST(req: Request) {
           throw new Error("Booking history limit reached. Contact support.");
         if (!a.profile.address || !a.profile.locality)
           throw new Error("Save your collection address first.");
-        if (scan!.identification.special_handling !== "no")
+        const specialist = scan!.identification.special_handling === "yes";
+        if (!["yes", "no"].includes(scan!.identification.special_handling))
           throw new Error(
             "This scan needs a special-handling check. Review its identification or open Help before booking.",
           );
@@ -142,9 +143,9 @@ export async function POST(req: Request) {
           ).length >= 3
         )
           throw new Error("You can have up to three pending pickups.");
-        reserve(a, { ...data, weightKg: 0 });
+        if (!specialist) reserve(a, { ...data, weightKg: 0 });
         if (
-          data.source === "membership" &&
+          !specialist && data.source === "membership" &&
           a.membership &&
           new Date(data.date + "T23:59:59+05:30") >
             new Date(a.membership.expiresAt)
@@ -156,22 +157,22 @@ export async function POST(req: Request) {
           segregated: data.segregated,
           time: data.window,
         });
-        if(data.quotedFeePaise !== undefined && data.quotedFeePaise !== pricing.totalPaise)
+        if(!specialist && data.quotedFeePaise !== undefined && data.quotedFeePaise !== pricing.totalPaise)
           throw new Error("Pickup pricing changed. Review the next available time and confirm again.");
         const surgeFeePaise = pricing.surgePaise,
-          feePaise = pricing.totalPaise;
+          feePaise = specialist ? 0 : pricing.totalPaise;
         const booking = {
           id: new ObjectId().toString(),
           requestId: data.requestId,
-          source: data.source,
-          benefitReferenceBasePaise: data.source === "basic" ? 1500 : 0,
+          source: specialist ? "quote" : data.source,
+          benefitReferenceBasePaise: !specialist && data.source === "basic" ? 1500 : 0,
           membershipOrderId:
-            data.source === "membership" ? a.membership?.orderId : null,
+            !specialist && data.source === "membership" ? a.membership?.orderId : null,
           segregated: data.segregated,
           specialHandling: scan!.identification.special_handling,
           scanId: data.scanId,
           recoveryPercent:
-            data.source === "membership"
+            !specialist && data.source === "membership"
               ? a.membership?.plan === "platinum"
                 ? 15
                 : 10
@@ -189,7 +190,7 @@ export async function POST(req: Request) {
           address: a.profile.address,
           location: a.profile.location,
           locality: a.profile.locality,
-          status: feePaise > 0 ? "payment_due" : "scheduled",
+          status: specialist ? "quote_requested" : feePaise > 0 ? "payment_due" : "scheduled",
           feePaise,
           surgeFeePaise,
           sortingFeePaise: pricing.sortingPaise,
@@ -197,7 +198,7 @@ export async function POST(req: Request) {
           createdAt: new Date().toISOString(),
           events: [{ status: "created", at: new Date().toISOString() }],
         };
-        assignDemoHelper(booking, helper);
+        if (!specialist) assignDemoHelper(booking, helper);
         a.bookings.push(booking);
         return booking;
       }
