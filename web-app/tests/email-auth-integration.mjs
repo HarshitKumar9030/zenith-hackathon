@@ -12,7 +12,7 @@ createRequire(import.meta.url)("@next/env").loadEnvConfig(process.cwd());
 const dir = await mkdtemp(join(tmpdir(), "waste-right-email-"));
 const messages = [];
 const sockets = new Set();
-let server, app;
+let server, app, rejectDelivery=false;
 const databaseName = `waste_right_email_qa_${Date.now()}`;
 const client = new MongoClient(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017");
 const port = Number(process.env.QA_EMAIL_PORT || 3108);
@@ -43,7 +43,7 @@ try {
       buffer += chunk;
       while (buffer.includes("\r\n")) {
         const end = buffer.indexOf("\r\n"), line = buffer.slice(0, end); buffer = buffer.slice(end + 2);
-        if (data) { if (line === ".") { messages.push(message); message = ""; data = false; socket.write("250 Accepted\r\n"); } else message += line + "\r\n"; }
+        if (data) { if (line === ".") { if(!rejectDelivery)messages.push(message); message = ""; data = false; socket.write(rejectDelivery?"451 Temporarily unavailable\r\n":"250 Accepted\r\n"); } else message += line + "\r\n"; }
         else if (/^EHLO/.test(line)) socket.write("250-localhost\r\n250 AUTH PLAIN\r\n");
         else if (/^AUTH/.test(line)) socket.write("235 Authenticated\r\n");
         else if (line === "DATA") { data = true; socket.write("354 Send data\r\n"); }
@@ -60,7 +60,7 @@ try {
   // SMTP_SECURE explicitly enables implicit TLS for a nonstandard test port.
   for (let i = 0; i < 80; i++) { try { if ((await fetch(base + "/api/auth/session")).ok) break; } catch {} await new Promise(r => setTimeout(r, 250)); if (i === 79) throw Error("QA app did not start"); }
   const email = "resident@example.test", password = "First-password-1234";
-  let result = await request("signup", { email, password, name: "Mail QA" });
+  let result = await request("signup", { email: `  ${email.toUpperCase()}  `, password, name: "Mail QA" });
   assert.equal(result.data.verificationRequired, true);
   assert.equal(result.response.headers.get("set-cookie"), null);
   assert.equal(messages.length, 1);
@@ -95,7 +95,16 @@ try {
   assert.equal((await request("signin", { token })).response.status,400);
   assert.equal(notifications().length,3,"Rejected replay does not send another notice");
   assert.equal((await request("send-signin", { email })).response.status, 429);
-  console.log("PASS: local TLS SMTP delivery, verification, sign-in, purpose isolation, expiry, replay/race rejection, password reset, session revocation request limits and one sign-in notice per new session.");
+  rejectDelivery=true;
+  const failedSignup=await request("signup",{email:"helper-failure@example.test",password,name:"Helper mail QA",accountType:"helper"});
+  assert.equal(failedSignup.data.deliveryFailed,true);assert.equal(failedSignup.data.verificationRequired,true);assert.equal(failedSignup.response.headers.get("set-cookie"),null);
+  const failedUser=await db.collection("users").findOne({email:"helper-failure@example.test"});assert.equal(failedUser.accountType,"helper");assert.equal(await db.collection("email_tokens").countDocuments({userId:failedUser._id}),0);
+  rejectDelivery=false;
+  const resent=await request("resend-verification",{email:"helper-failure@example.test"});assert.equal(resent.response.status,200);
+  const recovered=await request("verify",{token:tokenFromLastEmail()});assert.equal(recovered.response.status,200);
+  const recoveredSession=await request("session",undefined,recovered.response.headers.get("set-cookie").split(";")[0]);assert.equal(recoveredSession.data.user.accountType,"helper");
+  await waitForNotifications(4);
+  console.log("PASS: local TLS SMTP delivery, verification, sign-in, purpose isolation, expiry, replay/race rejection, password reset, session revocation request limits and one sign-in notice per new session, trimmed signup email, honest delivery-failure feedback and helper verification recovery.");
 } finally {
   app?.kill("SIGTERM");
   if (app) await new Promise(resolve => app.once("exit", resolve));

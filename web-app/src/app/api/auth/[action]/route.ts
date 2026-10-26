@@ -59,7 +59,7 @@ export async function POST(
     const emailActions: Record<string, EmailPurpose> = { "forgot-password": "reset", "send-signin": "signin", "resend-verification": "verify" };
     if (Object.hasOwn(emailActions, action)) {
       if (!emailConfigured()) return NextResponse.json({ error: "Email delivery is not configured yet. Please contact support." }, { status: 503 });
-      const { email } = z.object({ email: z.email().max(254).transform(v => v.toLowerCase()) }).parse(await request.json());
+      const { email } = z.object({ email: z.string().trim().pipe(z.email().max(254)).transform(v => v.toLowerCase()) }).parse(await request.json());
       const bucket = `email:${hashToken(email)}:${Math.floor(Date.now() / 600000)}`;
       const attempt = await database.collection("auth_attempts").findOneAndUpdate({ _id: bucket as never }, { $inc: { count: 1 }, $set: { expiresAt: new Date(Date.now() + 600000) } }, { upsert: true, returnDocument: "after" });
       if ((attempt?.count || 0) > 3) return NextResponse.json({ error: "Too many email requests. Try again in ten minutes." }, { status: 429 });
@@ -80,7 +80,7 @@ export async function POST(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     const data = z
       .object({
-        email: z.email().max(254),
+        email: z.string().trim().pipe(z.email().max(254)),
         password: z.string().min(10).max(128),
         name: z.string().min(1).max(80).optional(),
         accountType: z.enum(["user", "helper"]).default("user"),
@@ -119,7 +119,7 @@ export async function POST(
       if (emailConfigured()) {
         const created = await database.collection("users").findOne({ _id: user.insertedId });
         try { await issueEmailToken(created!, "verify"); }
-        catch { return NextResponse.json({ verificationRequired: true, message: "Account created, but email delivery failed. Use Resend verification to try again." }); }
+        catch { return NextResponse.json({ verificationRequired: true, deliveryFailed: true, message: "Account created, but email delivery failed. Use Resend verification to try again." }); }
         return NextResponse.json({ verificationRequired: true, message: "Check your email to verify your account. The link expires in 15 minutes." });
       }
       await createSession(user.insertedId);

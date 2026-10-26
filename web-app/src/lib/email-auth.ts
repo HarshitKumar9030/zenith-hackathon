@@ -17,7 +17,12 @@ export async function issueEmailToken(user: WithId<Document>, purpose: EmailPurp
     expiresAt: new Date(Date.now() + 15 * 60000),
   });
   try { await sendAccountEmail(user.email, purpose, accountLink(purpose, token)); }
-  catch { await database.collection("email_tokens").deleteOne({ _id: id as never }); throw new Error("Unable to send email. Please try again later."); }
+  catch (failure) {
+    const error = failure as { code?: string; responseCode?: number };
+    console.error("Account email delivery failed", { purpose, code: error.code || "EMAIL_DELIVERY", responseCode: error.responseCode });
+    await database.collection("email_tokens").deleteOne({ _id: id as never });
+    throw new Error("Unable to send email. Please try again later.");
+  }
 }
 
 export async function consumeEmailToken(token: string, purpose: EmailPurpose, password?: string) {

@@ -17,3 +17,5 @@
 @media(max-width:740px){.layout{grid-template-columns:1fr;max-width:520px;padding:15px 20px 45px;gap:0;margin:20px auto 0}.intro{display:none}.nav{padding:24px}.card{padding:30px}.modal{padding:30px 25px;border-radius:23px}.title{font-size:28px}.options{gap:9px}.option{padding:14px 11px}.brand{font-size:20px}}
 @media(max-width:360px){.options{grid-template-columns:1fr}.card{padding:25px}.labelRow{align-items:flex-start}.title{font-size:25px}}
 @media(prefers-reduced-motion:reduce){.modal{animation:none}.submit,.field input,.option{transition:none}.submit:hover:not(:disabled){transform:none}}
+
+.helperAccount{display:block;padding:16px;background:#edf1e5;border-radius:14px;font-size:14px;font-weight:500;color:#315647}

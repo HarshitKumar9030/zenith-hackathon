@@ -52,3 +52,15 @@ The HTML/plain-text message includes India and UTC time, the sign-in method, bro
 On Vercel, managed forwarded-IP headers are used. On another host, `AUTH_TRUSTED_PROXY_HOPS` may be set to the number of controlled reverse proxies only when the origin cannot be reached directly and those proxies append/replace forwarded headers correctly. Otherwise the email says the IP is unavailable; arbitrary caller-supplied IP headers are ignored. Device information is reported by the browser and is not verified device identity. See [Vercel headers](https://vercel.com/docs/headers/request-headers) and [forwarded-header trust guidance](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For).
 
 The local TLS SMTP integration verifies exactly one notice for each successful verification/password/email-link session, no replay notice, and the expected IP/method. No real recipient is contacted by the test.
+
+## Android authentication fixes (0.3)
+
+The Android app creates Helper accounts only; it cannot silently create a Resident account from the helper signup form. Email whitespace is trimmed server-side before validation. Signup transport failures remain a visible error with Resend verification, rather than a “Check your inbox” success state. Server logs record the email purpose, SMTP error code and response code without the recipient, password or token. Resend/reset/email-sign-in responses still avoid revealing whether an account exists.
+
+The production `APP_URL` must be `https://wasteright.harshit.page`; localhost links cannot open a phone's hosted account page. Hosting environment changes require a deployment to take effect. Both local and pulled production SMTP credentials passed TLS authentication without sending an external message during this investigation. That check proves connection/authentication only, not inbox acceptance or spam placement.
+
+Android 0.3 registers the exact HTTPS `/account` path as an App Link. The website's `.well-known/assetlinks.json` includes this APK's public signing-certificate fingerprint. The Activity accepts only the trusted host/account path and loads the fragment token inside the app's WebView, so verification/email sign-in can create the app's own session. Password-reset and verification actions still require user confirmation on the account screen. Android must verify the deployed association; another build signed with a different key needs its public fingerprint added. The private signing key remains ignored.
+
+Validation uses a local TLS SMTP sink: verified helper signup, deliberate SMTP rejection with honest failure feedback and no usable token left behind, successful resend recovery, email normalization, one-use/replay/expiry behaviour and sign-in notification counts. No real recipient was contacted by these tests.
+
+References: [Android App Links](https://developer.android.com/training/app-links/add-applinks), [edge-to-edge and insets](https://developer.android.com/develop/ui/views/layout/edge-to-edge).
