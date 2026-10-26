@@ -38,6 +38,8 @@ import ServiceHub from "./service-hub";
 import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
+import {useNativeHelper} from "@/lib/native-helper";
+import nativeStyles from "./helper-mobile.module.css";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
 import AuthDialogContent, {type AuthMode,type AuthFeedback} from "./auth-dialog-content";
@@ -82,6 +84,7 @@ async function api(path: string, method = "GET", body?: unknown) {
   return data;
 }
 export default function Dashboard() {
+  const {native} = useNativeHelper();
   const [photoFlight, setPhotoFlight] = useState(false);
   const [authFeedback,setAuthFeedback]=useState<AuthFeedback>(null);
   const reduceMotion = useReducedMotion();
@@ -294,6 +297,7 @@ export default function Dashboard() {
   }
   async function signOut() {
     try {
+      if (native) window.location.href = "wasteright-track://stop";
       await api("auth/logout", "POST");
       setUser(null);
       setServiceAccount(null);
@@ -365,7 +369,7 @@ export default function Dashboard() {
             const saved = value as Result;
             setResult(saved);
             setHistory((items) => items.map((scan) => scan._id === saved._id ? saved : scan));
-            if (editScanId === item._id && saved.identification.special_handling === "no") {
+            if (editScanId === item._id && saved.identification.special_handling !== "unknown") {
               setPickupScanId(saved._id);
               setPage("Pickups");
               setResult(null);
@@ -451,8 +455,9 @@ export default function Dashboard() {
       </Reveal>
     );
   }
+  if (native && user && user.accountType !== "helper") return <main className={nativeStyles.nativeShell} style={{padding:28}}><h1>A helper account is needed.</h1><p>This app is for collection partners. Sign out and use your helper account, or use the website for resident pickups.</p><button className="primary" onClick={()=>void signOut()}>Switch account</button></main>;
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${native ? nativeStyles.nativeShell : ""}`}>
       <AnimatedSidebar
         role={user?.role}
         signedIn={Boolean(user)}

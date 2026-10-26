@@ -1,4 +1,5 @@
 "use client";
+import {useNativeHelper} from "@/lib/native-helper";
 import {useEffect,useRef,useState} from 'react';
 import {Copy,MapPin,ShieldCheck,Smartphone,Square} from 'lucide-react';
 import {startBrowserTracking,TrackingEnded} from "@/lib/browser-tracking";
@@ -28,10 +29,17 @@ export function PickupTracking({bookingId}:{bookingId:string}){
  </section>;
 }
 export function HelperTracking({bookingId,hindi=false}:{bookingId:string;hindi?:boolean}){
+ const {native,tracking}=useNativeHelper();
  const [sharing,setSharing]=useState(false),[locating,setLocating]=useState(false),[locationMessage,setLocationMessage]=useState('');
  const control=useRef<AbortController|null>(null),mounted=useRef(true);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;control.current?.abort()}},[bookingId]);
  const startSharing=async()=>{
+  if(native){
+   setLocating(true);setLocationMessage('');
+   try{const data=await api(bookingId,{action:'create',bookingId});window.location.href=`wasteright-track://start?code=${encodeURIComponent(data.code)}`;}
+   catch(e){setLocationMessage((e as Error).message)}finally{setLocating(false)}
+   return;
+  }
   if(!navigator.geolocation){setLocationMessage('Location sharing is unavailable in this browser.');return;}
   control.current?.abort();const controller=new AbortController();control.current=controller;setLocating(true);setLocationMessage('');
   try{
@@ -43,13 +51,15 @@ export function HelperTracking({bookingId,hindi=false}:{bookingId:string;hindi?:
  const [code,setCode]=useState(''),[server,setServer]=useState(''),[expires,setExpires]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const create=async()=>{setBusy(true);setMessage('');try{const data=await api(bookingId,{action:'create',bookingId});setCode(data.code);setServer(window.location.origin);setExpires(data.expiresAt)}catch(e){setMessage((e as Error).message)}finally{setBusy(false)}};
  return <section className={styles.card}><header><div className={styles.icon}><Smartphone size={22}/></div><div><h3>{hindi?'लाइव संग्रह स्थान':'Share pickup location'}</h3><p>{hindi?'केवल इस संग्रह के निवासी के साथ':'Only with this pickup’s resident'}</p></div></header>
-  <button type="button" className={styles.button} disabled={locating} onClick={()=>{if(sharing){control.current?.abort();setSharing(false);setLocationMessage('')}else void startSharing()}}>{locating?(hindi?'स्थान ढूँढ रहे हैं…':'Finding your location…'):sharing?(hindi?'स्थान साझा करना बंद करें':'Stop sharing'):(hindi?'स्थान साझा करें':'Share location')}</button>
-  <p className={styles.note}>{hindi?'लाइव अपडेट के लिए यह स्क्रीन खुली रखें।':'Keep this screen open for live updates.'}</p>
+  <button type="button" className={styles.button} disabled={locating || (native && tracking.pending) || (native && tracking.running && tracking.bookingId!==bookingId)} onClick={()=>{if(native&&tracking.running){window.location.href='wasteright-track://stop';return;}if(sharing){control.current?.abort();setSharing(false);setLocationMessage('')}else void startSharing()}}>{locating?(hindi?'स्थान ढूँढ रहे हैं…':'Finding your location…'):(sharing || (native && tracking.running && tracking.bookingId===bookingId))?(hindi?'स्थान साझा करना बंद करें':'Stop sharing'):(hindi?'स्थान साझा करें':'Share location')}</button>
+  <p className={styles.note}>{native ? (hindi?'ऐप छोटा होने पर भी सूचना के साथ स्थान साझा रहेगा। सूचना से कभी भी रोकें।':'Location continues with a visible notification when the app is minimised. Stop from the notification at any time.') : (hindi?'लाइव अपडेट के लिए यह स्क्रीन खुली रखें।':'Keep this screen open for live updates.')}</p>
+  {native && tracking.status && <p className={styles.note} role="status">{tracking.status}</p>}
+  {native && tracking.running && tracking.bookingId!==bookingId && <p role="status">{hindi?'पहले दूसरे संग्रह का स्थान साझा करना बंद करें।':'Stop sharing the other pickup before starting this one.'}</p>}
   {locationMessage&&<p role="status" className={styles.note}>{locationMessage}</p>}
-  <details className={styles.setup}><summary>{hindi?'Android ऐप से साझा करें':'Use the Android app instead'}</summary>
+  {!native && <details className={styles.setup}><summary>{hindi?'Android ऐप से साझा करें':'Use the Android app instead'}</summary>
   <p className={styles.note}>{hindi?'Android ऐप जोड़ें और अपनी अनुमति से स्थान साझा करें। ऐप में या सूचना से कभी भी रोकें।':'Pair the Android helper app, then choose Start sharing on your phone. A visible notification lets you stop at any time.'}</p>
   {!code?<button type="button" className={styles.button} disabled={busy} onClick={()=>void create()}>{busy?'Please wait…':hindi?'Android ऐप जोड़ें':'Pair Android app'}</button>:<div className={styles.pairing}><label>{hindi?'सर्वर पता':'Server address'}<input readOnly value={server}/></label><label>{hindi?'एक बार उपयोग का कोड':'One-use pairing code'}<input readOnly value={code}/></label><button type="button" className={styles.link} onClick={()=>{void navigator.clipboard.writeText(code).then(()=>setMessage('Code copied.')).catch(()=>setMessage('Select and copy the code above.'))}}><Copy size={14}/>Copy code</button><small>Expires {new Date(expires).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}. On a phone, use your deployed HTTPS address or the computer’s LAN address for a local debug build.</small><button type="button" className={styles.link} disabled={busy} onClick={()=>void create()}>Generate a new code</button></div>}
   <button type="button" className={styles.link} disabled={busy} onClick={()=>{setBusy(true);void api(bookingId,{action:'stop',bookingId}).then(()=>{setCode('');setMessage(hindi?'स्थान साझा करना बंद है।':'Location sharing stopped.')}).catch(e=>setMessage(e.message)).finally(()=>setBusy(false))}}><Square size={13}/>{hindi?'साझा करना बंद करें':'Stop sharing for this pickup'}</button>
-  </details><p className={styles.note}><ShieldCheck size={13}/> {hindi?'अधिकतम 2 घंटे। केवल सक्रिय संग्रह।':'Up to two hours. Active assigned pickup only.'}</p>{message&&<p className={styles.note} role="status">{message}</p>}
+  </details>}<p className={styles.note}><ShieldCheck size={13}/> {hindi?'अधिकतम 2 घंटे। केवल सक्रिय संग्रह।':'Up to two hours. Active assigned pickup only.'}</p>{message&&<p className={styles.note} role="status">{message}</p>}
  </section>;
 }
