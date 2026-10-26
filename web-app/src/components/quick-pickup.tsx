@@ -1,5 +1,6 @@
 "use client";
 import flow from "./simple-flow.module.css";
+import { latestScanBooking, type PaymentState } from "@/lib/payment-status";
 import {openWasteCheckout} from "@/lib/checkout-client";
 import ActionMoment from "./action-moment";
 import { useEffect, useRef, useState } from "react";
@@ -55,6 +56,9 @@ export default function QuickPickup({
     [error, setError] = useState(""),
     [booking, setBooking] = useState<Account["bookings"][number] | null>(null);
   const [bookingMotion, setBookingMotion] = useState(false);
+  const [paymentState,setPaymentState] = useState<PaymentState | "checking">("checking");
+  const [paymentRevision,setPaymentRevision] = useState(0);
+  const paymentEpoch=useRef(0),dataEpoch=useRef(0);
   const [checkoutAvailable,setCheckoutAvailable]=useState(false);
   const form = useRef<HTMLFormElement>(null);
   const [address,setAddress]=useState(""),[locality,setLocality]=useState("");
@@ -67,13 +71,14 @@ export default function QuickPickup({
     });
   useEffect(() => {
     let active = true;
+    const epoch=++dataEpoch.current;
     requestId.current = crypto.randomUUID();
     const next = nextPickupSlot();
     setTime(next.time);
     setPickupDate(next.date);
     Promise.all([serviceApi("service"), serviceApi("history")])
       .then(([d, h]) => {
-        if (!active) return;
+        if (!active || epoch!==dataEpoch.current) return;
         setAccount(d.account);
         setCheckoutAvailable(d.checkoutAvailable===true);
         setAddress(d.account.profile.address);setLocality(d.account.profile.locality);
@@ -89,13 +94,7 @@ export default function QuickPickup({
               ? "reward"
               : "basic",
         );
-        if (scanId)
-          setBooking(
-            d.account.bookings.find(
-              (b: Account["bookings"][number]) =>
-                b.scanId === scanId && b.status !== "cancelled",
-            ) || null,
-          );
+        setBooking(latestScanBooking(d.account.bookings,scanId || initialScanId || items[0]?._id || ""));
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -111,6 +110,28 @@ export default function QuickPickup({
       active = false;
     };
   }, [scanId, initialScanId, reduce]);
+  useEffect(()=>{
+    if(!booking || !["payment_due","quote_ready","payment_due_after_collection"].includes(booking.status)){setPaymentState("paid");return;}
+    let active=true,attempts=0,inFlight=false;let timer:ReturnType<typeof setTimeout>;
+    const epoch=++paymentEpoch.current,id=booking.id;
+    const check=async()=>{
+      if(inFlight||!active)return;inFlight=true;attempts++;
+      try{
+        const result=await serviceApi("payments/status",{bookingId:id});
+        const fresh=await serviceApi("service");
+        if(!active || epoch!==paymentEpoch.current)return;
+        setAccount(fresh.account);
+        const updated=fresh.account.bookings.find((b:Account["bookings"][number])=>b.id===id);
+        if(updated)setBooking(updated);
+        setPaymentState(result.state);
+        if(["processing","unknown"].includes(result.state)&&attempts<12)timer=setTimeout(()=>void check(),5000);
+      }catch{if(active&&epoch===paymentEpoch.current){setPaymentState("unknown");if(attempts<12)timer=setTimeout(()=>void check(),5000);}}finally{inFlight=false;}
+    };
+    setPaymentState("checking");void check();
+    const resume=()=>{if(document.visibilityState==="visible"){clearTimeout(timer);void check();}};
+    window.addEventListener("focus",resume);document.addEventListener("visibilitychange",resume);
+    return()=>{active=false;clearTimeout(timer);window.removeEventListener("focus",resume);document.removeEventListener("visibilitychange",resume)};
+  },[booking?.id,booking?.status,paymentRevision]);
   const plan = account?.membership;
   const planName = plan
     ? PLANS[plan.plan as keyof typeof PLANS]?.name || "Basic"
@@ -160,9 +181,14 @@ export default function QuickPickup({
   const special = handling === "unknown";
   const specialist = handling === "yes";
   async function pay(id:string){
-    const result=await openWasteCheckout("basic",id);
-    const fresh=await serviceApi("service");setAccount(fresh.account);setBooking(fresh.account.bookings.find((b:Account["bookings"][number])=>b.id===id)||null);onBooked?.();
-    notify(result.paid?(result.outcome==="review_needed"?"Payment received. Operations will review it.":"Payment confirmed. Your pickup is requested."):"Payment not completed. Your pickup is saved.");
+    ++dataEpoch.current;++paymentEpoch.current;setPaymentState("checking");
+    try{
+      const result=await openWasteCheckout("basic",id);
+      ++paymentEpoch.current;
+      setPaymentState(result.paid?(result.outcome==="review_needed"?"review_needed":"paid"):result.pending?"processing":"unpaid");
+      const fresh=await serviceApi("service");setAccount(fresh.account);setBooking(fresh.account.bookings.find((b:Account["bookings"][number])=>b.id===id)||null);
+      notify(result.paid?(result.outcome==="review_needed"?"Payment received. Operations will review it.":"Payment confirmed. Your pickup is requested."):result.pending?"Payment confirmation is pending. Do not pay again; we’re checking its status.":"Payment not completed. Your pickup is saved.");
+    }finally{setPaymentRevision(v=>v+1);onBooked?.();}
   }
   async function book(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -183,6 +209,7 @@ export default function QuickPickup({
       const details=field?.closest("details");if(details)details.open=true;
       field?.focus();setError("Add your full street address and locality so your helper can find you.");return;
     }
+    ++dataEpoch.current;
     setBusy(true);
     setError("");
     try {
@@ -249,7 +276,7 @@ export default function QuickPickup({
             <span className="completion-icon"><Check size={26} /></span>
           )}
           <h3>
-            {(
+            {["payment_due","quote_ready"].includes(booking.status) && ["checking","processing","unknown","review_needed","paid"].includes(paymentState) ? (paymentState==="review_needed"?"Payment needs Operations review":paymentState==="paid"?"Payment received":"Checking payment status") : (
               {
                 scheduled: "Pickup requested",
                 payment_due: "Pickup saved · payment pending",
@@ -277,14 +304,15 @@ export default function QuickPickup({
                 : "Basic pickup"}{" "}
             · {money(booking.feePaise || 0)} collection fee</>}
           </p>
+          {booking.paymentId && !["payment_due","quote_ready"].includes(booking.status) && <p className={flow.notice} role="status">Pickup payment confirmed.</p>}
           {booking.status === "payment_due" ? (
             <p>
-              {checkoutAvailable?"Complete payment to request collection.":"Your pickup is saved. Payments are currently unavailable; it has not been scheduled."}
+              {paymentState==="review_needed"?"A payment record needs review. Do not pay again; contact Operations from Help.":paymentState==="paid"?"Your payment is received. Updating the collection status…":["checking","processing","unknown"].includes(paymentState)?"We’re checking the existing payment. Do not pay again while confirmation is pending.":checkoutAvailable?"Complete payment to request collection.":"Your pickup is saved. Payments are currently unavailable; it has not been scheduled."}
             </p>
           ) : (
             <p>{booking.status === "quote_requested" ? "Operations will review the materials and collection requirements. You can review the price and instructions before accepting. Collection is not scheduled yet." : "Track your pickup and collection receipt in one place."}</p>
           )}
-          {booking.status==="payment_due" && checkoutAvailable ? <button className="primary" type="button" disabled={busy} onClick={()=>{setBusy(true);void pay(booking.id).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>{busy?"Opening payment…":`Pay ${money(booking.feePaise||0)}`} <ArrowRight size={16}/></button> : <button className="primary" type="button" onClick={onRecords}>View pickup <ArrowRight size={16}/></button>}
+          {booking.status==="payment_due" && checkoutAvailable && paymentState==="unpaid" ? <button className="primary" type="button" disabled={busy} onClick={()=>{setBusy(true);void pay(booking.id).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>{busy?"Opening payment…":`Pay ${money(booking.feePaise||0)}`} <ArrowRight size={16}/></button> : booking.status==="payment_due" && ["checking","processing","unknown"].includes(paymentState) ? <button className="secondary" type="button" disabled={busy || paymentState==="checking"} onClick={()=>setPaymentRevision(v=>v+1)}>{paymentState==="checking"?"Checking…":"Check payment status"}</button> : <button className="primary" type="button" onClick={onRecords}>View pickup <ArrowRight size={16}/></button>}
           {!scanId && (
             <button
               className="text-button"

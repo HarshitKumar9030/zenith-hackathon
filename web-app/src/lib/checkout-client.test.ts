@@ -11,6 +11,8 @@ test('checkout prevents duplicates, handles dismissal and surfaces uncertain ver
   assert.deepEqual(await payment,{paid:true,outcome:'captured'});assert.equal(orders,1);assert.equal(verifies,1);
   const retry=openWasteCheckout('basic','qa-booking');await tick();options.modal.ondismiss();assert.deepEqual(await retry,{paid:false});assert.equal(verifies,1);
   globalThis.fetch=async(url)=>{if(String(url).endsWith('/order'))return Response.json({key:'test-fixture',orderId:'qa-order',amount:1000});verifies++;return Response.json({error:'temporarily unavailable'},{status:503})};
-  const failed=openWasteCheckout('basic','qa-booking');const rejected=assert.rejects(failed,/Check your payment history before trying again/);await tick();await options.handler(data);await rejected;assert.equal(verifies,2);
+  const failed=openWasteCheckout('basic','qa-booking');await tick();await options.handler(data);assert.deepEqual(await failed,{paid:false,pending:true,outcome:'unknown'});assert.equal(verifies,2);
+  const oldOptions=options;globalThis.fetch=async()=>Response.json({alreadyPaid:true,outcome:'captured'});assert.deepEqual(await openWasteCheckout('basic','qa-booking'),{paid:true,outcome:'captured'});assert.equal(options,oldOptions,'Already paid bookings never open checkout');
+  globalThis.fetch=async()=>Response.json({pending:true,outcome:'processing'});assert.deepEqual(await openWasteCheckout('basic','qa-booking'),{paid:false,pending:true,outcome:'processing'});assert.equal(options,oldOptions,'Pending confirmation never opens another payment window');
  }finally{globalThis.fetch=originalFetch;if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window')}
 });

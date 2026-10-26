@@ -14,21 +14,23 @@ async function loadCheckout(){
  });
  try{await loading}finally{loading=null}
 }
-export async function openWasteCheckout(plan:string,bookingId?:string):Promise<{paid:boolean;outcome?:string}>{
+export async function openWasteCheckout(plan:string,bookingId?:string):Promise<{paid:boolean;pending?:boolean;outcome?:string}>{
  if(active)throw new Error('A payment window is already open. Finish or close it first.');
  active=true;
  try{
-  await loadCheckout();
   const order=await serviceApi('payments/order',{plan,bookingId});
+  if(order.alreadyPaid)return {paid:true,outcome:order.outcome};
+  if(order.pending)return {paid:false,pending:true,outcome:order.outcome};
+  await loadCheckout();
   return await new Promise((resolve,reject)=>{
    let finished=false,verifying=false;
-   const finish=(value:{paid:boolean;outcome?:string})=>{if(!finished){finished=true;resolve(value)}};
+   const finish=(value:{paid:boolean;pending?:boolean;outcome?:string})=>{if(!finished){finished=true;resolve(value)}};
    const checkout=new window.Razorpay!({key:order.key,order_id:order.orderId,amount:order.amount,currency:'INR',name:'Waste Right',description:plan==='basic'?'Waste pickup':`${plan} monthly plan`,prefill:{name:order.name,email:order.email},theme:{color:'#6559a3'},
     modal:{ondismiss:()=>{if(!verifying)finish({paid:false})}},
     handler:async(data:{razorpay_order_id:string;razorpay_payment_id:string;razorpay_signature:string})=>{
      if(finished||verifying)return;verifying=true;
      try{const result=await serviceApi('payments/verify',{orderId:data.razorpay_order_id,paymentId:data.razorpay_payment_id,signature:data.razorpay_signature});finish({paid:true,outcome:result.outcome})}
-     catch{finished=true;reject(new Error('We could not confirm the payment yet. Check your payment history before trying again.'))}
+     catch{finish({paid:false,pending:true,outcome:'unknown'})}
     },
    });
    try{checkout.open()}catch(e){finished=true;reject(e)}

@@ -54,6 +54,7 @@ export default function ServiceHub({
     [jobs, setJobs] = useState<Record<string, unknown>[]>([]),
     [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [rewardMoment, setRewardMoment] = useState(0);
+  const [pendingPayment,setPendingPayment] = useState<string|null>(null);
   const [loading,setLoading] = useState(true),[loadError,setLoadError] = useState("");
   const [ranking, setRanking] = useState<
     { alias: string; days: number; rank: number; isYou: boolean }[]
@@ -105,8 +106,9 @@ export default function ServiceHub({
     if(busy)return;setBusy(true);
     try{
       const result=await openWasteCheckout(plan,bookingId);
+      setPendingPayment(result.pending?bookingId || null:null);
       await refresh();onRefresh();
-      notify(result.paid?(result.outcome==='review_needed'?"Payment received. Operations will review it.":"Payment confirmed."):"Payment not completed. You can try again from this screen.");
+      notify(result.pending?"Payment confirmation is pending. Do not pay again. Check its status shortly.":result.paid?(result.outcome==='review_needed'?"Payment received. Operations will review it.":"Payment confirmed."):"Payment not completed. You can try again from this screen.");
     }catch(e){notify((e as Error).message)}finally{setBusy(false)}
   }
 
@@ -318,11 +320,12 @@ export default function ServiceHub({
               )}
               {b.dispute && <p className={recordStyles.review}>Issue reported: {b.dispute.reason}{b.status === "disputed" ? " · Operations review pending." : ""}</p>}
               <div className="inline-actions">
-                {[
+                {pendingPayment===b.id && <button className="secondary" disabled={busy} onClick={()=>{setBusy(true);void serviceApi("payments/status",{bookingId:b.id}).then(async result=>{if(["paid","unpaid"].includes(result.state))setPendingPayment(null);await refresh();notify(result.state==="paid"?"Payment confirmed.":result.state==="unpaid"?"No successful payment recorded.":"Confirmation is pending. Do not pay again.")}).catch(e=>notify(e.message)).finally(()=>setBusy(false))}}>Check payment status</button>}
+              {[
                   "payment_due",
                   "quote_ready",
                   "payment_due_after_collection",
-                ].includes(b.status) && (
+                ].includes(b.status) && pendingPayment!==b.id && (
                   <button
                     className="primary"
                     disabled={busy || !available}
@@ -338,7 +341,8 @@ export default function ServiceHub({
                     securely
                   </button>
                 )}
-                {[
+
+              {[
                   "payment_due",
                   "scheduled",
                   "assigned",
