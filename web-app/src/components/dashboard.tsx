@@ -39,6 +39,7 @@ import BenefitsPanel from "./benefits-panel";
 import ConfirmationChecklist from "./confirmation-checklist";
 import AnimatedSidebar from "./animated-sidebar";
 import {useNativeHelper} from "@/lib/native-helper";
+import {dashboardPage} from "@/lib/dashboard-navigation";
 import nativeStyles from "./helper-mobile.module.css";
 import { AnimatedIllustration, PageTransition, Reveal } from "./animated-ui";
 import Dropdown from "./dropdown";
@@ -85,6 +86,7 @@ async function api(path: string, method = "GET", body?: unknown) {
 }
 export default function Dashboard() {
   const {native} = useNativeHelper();
+  const [sessionReady,setSessionReady] = useState(false);
   const [photoFlight, setPhotoFlight] = useState(false);
   const [authFeedback,setAuthFeedback]=useState<AuthFeedback>(null);
   const reduceMotion = useReducedMotion();
@@ -140,8 +142,8 @@ export default function Dashboard() {
         setUser(data.user);
         const query = new URLSearchParams(window.location.search);
         const requested = query.get("view");
-        if (data.user?.accountType === "helper") { const helperView = new URLSearchParams(window.location.search).get("view"); setPage(helperView && ["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(helperView) ? helperView : "Helper dashboard"); }
-        else if (requested && ["Overview", "Identify waste", "My history", "Plans", "Pickups", "Rewards", "Settings"].includes(requested)) setPage(requested);
+        setPage(dashboardPage(requested, data.user));
+        setSessionReady(true);
         const requestedAuth=query.get("auth");
         if(!data.user && requestedAuth && ["login","signup","forgot-password","send-signin","resend-verification"].includes(requestedAuth)){
           setSignup(requestedAuth === "signup");setEmailAction(["login","signup"].includes(requestedAuth)?"":requestedAuth);setAuth(true);
@@ -153,6 +155,13 @@ export default function Dashboard() {
       })
       .catch((e) => setMessage(e.message));
   }, [refresh]);
+  useEffect(() => {
+    if (!sessionReady) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", page);
+    if (user) { url.searchParams.delete("auth"); url.searchParams.delete("join"); }
+    window.history.replaceState(window.history.state, "", url);
+  }, [page, sessionReady, user]);
   useEffect(() => {
     if (!native) return;
     const navigate = (event: Event) => {
@@ -295,9 +304,7 @@ export default function Dashboard() {
       });
       if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setAuthFeedback({type:data.deliveryFailed ? "error" : "success",text:data.message}); return; }
       setUser(data.user);
-      setPage(
-        data.user.accountType === "helper" ? "Helper dashboard" : "Overview",
-      );
+      setPage(dashboardPage(new URLSearchParams(window.location.search).get("view"), data.user));
       setAuth(false);
       await refresh();
     } catch (e) {

@@ -64,9 +64,10 @@ try{
  const claimed=await request({action:'claim',residentId:String(fresh.id),id:included.data.result.id},helper.cookie,'','operations');assert.equal(claimed.status,200,JSON.stringify(claimed.data));
  const cancelled=await request({action:'cancel',id:included.data.result.id},fresh.cookie,'','service');assert.equal(cancelled.status,200,JSON.stringify(cancelled.data));
  const saved=await db.collection('service_accounts').findOne({_id:fresh.id});assert.equal(saved.credits,1);assert.equal(saved.bookings.find(b=>b.id===included.data.result.id).status,'cancelled');
- const admin=await user('admin');await db.collection('users').updateOne({_id:admin.id},{$set:{email:'ops@example.test',adminApproved:true}});
+ const admin=await user('admin');await db.collection('users').updateOne({_id:admin.id},{$set:{email:'ops@example.test'}});
  assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},helper.cookie,'','operations')).status,400);
  assert.equal((await request({action:'set_special_pickup',email:`${helper.id}@example.test`,enabled:true},admin.cookie,'','operations')).status,200);
+ assert.equal((await request(null,admin.cookie,'','operations')).data.role,'admin','Verified configured administrators do not need a local-only approval flag');
  const helperState=await request(null,helper.cookie,'','operations');assert.equal(helperState.data.specialPickupApproved,true);
  const specialResident=await user('resident');await request(null,specialResident.cookie,'','service');
  await request({action:'profile',address:'Synthetic special residence',locality:'QA campus',alias:'',leaderboard:false},specialResident.cookie,'','service');

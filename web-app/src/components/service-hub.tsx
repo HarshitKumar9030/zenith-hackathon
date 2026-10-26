@@ -54,11 +54,13 @@ export default function ServiceHub({
     [jobs, setJobs] = useState<Record<string, unknown>[]>([]),
     [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [rewardMoment, setRewardMoment] = useState(0);
+  const [loading,setLoading] = useState(true),[loadError,setLoadError] = useState("");
   const [ranking, setRanking] = useState<
     { alias: string; days: number; rank: number; isYou: boolean }[]
   >([]);
   const refresh = useCallback(async () => {
     if (!signedIn) return;
+    setLoading(true);setLoadError("");
     try {
       const data = await serviceApi("service");
       setAccount(data.account);
@@ -77,8 +79,9 @@ export default function ServiceHub({
         setUsers(op.users);
       }
     } catch (e) {
+      setLoadError((e as Error).message);
       notify((e as Error).message);
-    }
+    } finally { setLoading(false); }
   }, [signedIn, notify, page]);
   useEffect(() => {
     void refresh();
@@ -400,7 +403,7 @@ export default function ServiceHub({
         </>
       )}
       {["Collection route", "Operations"].includes(page) && (
-        !["collector", "admin"].includes(role) ? <div className="empty"><ShieldCheck size={35}/><h2>Approved partner access required.</h2><p>Operations must approve your helper account before you can see collection jobs.</p></div> : <OperationsWorkspace jobs={jobs} users={users} role={role as "admin" | "collector"} busy={busy} onAction={(data) => action("operations", data)}/>
+        loading ? <div className="empty" role="status"><Loader2 className="spin" size={24}/><h2>Opening Operations…</h2></div> : loadError ? <div className="empty" role="alert"><h2>Operations could not load.</h2><p>{loadError}</p><button className="primary" onClick={()=>void refresh()}>Try again</button></div> : !(page === "Operations" ? role === "admin" : ["collector", "admin"].includes(role)) ? <div className="empty"><ShieldCheck size={35}/><h2>{page === "Operations" ? "Administrator access required." : "Approved partner access required."}</h2><p>{page === "Operations" ? "Sign in with a verified email included in the server’s admin allowlist." : "Operations must approve your helper account before you can see collection jobs."}</p></div> : <OperationsWorkspace jobs={jobs} users={users} role={role as "admin" | "collector"} busy={busy} onAction={(data) => action("operations", data)}/>
       )}
     </>
   );
