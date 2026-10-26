@@ -35,3 +35,5 @@ Final scanner verification: the actual production prompt and repaired schema pro
 Scanner presentation: display one primary label, prioritising Special collection when handling requires it, then supported Recyclable, Biodegradable or Non-biodegradable properties. Unknown/mixed evidence stays internal and displays the concrete action Separate for sorting. It does not become a fabricated recycling or biodegradability claim. The helper sorts such items at collection.
 
 Routing correction: the QR destination was updated to `/quiz` so the root URL can remain the EcoMitra landing page. Reprint the updated QR artwork rather than using the earlier homepage-targeting copy.
+
+The single primary label is paired with a short fixed sorting instruction. Provider uncertainty prose is not repeated in the visible label panel; unknown evidence is retained in the saved record rather than presented as false certainty.
