@@ -12,7 +12,7 @@ function render(){
     const row=document.createElement('li');row.className='row';row.dataset.rank=String(entry.rank);row.style.animationDelay=`${i*20}ms`;
     const rank=document.createElement('span');rank.className='rank';rank.textContent=String(entry.rank).padStart(2,'0');
     const name=document.createElement('span');name.className='name';name.textContent=entry.alias;
-    const level=document.createElement('small');level.className='level';level.textContent=entry.points>=50?'Pathfinder':entry.points>=25?'Trailblazer':entry.points>=10?'Explorer':entry.points>=1?'First find':'New explorer';name.append(level);
+    const level=document.createElement('small');level.className='level';level.textContent=(entry.earned??entry.points)>=50?'Pathfinder':(entry.earned??entry.points)>=25?'Trailblazer':(entry.earned??entry.points)>=10?'Explorer':(entry.earned??entry.points)>=1?'First find':'New explorer';name.append(level);
     const score=document.createElement('strong');score.className='score';score.textContent=String(entry.points);score.setAttribute('aria-label',`${entry.points} points`);
     row.append(rank,name,score);fragment.append(row);
   });
@@ -30,7 +30,7 @@ async function refresh(){
     if(!Array.isArray(data.entries))throw Error('invalid response');
     entries=data.entries.slice(0,20).map((entry,i)=>{
       if(typeof entry.alias!=='string'||!Number.isSafeInteger(entry.points)||entry.points<0)throw Error('invalid entry');
-      return {alias:entry.alias,points:entry.points,rank:i+1};
+      return {alias:entry.alias,points:entry.points,earned:Number.isSafeInteger(entry.earned)?entry.earned:entry.points,rank:i+1};
     });
     render();
     updated.textContent=`Updated ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;

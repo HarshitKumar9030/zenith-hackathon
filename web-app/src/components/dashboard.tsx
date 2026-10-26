@@ -268,7 +268,7 @@ export default function Dashboard() {
         image: mode === "photo" ? image : undefined,
       });
       setResult(data);
-      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Discovery Points.");
+      if (data.discovery?.message) setMessage(data.discovery.message);
       void refresh();
     } catch (e) {
       setMessage((e as Error).message);
@@ -291,7 +291,8 @@ export default function Dashboard() {
     });
     if (currentPage.current === "Identify waste" && epoch === scanEpoch.current) {
       setResult(data);
-      if (data.discoveryPointsAwarded === 1) setMessage("+1 Discovery Point · View your ranking in Discovery Points.");
+      if (data.discovery?.message) setMessage(data.discovery.message);
+      if (data.discovery && !['earned','no_photo','no_waste'].includes(data.discovery.reason)) setLiveStop(value=>value+1);
     }
   }
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
@@ -759,6 +760,7 @@ export default function Dashboard() {
               <div className="page-heading">
                 <h1>Scan your waste.</h1>
                 <p>Show your items, check the result, and book a pickup.</p>
+                <details style={{fontSize:11,color:'#8a997a',marginTop:12}}><summary style={{cursor:'pointer'}}>Discovery prize point rules</summary><p style={{fontSize:11,lineHeight:1.8}}>Original waste photos earn up to 30 points per day. Repeated photos earn no extra points; a third identical submission within 24 hours deducts 35% once, rounded down. Similar photos wait for admin review without automatic deductions. Private review thumbnails are kept for seven days. Quiz scores and pickup rewards are separate.</p></details>
               </div>
               <div className="identify-grid">
                 <section>

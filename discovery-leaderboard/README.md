@@ -11,7 +11,7 @@ Open http://localhost:3002. It reads real scores from the EcoMitra public API, u
 
 Deploy `index.html`, `style.css` and `app.js` to any static host, or use `npm start` on a Node host (`PORT` defaults to 3002). On Vercel, `vercel.json` selects the Other preset and copies only the three assets into `dist` with `npm run build`; the local development server is not a production function. Its default API is `https://wasteright.harshit.page/api/discovery-leaderboard?public=1`; deploy the matching web-app API changes first.
 
-The public API exposes only top-20 pseudonyms and scores, with cross-origin read access and no personal total. The authenticated app retains personal totals. Public ranking participation is inherent to earning Discovery Points; account details and locations are not published. This is a hackathon participation challenge, not an anti-cheat system or pickup reward currency.
+The public API exposes only top-20 pseudonyms and scores, with cross-origin read access and no personal total. The authenticated app retains personal totals. Public ranking participation is inherent to earning Discovery Points; account details and locations are not published. Discovery balances are adjusted for reviewed scan rewards, repeat-image penalties and administrator-recorded prize redemptions. Quiz scores and pickup reward points are independent. Image similarity is a heuristic, not proof of physical-object identity.
 
 The main app has a separate sidebar page at `/app?view=Discovery%20Points`. Existing pickup rewards remain on Rewards. See `../docs/discovery-points.md` for earning rules.
 
