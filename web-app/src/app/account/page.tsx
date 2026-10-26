@@ -5,7 +5,7 @@ import {AuthMessage,PasswordField,type AuthFeedback} from '@/components/auth-dia
 import styles from '@/components/auth-screens.module.css';
 const copy={
  reset:{title:'Choose a new password.',description:'A fresh password keeps your account and collection history protected.',action:'Save new password',success:'Your password is updated.',detail:'Sign in with your new password to continue. Your saved activity stays with your account.'},
- verify:{title:'Verify your email.',description:'Confirm your email to finish setting up your Waste Right account.',action:'Verify email',success:'Your email is verified.',detail:'Your account is ready. Continue to your dashboard to get started.'},
+ verify:{title:'Verify your email.',description:'Confirm your email to finish setting up your EcoMitra account.',action:'Verify email',success:'Your email is verified.',detail:'Your account is ready. Continue to your dashboard to get started.'},
  signin:{title:'You’re one step away.',description:'Use your email link to sign in securely, without a password.',action:'Sign in securely',success:'You’re signed in.',detail:'Your account is ready. Pick up where you left off.'},
 };
 export default function AccountLinkPage(){
@@ -36,9 +36,9 @@ export default function AccountLinkPage(){
   finally{pending.current=false;setBusy(false);}
  }
  return <main className={styles.shell}>
-  <nav className={styles.nav} aria-label="Account navigation"><a href="/" className={styles.brand}><Leaf size={26} strokeWidth={1.7}/>Waste Right.</a><a href="/app?auth=login">Back to sign in</a></nav>
+  <nav className={styles.nav} aria-label="Account navigation"><a href="/" className={styles.brand}><Leaf size={26} strokeWidth={1.7}/>EcoMitra.</a><a href="/app?auth=login">Back to sign in</a></nav>
   <div className={styles.layout}>
-   <aside className={styles.intro}><small>Your Waste Right account</small><h2>A little help<br/>getting back in.</h2><p>Your pickups, saved scans and everyday progress, together in one place.</p><div className={styles.introNote}><ShieldCheck size={17}/>Secure links. A simple next step.</div></aside>
+   <aside className={styles.intro}><small>Your EcoMitra account</small><h2>A little help<br/>getting back in.</h2><p>Your pickups, saved scans and everyday progress, together in one place.</p><div className={styles.introNote}><ShieldCheck size={17}/>Secure links. A simple next step.</div></aside>
    <section className={styles.card} aria-labelledby="account-heading">
     <div className={`${styles.mark} ${done?styles.successMark:''}`}><Icon size={26} strokeWidth={1.6} className={!link?'spin':undefined}/></div>
     <header className={styles.header}><h1 id="account-heading" className={styles.title}>{!link?'Checking your link…':done?content!.success:content?.title||'Let’s get you a new link.'}</h1><p className={styles.description}>{!link?'Just a moment while we prepare your next step.':done?content!.detail:content?.description||'This link is incomplete or invalid. Request a fresh email to continue securely.'}</p></header>
@@ -53,7 +53,7 @@ export default function AccountLinkPage(){
      <div className={styles.footer}><a className={styles.link} href={retryHref}>Link expired? Request a new one</a></div>
     </>}
     {done&&<a className={styles.submit} href={action==='reset'?'/app?auth=login':'/app'}>{action==='reset'?'Sign in with your new password':'Open your dashboard'}<ArrowRight size={17}/></a>}
-    {(!valid||done)&&link&&<div className={styles.footer}><a className={styles.link} href="/"><ArrowLeft size={14}/>Back to Waste Right</a></div>}
+    {(!valid||done)&&link&&<div className={styles.footer}><a className={styles.link} href="/"><ArrowLeft size={14}/>Back to EcoMitra</a></div>}
    </section>
   </div>
  </main>;

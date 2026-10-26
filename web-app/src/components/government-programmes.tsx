@@ -16,8 +16,8 @@ export default function GovernmentProgrammes({compact=false}:{compact?:boolean})
   </article>)}</div>
   <div className={styles.policy}>
    <h3>Benefits recorded, not assumed</h3>
-   <p>Our policy allocates 50% of support actually received and attributable to an eligible completed organic collection to the resident as a recorded credit. This is a Waste Right policy, not a government-mandated rate. A scan or pickup alone does not create a subsidy.</p>
-   {compact?<a className={styles.link} href="/government-programmes">All five programmes, eligibility and sources <span aria-hidden="true">→</span></a>:<p>Government collaboration remains proposed/applying. No executed public partnership or award is documented. A PPP needs a signed public-authority agreement; our participation certificate is independently issued by Waste Right. DigiLocker access is not connected.</p>}
+   <p>Our policy allocates 50% of support actually received and attributable to an eligible completed organic collection to the resident as a recorded credit. This is a EcoMitra policy, not a government-mandated rate. A scan or pickup alone does not create a subsidy.</p>
+   {compact?<a className={styles.link} href="/government-programmes">All five programmes, eligibility and sources <span aria-hidden="true">→</span></a>:<p>Government collaboration remains proposed/applying. No executed public partnership or award is documented. A PPP needs a signed public-authority agreement; our participation certificate is independently issued by EcoMitra. DigiLocker access is not connected.</p>}
   </div>
   <small>Sources checked 24 October 2026. Confirm current terms with the implementing authority before applying.</small>
  </section>;

@@ -39,7 +39,7 @@ export default function HelpTour({
     : [
         {
           page: "Overview",
-          title: "Welcome to Waste Right",
+          title: "Welcome to EcoMitra",
           text: "Scan your waste, confirm what is present and arrange a pickup. Your plan and remaining allowance are always in the sidebar.",
         },
         {

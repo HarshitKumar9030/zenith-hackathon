@@ -8,7 +8,7 @@ export type AuthMode='login'|'signup'|'forgot-password'|'send-signin'|'resend-ve
 export type AuthFeedback={type:'success'|'error';text:string}|null;
 const copy={
  login:{title:'Welcome back.',description:'Sign in to your pickups, rewards and everyday progress.',action:'Sign in'},
- signup:{title:'A fresh start.',description:'Create your Waste Right account. Choose how you would like to take part.',action:'Create account'},
+ signup:{title:'A fresh start.',description:'Create your EcoMitra account. Choose how you would like to take part.',action:'Create account'},
  'forgot-password':{title:'Forgot your password?',description:'Enter your account email and we’ll send a link to reset your password.',action:'Send reset link'},
  'send-signin':{title:'Sign in with an email.',description:'We’ll email you a single-use link. No password needed.',action:'Send sign-in link'},
  'resend-verification':{title:'Verify your email.',description:'Request a fresh verification link to finish setting up your account.',action:'Send verification link'},
@@ -43,6 +43,6 @@ export default function AuthDialogContent({mode,busy,feedback,accountType,onAcco
    <button type="button" className={styles.option} disabled={busy} onClick={()=>onMode('send-signin')}><Mail size={17}/><span><strong>Email a sign-in link</strong><small>Continue without a password</small></span></button>
    <button type="button" className={styles.option} disabled={busy} onClick={()=>onMode('resend-verification')}><ShieldCheck size={17}/><span><strong>Verify your email</strong><small>Request a new verification link</small></span></button>
   </div></details>}
-  {!sent&&<div className={styles.footer}>{emailOnly?<button type="button" className={styles.link} disabled={busy} onClick={()=>onMode('login')}><ArrowLeft size={14}/>Back to sign in</button>:<><span>{mode==='signup'?'Already have an account?':'New to Waste Right?'}</span><button type="button" className={styles.link} disabled={busy} onClick={()=>onMode(mode==='signup'?'login':'signup')}>{mode==='signup'?'Sign in':'Create an account'}</button></>}</div>}
+  {!sent&&<div className={styles.footer}>{emailOnly?<button type="button" className={styles.link} disabled={busy} onClick={()=>onMode('login')}><ArrowLeft size={14}/>Back to sign in</button>:<><span>{mode==='signup'?'Already have an account?':'New to EcoMitra?'}</span><button type="button" className={styles.link} disabled={busy} onClick={()=>onMode(mode==='signup'?'login':'signup')}>{mode==='signup'?'Sign in':'Create an account'}</button></>}</div>}
  </>;
 }
