@@ -1,4 +1,5 @@
 "use client";
+import { scanDimensions } from "@/lib/scanner-config";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
@@ -201,9 +202,9 @@ export default function Dashboard() {
         throw new Error("Image dimensions are too large.");
       }
       const canvas = document.createElement("canvas");
-      const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-      canvas.width = bitmap.width * scale;
-      canvas.height = bitmap.height * scale;
+      const dimensions = scanDimensions(bitmap.width, bitmap.height);
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
       canvas
         .getContext("2d")!
         .drawImage(bitmap, 0, 0, canvas.width, canvas.height);

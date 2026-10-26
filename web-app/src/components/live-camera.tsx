@@ -1,4 +1,5 @@
 "use client";
+import { scanDimensions } from "@/lib/scanner-config";
 import { useEffect, useRef, useState } from "react";
 import { SwitchCamera } from "lucide-react";
 import { openCameraStream, type CameraFacing } from "@/lib/camera";
@@ -109,11 +110,11 @@ export default function LiveCamera({
     setProcessing(true);
     try {
       const canvas = document.createElement("canvas");
-      const scale = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
-      canvas.width = v.videoWidth * scale;
-      canvas.height = v.videoHeight * scale;
+      const dimensions = scanDimensions(v.videoWidth, v.videoHeight);
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
       canvas.getContext("2d")!.drawImage(v, 0, 0, canvas.width, canvas.height);
-      const captured = canvas.toDataURL("image/jpeg", 0.8);
+      const captured = canvas.toDataURL("image/jpeg", 0.88);
       setCapturedFrame(captured);
       let labelText = "";
       if (labelsRef.current) {
