@@ -1,6 +1,6 @@
 # Discovery Points leaderboard
 
-Standalone, responsive public leaderboard website. No dependencies, accounts, keys, Mongo credentials or build step. Requires Node.js 20+ for the included static server.
+Standalone, responsive public leaderboard website. No dependencies, accounts, keys or Mongo credentials. Requires Node.js 20+ for the included static server.
 
 ```sh
 cd discovery-leaderboard
@@ -9,8 +9,12 @@ npm start
 
 Open http://localhost:3002. It reads real scores from the EcoMitra public API, updates every 30 seconds while visible and supports manual refresh. For the local app running on port 3001, open http://localhost:3002/?source=local. No invented entries or scores are shown when the API is unavailable.
 
-Deploy `index.html`, `style.css` and `app.js` to any static host, or use `npm start` on a Node host (`PORT` defaults to 3002). No deployment has been created for this separate site yet. Its default API is `https://wasteright.harshit.page/api/discovery-leaderboard?public=1`; deploy the matching web-app API changes first.
+Deploy `index.html`, `style.css` and `app.js` to any static host, or use `npm start` on a Node host (`PORT` defaults to 3002). On Vercel, `vercel.json` selects the Other preset and copies only the three assets into `dist` with `npm run build`; the local development server is not a production function. Its default API is `https://wasteright.harshit.page/api/discovery-leaderboard?public=1`; deploy the matching web-app API changes first.
 
 The public API exposes only top-20 pseudonyms and scores, with cross-origin read access and no personal total. The authenticated app retains personal totals. Public ranking participation is inherent to earning Discovery Points; account details and locations are not published. This is a hackathon participation challenge, not an anti-cheat system or pickup reward currency.
 
 The main app has a separate sidebar page at `/app?view=Discovery%20Points`. Existing pickup rewards remain on Rewards. See `../docs/discovery-points.md` for earning rules.
+
+Production failure fixed 26 October 2026: the original deployment autodetected `server.mjs` as a function and returned FUNCTION_INVOCATION_FAILED. The replacement deployment serves static HTML/CSS/JS directly; the scores still come from the main app API. Public site: https://discovery-leaderboard.vercel.app.
+
+Configuration reference: [Vercel static configuration](https://vercel.com/docs/project-configuration/vercel-json).
