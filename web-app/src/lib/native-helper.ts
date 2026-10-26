@@ -5,7 +5,7 @@ export function useNativeHelper() {
   const [native, setNative] = useState(false);
   const [tracking, setTracking] = useState<NativeTrackingState>({ running: false, status: "", bookingId: "", pending: false });
   useEffect(() => {
-    setNative(/WasteRightHelper\/0\.2/.test(navigator.userAgent));
+    setNative(/WasteRightHelper\/0\.(?:2|3)\b/.test(navigator.userAgent));
     const update = (event: Event) => {
       const data = (event as CustomEvent).detail;
       if (!data || typeof data.running !== "boolean" || typeof data.status !== "string" || typeof data.bookingId !== "string") return;

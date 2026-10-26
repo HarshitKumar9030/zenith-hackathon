@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.wasteright.helper",
+      "sha256_cert_fingerprints": ["52:0F:08:34:BC:B3:7E:21:39:02:AF:97:E2:F0:3B:2B:AE:DC:BE:D2:D7:D5:F2:65:A7:58:FB:A5:DD:1B:37:A7"]
+    }
+  }
+]

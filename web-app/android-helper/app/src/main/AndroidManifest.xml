@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.wasteright.helper" android:versionCode="2" android:versionName="0.2.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.wasteright.helper" android:versionCode="3" android:versionName="0.3.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -8,8 +8,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application android:label="Waste Right Helper" android:icon="@drawable/helper_icon" android:roundIcon="@drawable/helper_icon" android:allowBackup="false" android:usesCleartextTraffic="false" android:theme="@style/AppTheme" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="false"/>
-        <activity android:name=".DashboardActivity" android:exported="true" android:screenOrientation="portrait">
+        <activity android:name=".DashboardActivity" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:exported="true" android:screenOrientation="portrait">
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="wasteright.harshit.page" android:path="/account"/>
+            </intent-filter>
         </activity>
         <service android:name=".TrackingService" android:exported="false" android:foregroundServiceType="location" android:stopWithTask="true"/>
     </application>

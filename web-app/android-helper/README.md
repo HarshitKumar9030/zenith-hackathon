@@ -25,3 +25,9 @@ The app requires connectivity for dashboard actions and does not queue offline r
 The APK compiles and its v2/v3 signature verifies. Web production build, unit tests and scoped API integration cover the backend; synthetic browser checks cover mobile layout, special filtering and Hindi. Physical-device background GPS, notification denial/recovery and battery-management behaviour still need a field test. No real GPS or payment was used during UI QA.
 
 Security references: [Android WebView bridge guidance](https://developer.android.com/privacy-and-security/risks/insecure-webview-native-bridges), [location foreground services](https://developer.android.com/develop/background-work/services/fgs/service-types#location). More: [tracking documentation](../../docs/helper-location-tracking.md).
+
+## Version 0.3: authentication and navigation
+
+Update the installed APK to version 0.3.0 (versionCode 3); the package and signing key are unchanged. The web build recognises 0.2 and 0.3 clients. Bottom navigation is hidden until a helper is signed in and while the keyboard/account dialog is open. Android 11+ system-bar, cutout and keyboard insets are handled separately. Tabs switch the current React page rather than reloading the sign-in form or collection workspace. Older Android versions use resize/visible-frame detection for the keyboard.
+
+Signup is explicitly a Helper account. Email verification, sign-in and reset links for `https://wasteright.harshit.page/account` can reopen this app through Android App Links, retaining its WebView cookie session after verification. Deploy the association JSON before installation/link verification. A fresh signing key requires updating `public/.well-known/assetlinks.json` with its SHA-256 certificate fingerprint; do not commit the keystore. The native URL allowlist and certificate checks remain enabled. Link verification and keyboard/system-bar positioning still need confirmation on the user's device.

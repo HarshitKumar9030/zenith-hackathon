@@ -154,6 +154,17 @@ export default function Dashboard() {
       .catch((e) => setMessage(e.message));
   }, [refresh]);
   useEffect(() => {
+    if (!native) return;
+    const navigate = (event: Event) => {
+      const next = (event as CustomEvent).detail;
+      if (!["Helper dashboard", "Helper collections", "Helper earnings", "Service area"].includes(next)) return;
+      if (!user) { setSignup(false); setEmailAction(""); setAuth(true); return; }
+      if (user.accountType === "helper") setPage(next);
+    };
+    window.addEventListener("wasteright-native-navigate", navigate);
+    return () => window.removeEventListener("wasteright-native-navigate", navigate);
+  }, [native, user]);
+  useEffect(() => {
     if (auth) {
       setAuthFeedback(null);
       dialog.current?.showModal();
@@ -280,9 +291,9 @@ export default function Dashboard() {
       }
       const data = await api(`auth/${signup ? "signup" : "login"}`, "POST", {
         ...Object.fromEntries(form),
-        ...(signup ? { accountType } : {}),
+        ...(signup ? { accountType: native ? "helper" : accountType } : {}),
       });
-      if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setAuthFeedback({type:"success",text:data.message}); return; }
+      if (data.verificationRequired) { setSignup(false); setEmailAction("resend-verification"); setAuthFeedback({type:data.deliveryFailed ? "error" : "success",text:data.message}); return; }
       setUser(data.user);
       setPage(
         data.user.accountType === "helper" ? "Helper dashboard" : "Overview",
@@ -457,7 +468,7 @@ export default function Dashboard() {
   }
   if (native && user && user.accountType !== "helper") return <main className={nativeStyles.nativeShell} style={{padding:28}}><h1>A helper account is needed.</h1><p>This app is for collection partners. Sign out and use your helper account, or use the website for resident pickups.</p><button className="primary" onClick={()=>void signOut()}>Switch account</button></main>;
   return (
-    <div className={`app-shell ${native ? nativeStyles.nativeShell : ""}`}>
+    <div className={`app-shell ${native ? nativeStyles.nativeShell : ""}`} data-helper-session={user?.accountType === "helper" && !auth ? "ready" : "signed-out"}>
       <AnimatedSidebar
         role={user?.role}
         signedIn={Boolean(user)}
@@ -1053,7 +1064,7 @@ export default function Dashboard() {
         </button>
         <AuthDialogContent
           mode={emailAction ? emailAction as AuthMode : signup ? "signup" : "login"}
-          busy={authBusy} feedback={authFeedback} accountType={accountType}
+          busy={authBusy} feedback={authFeedback} accountType={native ? "helper" : accountType} helperOnly={native}
           onAccountType={setAccountType} onSubmit={authenticate}
           onMode={(next)=>{setSignup(next === "signup");setEmailAction(["login","signup"].includes(next)?"":next);setAuthFeedback(null);}}
         />
