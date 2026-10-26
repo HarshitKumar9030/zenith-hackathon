@@ -1,0 +1,19 @@
+.nativeShell{display:block!important;background:#f7f8f2;min-height:100dvh}
+.nativeShell>:global(.sidebar){display:none!important}
+.nativeShell>:global(.main-shell){margin:0!important;padding:0!important;min-width:0}
+.nativeShell :global(.topbar){position:sticky;top:0;z-index:20;margin:0;padding:12px 20px;background:#f7f8f2eF;backdrop-filter:blur(16px);min-height:58px}
+.nativeShell :global(.topbar)>span{display:block!important;font-size:13px;font-weight:600}
+.nativeShell main{padding:20px!important}
+.nativeShell :global(.page-content){padding:20px!important}
+.nativeShell :global(.main-content){padding:20px!important}
+.nativeShell :global(.helper-dashboard){padding:0 2px 28px}
+.nativeShell :global(.page-heading){margin-bottom:24px}
+.nativeShell :global(.page-heading h1){font-size:32px;line-height:1.13;letter-spacing:-.045em}
+.nativeShell :global(.helper-metrics){grid-template-columns:1fr!important;gap:14px}
+.nativeShell :global(.inline-actions){flex-wrap:wrap;gap:8px}
+.nativeShell :global(.inline-actions button){min-height:44px}
+.nativeShell :global(.brand){font-size:22px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 135px;align-items:center;gap:18px;padding:28px;background:#e8eddf;border-radius:28px;margin:8px 0 26px;overflow:hidden;position:relative}
+.hero>div{position:relative;z-index:1}.hero small{font-size:10px;letter-spacing:.14em;color:#597351;text-transform:uppercase}.hero h2{font-size:30px;line-height:1.15;letter-spacing:-.04em;margin:12px 0;color:#1c4231}.hero p{font-size:13px;line-height:1.7;color:#58715e;max-width:340px;margin:0}.hero svg{width:100%;height:auto}.hero img{position:absolute;width:160px;right:-38px;bottom:-55px;opacity:.12;pointer-events:none}
+@media(max-width:480px){.hero{padding:23px;grid-template-columns:minmax(0,1fr) 95px;gap:8px}.hero h2{font-size:26px}.hero p{font-size:12px}.nativeShell :global(.content){padding:18px!important}}
+@media(prefers-reduced-motion:no-preference){.hero{animation:arrive .45s ease both}@keyframes arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}}

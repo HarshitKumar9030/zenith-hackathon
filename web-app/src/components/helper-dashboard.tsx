@@ -1,5 +1,7 @@
 "use client";
 import helperStyles from "./helper-insights.module.css";
+import mobileStyles from "./helper-mobile.module.css";
+import WorkflowArt from "./workflow-art";
 import { helperCompensation } from "@/lib/helper-pay";
 import HelperCollections from "./helper-collections";
 import {HelperTracking} from "./pickup-tracking";
@@ -144,6 +146,9 @@ type Job = {
   item: string;
   material: string;
   status: string;
+  specialHandling?: string;
+  source?: string;
+  quoteTerms?: string;
   locality: string;
   date: string;
   window: string;
@@ -214,9 +219,9 @@ export default function HelperDashboard({
       if (data.action === "weigh") setReceiptMoment((previous) => ({ id: String(data.id), revision: (previous?.revision || 0) + 1 }));
       await refresh();
       notify(t.saved);
-    } catch {
+    } catch (failure) {
       setError(
-        lang === "hi"
+        lang === "en" && failure instanceof Error ? failure.message : lang === "hi"
           ? "जानकारी सहेजी नहीं जा सकी। वजन, अनुमति और कार्य की स्थिति जाँचें।"
           : "Unable to save. Check weight, assignment and current job status.",
       );
@@ -365,9 +370,10 @@ export default function HelperDashboard({
         </section>
       ) : (
         <>
+          {view === "Helper dashboard" && <div className={mobileStyles.hero}><div><small>{lang === "hi" ? "एक बेहतर दिन" : "A cleaner day, together"}</small><h2>{lang === "hi" ? "अगला पड़ाव। नई शुरुआत।" : "Your next stop. A fresh start."}</h2><p>{lang === "hi" ? `${jobs.filter(j=>j.status==='assigned').length} सौंपे गए संग्रह · ${jobs.filter(j=>j.status==='scheduled').length} उपलब्ध। संग्रह टैब में अपना काम चुनें।` : `${jobs.filter(j=>j.status==='assigned').length} assigned · ${jobs.filter(j=>j.status==='scheduled').length} available. Open Collections to choose your next job.`}</p></div><WorkflowArt scene="pickup"/><img src="/assets/abstract-watchglass.svg" alt=""/></div>}
           {view !== "Helper collections" && <>
-          <HelperInsights jobs={jobs} hindi={lang === "hi"} />
-          <div className="helper-metrics">
+          {view === "Helper earnings" && <HelperInsights jobs={jobs} hindi={lang === "hi"} />}
+          {view === "Helper dashboard" && <div className="helper-metrics">
             <div>
               <Wallet size={25} />
               <p>{t.pay}</p>
@@ -400,7 +406,7 @@ export default function HelperDashboard({
               </strong>
               <small>{t.receipts}</small>
             </div>
-          </div>
+          </div>}
           </>}
           {view === "Helper collections" && <HelperCollections jobs={jobs} hindi={lang === "hi"}>{(b) => (
             <article className="booking-entry helper-job" key={b.id}>
@@ -411,6 +417,9 @@ export default function HelperDashboard({
                   {t[b.status as "assigned"] || b.status}
                 </span>
               </div>
+              {(b.specialHandling === "yes" || b.source === "quote") && <div className={helperStyles.specialNotice} role="note"><ShieldCheck size={21}/><div><strong>{lang === "hi" ? "विशेष देखभाल वाला संग्रह" : "Special-handling pickup"}</strong><p>{lang === "hi" ? "स्वीकृत विशेष संग्रह सहायक ही स्वीकार करें। अन्य कचरे से अलग रखें और संचालन के निर्देशों का पालन करें।" : "Approved special-pickup helpers only. Keep these items separate and follow the collection instructions from Operations."}</p>{!specialPickup && <small>{lang === "hi" ? "आपके खाते को इस संग्रह की अनुमति नहीं है।" : "Your account is not approved for this collection."}</small>}</div></div>}
+              {b.quoteTerms && <p><strong>{lang === "hi" ? "संग्रह के निर्देश" : "Collection instructions"}</strong><br/>{b.quoteTerms}</p>}
+              {b.specialHandling === "unknown" && <p role="note">{lang === "hi" ? "देखभाल की समीक्षा बाकी है। संचालन से संपर्क करें।" : "Handling review pending. Contact Operations before accepting."}</p>}
               <p>
                 <MapPin size={15} /> {t.locality}: {b.locality}
               </p>
@@ -450,7 +459,7 @@ export default function HelperDashboard({
               {view === "Helper collections" && b.status === "scheduled" && (
                 <button
                   className="primary"
-                  disabled={busy}
+                  disabled={busy || b.specialHandling === "unknown" || ((b.specialHandling === "yes" || b.source === "quote") && !specialPickup)}
                   onClick={() =>
                     act({ action: "claim", residentId: b.residentId, id: b.id })
                   }
