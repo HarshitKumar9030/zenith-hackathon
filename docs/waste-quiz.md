@@ -20,7 +20,7 @@ Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 
 
 `https://ecomitra.harshit.page/` serves the landing page. `https://ecomitra.harshit.page/quiz` serves the standalone quiz; no host-specific root rewrite is used. Public page branding is EcoMitra. Existing internal database identifiers, native helper identifiers, certificate IDs and authentication domains are retained for compatibility.
 
-Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page/quiz` with high error correction and a four-module quiet zone. The artwork surrounds the intact code rather than covering its data modules. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
+Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page/quiz` with high error correction and a four-module quiet zone. The custom artwork uses rounded dark-green modules and finder frames, a centred leaf mark, a four-module quiet zone, and a high-contrast white code area. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
 
 Scanner results also show independent biodegradability and potential-recyclability properties, including unknown and mixed cases, at scan/group level. The provider supplies these within the same classification request. Legacy records remain readable; an identification correction invalidates the original environmental claims. Potential recycling is not a local acceptance guarantee.
 
@@ -37,3 +37,5 @@ Scanner presentation: display one primary label, prioritising Special collection
 Routing correction: the QR destination was updated to `/quiz` so the root URL can remain the EcoMitra landing page. Reprint the updated QR artwork rather than using the earlier homepage-targeting copy.
 
 The single primary label is paired with a short fixed sorting instruction. Provider uncertainty prose is not repeated in the visible label panel; unknown evidence is retained in the saved record rather than presented as false certainty.
+
+QR visual revision: a forest-green poster with EcoMitra leaf branding, a centred code mark, rounded modules/finder frames and a lilac Scan to play call to action. PNG size is 1000 × 1360; SVG remains scalable. Independent decoding confirmed the exact `/quiz` URL at rendered widths of 1000, 600, 400 and 300 pixels.
