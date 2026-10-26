@@ -22,8 +22,12 @@ The host-specific Next.js rewrite routes `https://ecomitra.harshit.page/` direct
 
 Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page` with high error correction and a four-module quiet zone. The artwork surrounds the intact code rather than covering its data modules. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
 
-Scanner results also show independent biodegradability and potential-recyclability properties, including unknown and mixed cases, for groups and individual items. The provider supplies these within the same classification request. Legacy records remain readable; an identification correction invalidates the original environmental claims. Potential recycling is not a local acceptance guarantee.
+Scanner results also show independent biodegradability and potential-recyclability properties, including unknown and mixed cases, at scan/group level. The provider supplies these within the same classification request. Legacy records remain readable; an identification correction invalidates the original environmental claims. Potential recycling is not a local acceptance guarantee.
 
 Domain status checked 26 October 2026: attached to Vercel project `web-app`, but DNS is not configured. Cloudflare record required: CNAME `ecomitra` → `28aaf9280a8b06b7.vercel-dns-017.com` with proxy disabled (DNS only). Run `vercel domains verify ecomitra.harshit.page` after configuring it. No Cloudflare-authenticated connection was available in this session.
 
 Verification: 73 unit tests and production build passed. A browser run completed all ten questions with exactly 5 easy / 2 medium / 3 hard and displayed the final score and per-answer mistakes. The host rewrite was checked locally with the ecomitra Host header. The rendered branded QR PNG was decoded independently and matched `https://ecomitra.harshit.page` exactly. Public DNS availability remains outstanding.
+
+Provider compatibility fix: a live API comparison returned HTTP 400 for nested per-item environmental-property objects, while both the previous schema and group-only environmental labels returned HTTP 200. Environmental properties are therefore requested only at scan/group level; individual items retain their existing material and special-handling fields.
+
+Final scanner verification: the actual production prompt and repaired schema processed a supplied banana-peel photograph successfully (HTTP 200, STOP, valid schema, food_waste, biodegradable) in 4195 ms. This is one compatibility smoke, not an accuracy benchmark. All 74 unit tests and the production build passed after the schema repair.
