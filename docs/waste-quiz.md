@@ -14,7 +14,7 @@ Biodegradable and recyclable overlap: clean uncoated paper/cardboard accepts bot
 
 Reference background: [EPA common recyclables](https://www.epa.gov/recycle/how-do-i-recycle-common-recyclables) distinguishes container and other glass, plastic acceptance, and compostable plastics; [EPA household hazardous waste](https://www.epa.gov/large-scale-residential-demolition/household-hazardous-waste-and-demolition) supports separate handling for contaminated chemical/oil containers; [EPA battery FAQ](https://www.epa.gov/hw/lithium-ion-battery-recycling-frequently-asked-questions) explains separate battery recovery. These sources supply educational context, not Indian locality disposal rules. Image ownership/licence evidence was not supplied; keep the supplied files' provenance for public use.
 
-Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 generated rounds, no duplicate questions, non-mutating selection, partial credit and overlap handling. No answer countdown or external API is required.
+Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 generated rounds, no duplicate questions, non-mutating selection, partial credit and overlap handling. No external API is required.
 
 ## EcoMitra domain and QR
 
@@ -42,10 +42,14 @@ QR visual revision: a forest-green poster with EcoMitra leaf branding, a centred
 
 ## Interactive game revision — 26 October 2026
 
-The quiz has a game welcome screen, coloured shape-marked answer cards, one prompt at a time, a live points counter and a consecutive-perfect-photo indicator. The photo count remains ten and the 5/2/3 difficulty mix stays internal. There is no countdown or speed bonus. The final score screen runs a short CSS confetti burst, celebrates completion at every score, and retains the wrong-answer review. Reduced-motion users do not see falling confetti. No Kahoot branding, assets or recordings are copied.
+The quiz has a game welcome screen, coloured shape-marked answer cards, one prompt at a time, a live points counter and a consecutive-perfect-photo indicator. The photo count remains ten and the 5/2/3 difficulty mix stays internal. Each pick has a 20-second countdown with no speed bonus. The final score screen runs a short CSS confetti burst, celebrates completion at every score, and retains the wrong-answer review. Reduced-motion users do not see falling confetti. No Kahoot branding, assets or recordings are copied.
 
 Four locally hosted sound files come from [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds), licensed CC0. Source mapping and the pack licence are in `web-app/public/audio/quiz/`. Sounds are requested only after a user interaction. A persistent mute control stops playback and speech; leaving or hiding the page cancels them. Optional system speech synthesis says short phrases such as “Good job!” and “Amazing work! Well done!” when supported. This is generated browser speech, not a downloaded actor recording. Audio/speech failure cannot block scoring or navigation. No music loops or third-party audio requests are needed during play.
 
 Tests additionally validate that each of the 100 category questions offers exactly four distinct choices with exactly one accepted category. Visible and audible feedback use the same answer-key check. Audio files were verified as Ogg/Vorbis; browser playback is subject to the user's autoplay policy and codec/voice support.
 
 Automatic progression: correct feedback stays for 1.1 seconds; incorrect feedback stays for 2.2 seconds before the next prompt/photo. A small progress indicator explains the transition. Timers are cancelled on navigation/unmount and paused while the tab is hidden; returning restarts the feedback interval. Answers lock synchronously so rapid repeated taps cannot award twice or skip prompts. The last category answer automatically opens the final score.
+
+## Answer timer — 27 October 2026
+
+Each waste-type and category prompt has its own visible 20-second countdown. The last five seconds use a contrasting colour. Expiry locks an unanswered pick for zero points, reveals the accepted answers with “Time’s up” feedback, and uses the existing automatic progression. Timeout answers remain visible as unanswered in the final review. The countdown follows a wall-clock deadline, so switching tabs does not grant extra answer time; feedback progression still waits until the tab is visible. Answer and timeout share the synchronous lock to prevent double scoring. Timers are cleared on prompt changes, completion and unmount. Quiz timing does not affect Discovery Points.
