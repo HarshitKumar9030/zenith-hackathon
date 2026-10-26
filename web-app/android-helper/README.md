@@ -1,17 +1,27 @@
 # Waste Right Helper for Android
 
-A small native Android companion for sharing the location of an active, assigned pickup. English/Hindi. No third-party application libraries.
+Android 8+ helper dashboard and native GPS companion. The app uses **https://wasteright.harshit.page** for the signed-in workspace and tracking API. Home, Collections, Earnings and Service area have native bottom navigation. The workspace supports English/Hindi, search, list/grid collections, measured receipts and existing illustrated cards.
 
-Build from the repository root:
+## Build and install
 
 ```sh
 python3 web-app/android-helper/build.py
 ```
 
-Requires Android SDK/platform/build-tools and JDK 17+. Android Studio's bundled JDK is detected on macOS. Optional environment variables: `ANDROID_HOME`, `JAVA_HOME`. Output: `build/waste-right-helper-debug.apk` (ignored by Git).
+Requires the Android SDK/platform/build-tools and JDK 17+. Android Studio's bundled JDK is detected on macOS. Optional `ANDROID_HOME`, `JAVA_HOME`. Output: `build/waste-right-helper-debug.apk` (ignored by Git). This is a debug-signed installable build, not a Play Store release. Keep the signing key out of Git.
 
-Install on Android 8 or later. Generate a one-use pairing code in the approved helper's assigned collection on the website. Enter the HTTPS server address and code in the app, pair, then tap Start sharing and grant location and notification permission. For local debug testing use the computer's LAN address, not localhost, on the same trusted network. HTTP is enabled only in the generated debug build.
+Deploy the matching website changes before using the new in-app Share location action. Install the APK, sign in with an approved Helper account, open Collections and accept an eligible job. Tap **Share location** on that assigned job and grant phone location and notification permissions. There is no server URL or pairing-code entry in the normal flow. Special pickups show handling instructions and require Operations' special-pickup approval. An account designation is not proof of hazardous-material training.
 
-A persistent notification has Stop sharing. The service checks assignment every 15 seconds, attempts GPS uploads every five seconds, and stops after two hours or when the session/job ends. No silent restart, full route archive, or persistent token storage. A resident sees only their own assigned helper's latest point, reported accuracy, freshness and approximate arrival range. The APK build/signature and API were tested; real-device GPS/background behaviour still needs testing.
+The website creates a short-lived, single-use code. Only navigation from the trusted HTTPS top-level page can hand that code to Android; the native client exchanges it for a two-hour, assignment-scoped tracking token. No `addJavascriptInterface` is exposed. Session cookies remain inside WebView; tracking tokens remain in process memory. Certificate errors are rejected, mixed content and file access are disabled, and external links open outside the workspace.
 
-Full setup, privacy behaviour and ETA limitations: [tracking documentation](../../docs/helper-location-tracking.md).
+Location is shared only after the helper starts it. A persistent notification and in-app strip provide Stop. GPS attempts updates about every five seconds; a 15-second heartbeat checks assignment. Sharing continues when minimised, and ends on Stop, session expiry, assignment ending, or removal of the app task. Battery management, network and GPS conditions affect delivery and accuracy. No continuous off-duty tracking or full route archive. If revoked while offline, the server may retain the session until its expiry/next assignment check; the device stops collecting.
+
+The address picker requests location separately when the helper taps it. It does not start pickup tracking. Phone denial is respected. Foreground location sharing follows Android's runtime permission rules; no background-location permission is requested.
+
+The app requires connectivity for dashboard actions and does not queue offline receipts or claims. The web map shows the latest reported position and accuracy, not a guaranteed precise location or traffic-based ETA.
+
+## Verification
+
+The APK compiles and its v2/v3 signature verifies. Web production build, unit tests and scoped API integration cover the backend; synthetic browser checks cover mobile layout, special filtering and Hindi. Physical-device background GPS, notification denial/recovery and battery-management behaviour still need a field test. No real GPS or payment was used during UI QA.
+
+Security references: [Android WebView bridge guidance](https://developer.android.com/privacy-and-security/risks/insecure-webview-native-bridges), [location foreground services](https://developer.android.com/develop/background-work/services/fgs/service-types#location). More: [tracking documentation](../../docs/helper-location-tracking.md).

@@ -12,6 +12,7 @@ import org.json.*;
 
 public class TrackingService extends Service implements LocationListener {
     public static volatile boolean running=false;
+    public static volatile String activeBookingId="";
     public static volatile boolean sessionEnded=false;
     public static volatile String status="Not sharing location.";
     private String server,token;
@@ -30,7 +31,7 @@ public class TrackingService extends Service implements LocationListener {
     String t(String en,String hi){return hindi?hi:en;}
     @Override public IBinder onBind(Intent intent){return null;}
     Notification notice(){
-        Intent open=new Intent(this,MainActivity.class);PendingIntent show=PendingIntent.getActivity(this,1,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent open=new Intent(this,DashboardActivity.class);PendingIntent show=PendingIntent.getActivity(this,1,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent stop=PendingIntent.getService(this,2,new Intent(this,TrackingService.class).setAction("STOP"),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
         return new Notification.Builder(this,"pickup-location").setSmallIcon(android.R.drawable.ic_menu_mylocation).setContentTitle(t("Waste Right · Sharing pickup location","Waste Right · संग्रह स्थान साझा है")).setContentText(status).setContentIntent(show).setOngoing(true).setOnlyAlertOnce(true).addAction(new Notification.Action.Builder(null,t("Stop sharing","साझा करना रोकें"),stop).build()).build();
     }
@@ -45,7 +46,7 @@ public class TrackingService extends Service implements LocationListener {
         status=t("Finding a fresh GPS fix…","ताज़ा GPS स्थान ढूँढ रहे हैं…");
         try{
             if(Build.VERSION.SDK_INT>=29)startForeground(77,notice(),ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);else startForeground(77,notice());
-            running=true;locations=(LocationManager)getSystemService(LOCATION_SERVICE);
+            running=true;activeBookingId=intent.getStringExtra("bookingId");locations=(LocationManager)getSystemService(LOCATION_SERVICE);
             boolean fine=checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED,requested=false;
             if(fine&&locations.isProviderEnabled(LocationManager.GPS_PROVIDER)){locations.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,2,this,Looper.getMainLooper());requested=true;}
             if(locations.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){locations.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5000,2,this,Looper.getMainLooper());requested=true;}
@@ -77,7 +78,7 @@ public class TrackingService extends Service implements LocationListener {
     @Override public void onProviderEnabled(String provider){}
     @Override public void onStatusChanged(String provider,int value,Bundle extras){}
     @Override public void onDestroy(){
-        running=false;sessionEnded=true;if(status.startsWith("Sharing ·")||status.startsWith("साझा है ·"))status=t("Sharing stopped. Pair again to restart.","साझा करना बंद है। फिर जोड़ें।");handler.removeCallbacksAndMessages(null);if(locations!=null)locations.removeUpdates(this);
+        running=false;activeBookingId="";sessionEnded=true;if(!status.contains("ended")&&!status.contains("समाप्त")&&!status.contains("unavailable"))status=t("Sharing stopped. Pair again to restart.","साझा करना बंद है। फिर जोड़ें।");handler.removeCallbacksAndMessages(null);if(locations!=null)locations.removeUpdates(this);
         final String auth=token,origin=server;token=null;
         if(auth!=null&&origin!=null)network.execute(()->{try{Api.post(origin,new JSONObject().put("action","stop"),auth);}catch(Exception ignored){}});
         network.shutdown();stopForeground(STOP_FOREGROUND_REMOVE);super.onDestroy();
