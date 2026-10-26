@@ -1,6 +1,6 @@
-# Waste Right photo quiz
+# EcoMitra photo quiz
 
-Open `/quiz` (no sign-in required), or Waste quiz in the resident sidebar. Each round samples five unique easy, two medium and three hard images, then shuffles their display order. Fresh sampling can legitimately repeat images across separate rounds; no image repeats within one round. The supplied bank contains 50 easy, 20 medium and 30 hard images.
+Open `/quiz` (no sign-in required). The quiz is a standalone page and is not embedded in the dashboard. Each round samples five unique easy, two medium and three hard images, then shuffles their display order. Fresh sampling can legitimately repeat images across separate rounds; no image repeats within one round. The supplied bank contains 50 easy, 20 medium and 30 hard images.
 
 Every image shows its cleaned-up filename as its name. Two custom, keyboard-accessible dropdowns collect waste type (biodegradable / non-biodegradable / recyclable) and material/category. Categories include the scanner's existing materials plus wood, rubber, ceramic, electronic, hazardous, sanitary and oil streams for items that cannot sensibly be labelled just plastic or glass.
 
@@ -15,3 +15,15 @@ Biodegradable and recyclable overlap: clean uncoated paper/cardboard accepts bot
 Reference background: [EPA common recyclables](https://www.epa.gov/recycle/how-do-i-recycle-common-recyclables) distinguishes container and other glass, plastic acceptance, and compostable plastics; [EPA household hazardous waste](https://www.epa.gov/large-scale-residential-demolition/household-hazardous-waste-and-demolition) supports separate handling for contaminated chemical/oil containers; [EPA battery FAQ](https://www.epa.gov/hw/lithium-ion-battery-recycling-frequently-asked-questions) explains separate battery recovery. These sources supply educational context, not Indian locality disposal rules. Image ownership/licence evidence was not supplied; keep the supplied files' provenance for public use.
 
 Tests verify every asset exists, valid answer options, exactly 5/2/3 across 100 generated rounds, no duplicate questions, non-mutating selection, partial credit and overlap handling. No timer or external API is required.
+
+## EcoMitra domain and QR
+
+The host-specific Next.js rewrite routes `https://ecomitra.harshit.page/` directly to `/quiz`; the existing application domain keeps its normal home page. Public page branding is EcoMitra. Existing internal database identifiers, native helper identifiers, certificate IDs and authentication domains are retained for compatibility.
+
+Printable QR assets: `web-app/public/assets/ecomitra-quiz-qr.svg` and `.png`. They encode `https://ecomitra.harshit.page` with high error correction and a four-module quiet zone. The artwork surrounds the intact code rather than covering its data modules. The standalone page provides a QR download link. DNS must point the new subdomain to Vercel before this QR destination works publicly.
+
+Scanner results also show independent biodegradability and potential-recyclability properties, including unknown and mixed cases, for groups and individual items. The provider supplies these within the same classification request. Legacy records remain readable; an identification correction invalidates the original environmental claims. Potential recycling is not a local acceptance guarantee.
+
+Domain status checked 26 October 2026: attached to Vercel project `web-app`, but DNS is not configured. Cloudflare record required: CNAME `ecomitra` → `28aaf9280a8b06b7.vercel-dns-017.com` with proxy disabled (DNS only). Run `vercel domains verify ecomitra.harshit.page` after configuring it. No Cloudflare-authenticated connection was available in this session.
+
+Verification: 73 unit tests and production build passed. A browser run completed all ten questions with exactly 5 easy / 2 medium / 3 hard and displayed the final score and per-answer mistakes. The host rewrite was checked locally with the ecomitra Host header. The rendered branded QR PNG was decoded independently and matched `https://ecomitra.harshit.page` exactly. Public DNS availability remains outstanding.

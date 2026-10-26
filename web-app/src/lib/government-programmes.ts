@@ -1,17 +1,17 @@
-/** Official sources checked 24 October 2026. Programme eligibility is not an award to Waste Right. */
+/** Official sources checked 24 October 2026. Programme eligibility is not an award to EcoMitra. */
 export const GOVERNMENT_PROGRAMMES = [
  {
   id:'gobardhan',name:'GOBARdhan',authority:'Ministry of Petroleum & Natural Gas',status:'Partner opportunity',
   summary:'The integrated 2026–36 CBG framework supports biogas production, market access and project development.',
   relevance:'Our proposed role: collect and aggregate suitable organic waste for a contracted processing partner.',
-  requirement:'Plant and project support has separate eligibility. Waste Right has no documented funding award or executed partnership.',
+  requirement:'Plant and project support has separate eligibility. EcoMitra has no documented funding award or executed partnership.',
   source:'https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2317937&lang=2&reg=48',sourceLabel:'Official launch · 1 October 2026',
  },
  {
   id:'namaste',name:'NAMASTE',authority:'Ministry of Social Justice & Empowerment',status:'Eligibility required',
   summary:'The waste-picker component provides access to occupational IDs, PPE, skills support and PM-JAY health coverage under scheme rules.',
   relevance:'Help eligible collection partners reach the official enumeration and validation process.',
-  requirement:'Signing up as a Waste Right helper does not enrol a person in NAMASTE or establish eligibility.',
+  requirement:'Signing up as a EcoMitra helper does not enrol a person in NAMASTE or establish eligibility.',
   source:'https://www.pib.gov.in/PressReleasePage.aspx?PRID=2134303&lang=2&reg=48',sourceLabel:'Official waste-picker component',
  },
  {
@@ -32,7 +32,7 @@ export const GOVERNMENT_PROGRAMMES = [
   id:'startup-challenge',name:'Swachhata Startup Challenge',authority:'MoHUA · AFD · DPIIT',status:'Historical competition',
   summary:'The 2022 competition offered ₹25 lakh per selected project to ten winners, alongside incubation.',
   relevance:'Monitor official future calls for waste-management innovation and municipal pilot opportunities.',
-  requirement:'The cited application window closed on 15 April 2022. No current call or Waste Right selection is verified; the award is excluded from revenue.',
+  requirement:'The cited application window closed on 15 April 2022. No current call or EcoMitra selection is verified; the award is excluded from revenue.',
   source:'https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1860635&lang=2&reg=48',sourceLabel:'Official challenge update · September 2022',
  },
 ] as const;

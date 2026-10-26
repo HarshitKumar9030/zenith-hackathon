@@ -56,6 +56,6 @@ export default function LandingProgrammesShowcase(){
     </motion.div>
    </AnimatePresence>
   </div>
-  <div className={styles.bottom}><p>No Waste Right grant or public partnership is documented. Eligibility and current scheme terms require confirmation.</p><a href="/government-programmes">All programmes &amp; benefit policy <ArrowRight size={18}/></a></div>
+  <div className={styles.bottom}><p>No EcoMitra grant or public partnership is documented. Eligibility and current scheme terms require confirmation.</p><a href="/government-programmes">All programmes &amp; benefit policy <ArrowRight size={18}/></a></div>
  </section>
 }
