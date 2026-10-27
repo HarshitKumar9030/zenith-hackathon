@@ -4,6 +4,7 @@ import {randomBytes,createHash,scryptSync} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {writeFile,unlink} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {seedDemoReviews} from '../src/lib/demo-reviews';
 nextEnv.loadEnvConfig(process.cwd());
 const uri=process.env.MONGODB_URI||'mongodb://127.0.0.1:27017';if(!/127\.0\.0\.1|localhost/.test(uri))throw new Error('Local MongoDB required');
 const client=await new MongoClient(uri).connect(),database=client.db(`ecomitra_reviews_qa_${Date.now()}`),base='http://localhost:3116';
@@ -25,6 +26,7 @@ try{
  let ready=false;for(let i=0;i<80;i++){try{if((await fetch(base+'/api/ops-reviews')).status===403){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,250));}assert(ready,'QA server ready');
  const get=async(path='',role:keyof typeof tokens='admin')=>{const r=await fetch(base+'/api/ops-reviews'+path,{headers:{cookie:`ww_session=${tokens[role]}`}});return {status:r.status,data:await r.json(),headers:r.headers};};
  for(const role of ['helper','resident']as const)assert.equal((await get('',role)).status,403);
+ assert.equal((await fetch(base+'/api/ops-reviews/seed-demo',{method:'POST'})).status,404);
  const first=await get(),second=await get('?page=2');assert.equal(first.status,200);assert.equal(first.data.summary.total,41);assert.equal(first.data.summary.visitor,40);assert.equal(first.data.reviews.length,30);assert.equal(second.data.reviews.length,11);assert.equal(first.data.hasMore,true);assert.equal(second.data.hasMore,false);assert.equal(new Set([...first.data.reviews,...second.data.reviews].map(r=>r.id)).size,41);
  assert.equal(first.headers.get('cache-control'),'private, no-store');
  const text=JSON.stringify([first.data,second.data]);assert(!text.includes('SECRET_SENTINEL'));assert(!text.includes('PRIVATE_TICKET_SENTINEL'));assert(!text.includes('"userId"'));
@@ -35,6 +37,9 @@ try{
  await database.collection('scan_feedback').insertMany(Array.from({length:3},(_,i)=>({_id:`demo:qa-${i}`,isDemo:true,source:'demo',accountLinked:false,name:`Demo visitor ${i+1}`,contact:null,stars:5,comment:'Synthetic sample',createdAt:new Date()})) as never[]);
  const demos=await get('?source=demo');assert.equal(demos.data.summary.total,3);assert.equal(demos.data.summary.average,null);assert.equal(demos.data.summary.visitor,0);assert.equal(demos.data.summary.fiveStar,0);assert(demos.data.reviews.every(r=>r.isDemo));
  const withDemos=await get();assert.equal(withDemos.data.summary.total,44);assert.equal(withDemos.data.summary.demo,3);assert.equal(withDemos.data.summary.average,first.data.summary.average);assert.equal(withDemos.data.summary.fiveStar,8);assert.equal(withDemos.data.summary.visitor,40);
+ const seed=await seedDemoReviews(database);assert.equal(seed.inserted,30);assert.equal(seed.demoBatchCount,30);assert.equal((await seedDemoReviews(database)).inserted,0);
+ const afterSeed=await get();assert.equal(afterSeed.data.summary.average,first.data.summary.average);assert.equal(afterSeed.data.summary.visitor,40);assert.equal(await database.collection('scan_feedback').countDocuments({isDemo:true,contact:{$ne:null}}),0);
+ console.log('PASS: exactly 30 contact-free labelled demo samples; reruns cannot duplicate or inflate genuine ratings');
  console.log('PASS: labelled demo samples cannot inflate genuine rating statistics');
  console.log('PASS: admin-only access, all 41 reviews across pages, rating/source/name/contact/comment filters, summary counts, legacy account lookup and private projections');
  if(process.env.REVIEWS_QA_KEEP==='1'){await writeFile('/tmp/ecomitra-reviews-qa.json',JSON.stringify({base,database:database.databaseName}),{mode:0o600});console.log('QA_READY: synthetic reviews/admin; SMTP disabled');await new Promise<void>(resolve=>{process.once('SIGINT',resolve);process.once('SIGTERM',resolve);});}
