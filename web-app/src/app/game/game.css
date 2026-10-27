@@ -45,3 +45,26 @@
 @media(max-width:650px){.eco-game-hud{gap:12px;padding:0 12px}.eco-game-hud small{font-size:10px}.eco-game.is-in-round .eco-game-top-actions>button{height:38px;padding:0 9px}.eco-game.is-in-round .eco-game-top-actions kbd{display:none}.eco-game-minimap{bottom:105px;right:16px;width:100px}.eco-game-minimap>span{font-size:9px}.eco-game-minimap kbd{font-size:8px;right:7px;top:7px}.eco-game-pickup{bottom:110px;left:16px;max-width:calc(100vw - 150px)}.eco-game-pickup>span,.eco-game-pickup>button{padding:11px 12px;font-size:12px;gap:6px}.eco-game-pickup kbd{display:none}.eco-game-notice{bottom:225px;max-width:85vw;font-size:11px;width:max-content}.eco-game-pause{padding:24px}.eco-game-pause h2{font-size:29px}}
 .eco-game.is-in-round .eco-game-brand,.eco-game.is-in-round .eco-game-brand>svg{color:#234b35}
 @media(max-width:400px){.eco-game-hud{gap:10px;padding:0 10px}.eco-game-hud strong{font-size:16px}.eco-game-hud>button>svg{display:none}}
+
+/* Local radar stays circular and small; detailed planning remains on M. */
+.eco-game-minimap>button{border-radius:50%;padding:6px;aspect-ratio:1;background:rgba(18,41,31,.94)}
+.eco-game-minimap svg{border-radius:50%;aspect-ratio:1}
+.eco-game-minimap .eco-game-compass{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#edf5dc;text-shadow:0 1px 3px #132d20}
+.eco-game-minimap>span{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.eco-game-minimap>span kbd{position:static;font-size:9px;padding:3px 5px;background:rgba(19,45,32,.85);color:#eef3e3}
+.eco-game .eco-game-camera-setting{justify-content:flex-start;padding:11px 13px;background:rgba(238,247,225,.08);border-radius:12px;font-size:13px;color:#d0e4bd}
+.eco-game-camera-setting kbd{margin-left:auto}
+.eco-game-result-actions{flex-wrap:wrap}
+.eco-game .eco-game-email-toggle{padding:10px 4px;font-size:13px;color:#c5ddb7}
+.eco-game-email{margin-top:15px;max-width:480px;padding:16px;background:rgba(235,246,220,.07);border-radius:15px}
+.eco-game-email label{font-size:12px;color:#d7e5cb;display:block;margin-bottom:10px}
+.eco-game-email>div{display:flex;gap:8px}
+.eco-game-email input{appearance:none;border:0;border-radius:10px;background:#ecf1e2;color:#183d28;padding:13px 14px;font:inherit;font-size:14px;min-width:0;width:100%;box-shadow:none;outline-offset:3px}
+.eco-game-email input:focus-visible{outline:2px solid #bce98c}
+.eco-game-email input::placeholder{color:#687a68}
+.eco-game-email button{background:#c3ed90;color:#1a3c29;white-space:nowrap;padding:11px 15px;border-radius:10px;font-size:13px;font-weight:600}
+.eco-game-email>p{font-size:11px!important;color:#c6d9b9!important;line-height:1.5;margin-top:10px!important}
+@media(max-width:650px){.eco-game-email>div{flex-wrap:wrap}.eco-game-email button{width:100%}.eco-game-result-actions .eco-game-email-toggle{justify-content:center}.eco-game-minimap .eco-game-compass{font-size:8px;top:6px}}
+.eco-game-finish.has-email{align-items:flex-start;padding-top:110px}
+.eco-game-finish.has-email .eco-game-result{padding-top:0}
+@media(max-width:650px){.eco-game-finish.has-email{padding-top:100px}}

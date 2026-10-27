@@ -16,13 +16,15 @@ The 800 × 800 metre city has nine districts and 144 possible pickup locations. 
 | Space | Brake |
 | E | Collect the nearest eligible pickup |
 | M | Open / close city map; clock pauses |
-| C | Switch between isometric and high overhead cameras |
+| C | Cycle isometric, overhead and 360° orbit cameras |
+| J / L; I / K; + / − | Orbit, tilt and zoom the 360° camera |
+| Cursor position / wheel | Look around without clicking / zoom in 360° mode |
 | P / Escape | Pause / resume |
 | R | Rescue to the nearest road intersection |
 | F | Toggle browser fullscreen |
 | Enter | Start, resume or replay |
 
-The driving HUD contains a compact timer / score / progress bar, a small corner map and a nearest-pickup chip. The collect button appears only within collection range; brief action feedback disappears automatically. The full category breakdown is available through the map or pause screen, and sound / fullscreen settings are in the pause menu. There is no persistent mission panel or bottom keybind strip.
+The driving HUD contains a compact timer / score / progress bar, a small circular, truck-centred radar with a north indicator and an off-screen target arrow and a nearest-pickup chip. The collect button appears only within collection range; brief action feedback disappears automatically. The full category breakdown is available through the map or pause screen, and sound / fullscreen settings are in the pause menu. There is no persistent mission panel or bottom keybind strip.
 
 Buttons are provided for collection, sound, fullscreen and pause. Basic touch driving buttons appear on small screens, but keyboard on a large display is the primary experience. There is no controller or TV remote support in this iteration. Losing window focus or hiding the tab pauses play and clears held movement keys.
 
@@ -60,3 +62,18 @@ npm run typecheck
 npx tsx --test src/lib/collection-game-rules.test.ts
 npm run build
 ```
+
+
+## Graphics, camera, sound and email upgrade
+
+The default 360° orbit camera follows the truck while preserving the player's chosen angle. Moving the mouse cursor across the world controls a full 360° horizontal orbit; cursor height controls camera elevation. No mouse press is required; a stationary click does not change the camera. Drag gestures have no separate camera action. Scroll/pinch zooms; J/L orbit, I/K tilt and +/− zoom provide keyboard alternatives. The default camera is closer to the truck for an arcade chase view. Distance and elevation are bounded. C cycles all three camera modes; the pause menu also shows a camera selector. Controls are disposed on unmount and are disabled behind pause and map screens. Camera occlusion against buildings is not simulated.
+
+Rendering uses procedurally textured darker asphalt, reflective windows, a warm directional light, environment reflections, reduced exposure, a 2048-pixel shadow map centred on the truck and shadow receivers on the city / finish platform. Shadows cover the nearby scene, not the entire 800-metre map. The radar displays a local 250-metre diameter area; the full M map retains the entire city and collection totals.
+
+`engine-audio.ts` synthesizes a low-pass-filtered layered motor. Pitch and volume follow throttle, speed and simulated gear changes. Sound starts only after a gesture, fades on pause / finish / mute, and releases its audio context on unmount. This is synthesized sound, not a recorded truck engine.
+
+At the end of a round, **Email my result** reveals an optional email form. `/api/game-result` validates the address, category counts and remaining time, recomputes the game score, generates a 1080 × 1920 PNG with Sharp and emails the result and attachment using the existing SMTP service. Sending requires the existing MongoDB and `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `APP_URL` configuration; playing and downloading a card work without these services. No new provider or credentials are required when app mail already works.
+
+The endpoint rejects cross-origin requests and oversized / malformed payloads. MongoDB's existing TTL-indexed `auth_attempts` collection limits sending to three attempts per recipient per hour and twelve per source IP per hour. It stores hashed bucket identifiers rather than raw addresses or IPs, and expires them after two hours. No email addresses or results are added to a marketing list. Scores remain self-reported game results and are not verified competition entries.
+
+Upgrade validation: focused tests cover email payload bounds, score recomputation and real PNG dimensions; invalid-address and cross-origin HTTP requests were rejected; SMTP connection and authentication were verified without sending an email. Inbox delivery is not independently confirmed. Browser checks cover collection, keyboard orbit rotation, circular radar, pause and the optional email form.
