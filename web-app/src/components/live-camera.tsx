@@ -23,11 +23,13 @@ export default function LiveCamera({
   onError,
   stopSignal = 0,
   onDescribe,
+  stationMode = false,
 }: {
   onScan: (image: string, ocr?: string) => Promise<void>;
   onError: (message: string) => void;
   stopSignal?: number;
   onDescribe?: () => void;
+  stationMode?: boolean;
 }) {
   const video = useRef<HTMLVideoElement>(null),
     stream = useRef<MediaStream | null>(null),
@@ -41,7 +43,7 @@ export default function LiveCamera({
   const [running, setRunning] = useState(false),
     [processing, setProcessing] = useState(false),
     [count, setCount] = useState(0),
-    [auto, setAuto] = useState(true);
+    [auto, setAuto] = useState(!stationMode);
   const [readLabels, setReadLabels] = useState(false);
   const [starting, setStarting] = useState(false);
   const [facing, setFacing] = useState<CameraFacing>("environment");
@@ -305,7 +307,7 @@ export default function LiveCamera({
           <span>
             {running
               ? `${count} ${count === 1 ? "scan" : "scans"} analysed · review the items below`
-              : "Scan → review items → choose a pickup"}
+              : (stationMode ? "Position your items, then tap Scan now" : "Scan → review items → choose a pickup")}
           </span>
         </div>
         <div className="camera-buttons">
@@ -405,7 +407,7 @@ export default function LiveCamera({
       </details>
       <div className="camera-bottom-note">
         <span>
-          <ShieldCheck size={14} /> Frames aren’t saved
+          <ShieldCheck size={14} /> {stationMode ? "Station frames aren’t saved" : "Frames aren’t saved"}
         </span>
         {onDescribe && (
           <button type="button" className="text-button" onClick={onDescribe}>
