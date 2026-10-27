@@ -1,0 +1,4199 @@
+{
+  "name": "EcoMitra Circular City",
+  "version": 1,
+  "seed": 2741,
+  "units": "meters",
+  "coordinateSystem": "glTF right-handed Y-up; Blender (x,y,z) becomes (x,z,-y)",
+  "sizeMeters": [
+    800,
+    800
+  ],
+  "playerStart": [
+    -360.0,
+    1.0,
+    330.0
+  ],
+  "deliveryPoint": [
+    0.0,
+    1.0,
+    -204.0
+  ],
+  "deliveryRadiusMeters": 12,
+  "roads": {
+    "axisCoordinates": [
+      -360,
+      -240,
+      -120,
+      0,
+      120,
+      240,
+      360
+    ],
+    "widthMeters": 18,
+    "note": "Connected orthogonal road grid; coordinates are X and Z in glTF."
+  },
+  "districts": [
+    {
+      "id": "01 Willow Homes",
+      "center": [
+        -240,
+        0,
+        240
+      ],
+      "style": "homes",
+      "primaryWaste": "organic",
+      "pickupIds": [
+        "EM-001",
+        "EM-002",
+        "EM-003",
+        "EM-004",
+        "EM-005",
+        "EM-006",
+        "EM-007",
+        "EM-008",
+        "EM-009",
+        "EM-010",
+        "EM-011",
+        "EM-012",
+        "EM-013",
+        "EM-014",
+        "EM-015",
+        "EM-016"
+      ]
+    },
+    {
+      "id": "02 Market Quarter",
+      "center": [
+        0,
+        0,
+        240
+      ],
+      "style": "market",
+      "primaryWaste": "plastic",
+      "pickupIds": [
+        "EM-017",
+        "EM-018",
+        "EM-019",
+        "EM-020",
+        "EM-021",
+        "EM-022",
+        "EM-023",
+        "EM-024",
+        "EM-025",
+        "EM-026",
+        "EM-027",
+        "EM-028",
+        "EM-029",
+        "EM-030",
+        "EM-031",
+        "EM-032"
+      ]
+    },
+    {
+      "id": "03 Canal Walk",
+      "center": [
+        240,
+        0,
+        240
+      ],
+      "style": "waterfront",
+      "primaryWaste": "glass",
+      "pickupIds": [
+        "EM-033",
+        "EM-034",
+        "EM-035",
+        "EM-036",
+        "EM-037",
+        "EM-038",
+        "EM-039",
+        "EM-040",
+        "EM-041",
+        "EM-042",
+        "EM-043",
+        "EM-044",
+        "EM-045",
+        "EM-046",
+        "EM-047",
+        "EM-048"
+      ]
+    },
+    {
+      "id": "04 Learning Campus",
+      "center": [
+        -240,
+        0,
+        0
+      ],
+      "style": "campus",
+      "primaryWaste": "paper",
+      "pickupIds": [
+        "EM-049",
+        "EM-050",
+        "EM-051",
+        "EM-052",
+        "EM-053",
+        "EM-054",
+        "EM-055",
+        "EM-056",
+        "EM-057",
+        "EM-058",
+        "EM-059",
+        "EM-060",
+        "EM-061",
+        "EM-062",
+        "EM-063",
+        "EM-064"
+      ]
+    },
+    {
+      "id": "05 Central Gardens",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "style": "park",
+      "primaryWaste": "organic",
+      "pickupIds": [
+        "EM-065",
+        "EM-066",
+        "EM-067",
+        "EM-068",
+        "EM-069",
+        "EM-070",
+        "EM-071",
+        "EM-072",
+        "EM-073",
+        "EM-074",
+        "EM-075",
+        "EM-076",
+        "EM-077",
+        "EM-078",
+        "EM-079",
+        "EM-080"
+      ]
+    },
+    {
+      "id": "06 Maker Works",
+      "center": [
+        240,
+        0,
+        0
+      ],
+      "style": "industry",
+      "primaryWaste": "metal",
+      "pickupIds": [
+        "EM-081",
+        "EM-082",
+        "EM-083",
+        "EM-084",
+        "EM-085",
+        "EM-086",
+        "EM-087",
+        "EM-088",
+        "EM-089",
+        "EM-090",
+        "EM-091",
+        "EM-092",
+        "EM-093",
+        "EM-094",
+        "EM-095",
+        "EM-096"
+      ]
+    },
+    {
+      "id": "07 Old Town",
+      "center": [
+        -240,
+        0,
+        -240
+      ],
+      "style": "oldtown",
+      "primaryWaste": "glass",
+      "pickupIds": [
+        "EM-097",
+        "EM-098",
+        "EM-099",
+        "EM-100",
+        "EM-101",
+        "EM-102",
+        "EM-103",
+        "EM-104",
+        "EM-105",
+        "EM-106",
+        "EM-107",
+        "EM-108",
+        "EM-109",
+        "EM-110",
+        "EM-111",
+        "EM-112"
+      ]
+    },
+    {
+      "id": "08 Circular Hub",
+      "center": [
+        0,
+        0,
+        -240
+      ],
+      "style": "hub",
+      "primaryWaste": "ewaste",
+      "pickupIds": [
+        "EM-113",
+        "EM-114",
+        "EM-115",
+        "EM-116",
+        "EM-117",
+        "EM-118",
+        "EM-119",
+        "EM-120",
+        "EM-121",
+        "EM-122",
+        "EM-123",
+        "EM-124",
+        "EM-125",
+        "EM-126",
+        "EM-127",
+        "EM-128"
+      ]
+    },
+    {
+      "id": "09 Solar Heights",
+      "center": [
+        240,
+        0,
+        -240
+      ],
+      "style": "towers",
+      "primaryWaste": "paper",
+      "pickupIds": [
+        "EM-129",
+        "EM-130",
+        "EM-131",
+        "EM-132",
+        "EM-133",
+        "EM-134",
+        "EM-135",
+        "EM-136",
+        "EM-137",
+        "EM-138",
+        "EM-139",
+        "EM-140",
+        "EM-141",
+        "EM-142",
+        "EM-143",
+        "EM-144"
+      ]
+    }
+  ],
+  "collectibles": [
+    {
+      "id": "EM-001",
+      "node": "Pickup_001_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -337,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-002",
+      "node": "Pickup_002_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -263,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-003",
+      "node": "Pickup_003_paper",
+      "wasteType": "paper",
+      "district": "01 Willow Homes",
+      "position": [
+        -346,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-004",
+      "node": "Pickup_004_metal",
+      "wasteType": "metal",
+      "district": "01 Willow Homes",
+      "position": [
+        -254,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-005",
+      "node": "Pickup_005_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -337,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-006",
+      "node": "Pickup_006_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -263,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-007",
+      "node": "Pickup_007_paper",
+      "wasteType": "paper",
+      "district": "01 Willow Homes",
+      "position": [
+        -346,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-008",
+      "node": "Pickup_008_metal",
+      "wasteType": "metal",
+      "district": "01 Willow Homes",
+      "position": [
+        -254,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-009",
+      "node": "Pickup_009_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -217,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-010",
+      "node": "Pickup_010_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -143,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-011",
+      "node": "Pickup_011_paper",
+      "wasteType": "paper",
+      "district": "01 Willow Homes",
+      "position": [
+        -226,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-012",
+      "node": "Pickup_012_metal",
+      "wasteType": "metal",
+      "district": "01 Willow Homes",
+      "position": [
+        -134,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-013",
+      "node": "Pickup_013_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -217,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-014",
+      "node": "Pickup_014_organic",
+      "wasteType": "organic",
+      "district": "01 Willow Homes",
+      "position": [
+        -143,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-015",
+      "node": "Pickup_015_paper",
+      "wasteType": "paper",
+      "district": "01 Willow Homes",
+      "position": [
+        -226,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-016",
+      "node": "Pickup_016_metal",
+      "wasteType": "metal",
+      "district": "01 Willow Homes",
+      "position": [
+        -134,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-017",
+      "node": "Pickup_017_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        -97,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-018",
+      "node": "Pickup_018_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        -23,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-019",
+      "node": "Pickup_019_metal",
+      "wasteType": "metal",
+      "district": "02 Market Quarter",
+      "position": [
+        -106,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-020",
+      "node": "Pickup_020_glass",
+      "wasteType": "glass",
+      "district": "02 Market Quarter",
+      "position": [
+        -14,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-021",
+      "node": "Pickup_021_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        -97,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-022",
+      "node": "Pickup_022_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        -23,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-023",
+      "node": "Pickup_023_metal",
+      "wasteType": "metal",
+      "district": "02 Market Quarter",
+      "position": [
+        -106,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-024",
+      "node": "Pickup_024_glass",
+      "wasteType": "glass",
+      "district": "02 Market Quarter",
+      "position": [
+        -14,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-025",
+      "node": "Pickup_025_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        23,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-026",
+      "node": "Pickup_026_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        97,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-027",
+      "node": "Pickup_027_metal",
+      "wasteType": "metal",
+      "district": "02 Market Quarter",
+      "position": [
+        14,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-028",
+      "node": "Pickup_028_glass",
+      "wasteType": "glass",
+      "district": "02 Market Quarter",
+      "position": [
+        106,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-029",
+      "node": "Pickup_029_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        23,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-030",
+      "node": "Pickup_030_plastic",
+      "wasteType": "plastic",
+      "district": "02 Market Quarter",
+      "position": [
+        97,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-031",
+      "node": "Pickup_031_metal",
+      "wasteType": "metal",
+      "district": "02 Market Quarter",
+      "position": [
+        14,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-032",
+      "node": "Pickup_032_glass",
+      "wasteType": "glass",
+      "district": "02 Market Quarter",
+      "position": [
+        106,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-033",
+      "node": "Pickup_033_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        143,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-034",
+      "node": "Pickup_034_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        217,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-035",
+      "node": "Pickup_035_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        134,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-036",
+      "node": "Pickup_036_ewaste",
+      "wasteType": "ewaste",
+      "district": "03 Canal Walk",
+      "position": [
+        226,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-037",
+      "node": "Pickup_037_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        143,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-038",
+      "node": "Pickup_038_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        217,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-039",
+      "node": "Pickup_039_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        134,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-040",
+      "node": "Pickup_040_ewaste",
+      "wasteType": "ewaste",
+      "district": "03 Canal Walk",
+      "position": [
+        226,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-041",
+      "node": "Pickup_041_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        263,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-042",
+      "node": "Pickup_042_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        337,
+        0.65,
+        346
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-043",
+      "node": "Pickup_043_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        254,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-044",
+      "node": "Pickup_044_ewaste",
+      "wasteType": "ewaste",
+      "district": "03 Canal Walk",
+      "position": [
+        346,
+        0.65,
+        300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-045",
+      "node": "Pickup_045_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        263,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-046",
+      "node": "Pickup_046_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        337,
+        0.65,
+        226
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-047",
+      "node": "Pickup_047_glass",
+      "wasteType": "glass",
+      "district": "03 Canal Walk",
+      "position": [
+        254,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-048",
+      "node": "Pickup_048_ewaste",
+      "wasteType": "ewaste",
+      "district": "03 Canal Walk",
+      "position": [
+        346,
+        0.65,
+        180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-049",
+      "node": "Pickup_049_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -337,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-050",
+      "node": "Pickup_050_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -263,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-051",
+      "node": "Pickup_051_ewaste",
+      "wasteType": "ewaste",
+      "district": "04 Learning Campus",
+      "position": [
+        -346,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-052",
+      "node": "Pickup_052_organic",
+      "wasteType": "organic",
+      "district": "04 Learning Campus",
+      "position": [
+        -254,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-053",
+      "node": "Pickup_053_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -337,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-054",
+      "node": "Pickup_054_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -263,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-055",
+      "node": "Pickup_055_ewaste",
+      "wasteType": "ewaste",
+      "district": "04 Learning Campus",
+      "position": [
+        -346,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-056",
+      "node": "Pickup_056_organic",
+      "wasteType": "organic",
+      "district": "04 Learning Campus",
+      "position": [
+        -254,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-057",
+      "node": "Pickup_057_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -217,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-058",
+      "node": "Pickup_058_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -143,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-059",
+      "node": "Pickup_059_ewaste",
+      "wasteType": "ewaste",
+      "district": "04 Learning Campus",
+      "position": [
+        -226,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-060",
+      "node": "Pickup_060_organic",
+      "wasteType": "organic",
+      "district": "04 Learning Campus",
+      "position": [
+        -134,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-061",
+      "node": "Pickup_061_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -217,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-062",
+      "node": "Pickup_062_paper",
+      "wasteType": "paper",
+      "district": "04 Learning Campus",
+      "position": [
+        -143,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-063",
+      "node": "Pickup_063_ewaste",
+      "wasteType": "ewaste",
+      "district": "04 Learning Campus",
+      "position": [
+        -226,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-064",
+      "node": "Pickup_064_organic",
+      "wasteType": "organic",
+      "district": "04 Learning Campus",
+      "position": [
+        -134,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-065",
+      "node": "Pickup_065_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -97,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-066",
+      "node": "Pickup_066_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -23,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-067",
+      "node": "Pickup_067_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -106,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-068",
+      "node": "Pickup_068_plastic",
+      "wasteType": "plastic",
+      "district": "05 Central Gardens",
+      "position": [
+        -14,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-069",
+      "node": "Pickup_069_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -97,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-070",
+      "node": "Pickup_070_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -23,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-071",
+      "node": "Pickup_071_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        -106,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-072",
+      "node": "Pickup_072_plastic",
+      "wasteType": "plastic",
+      "district": "05 Central Gardens",
+      "position": [
+        -14,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-073",
+      "node": "Pickup_073_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        23,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-074",
+      "node": "Pickup_074_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        97,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-075",
+      "node": "Pickup_075_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        14,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-076",
+      "node": "Pickup_076_plastic",
+      "wasteType": "plastic",
+      "district": "05 Central Gardens",
+      "position": [
+        106,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-077",
+      "node": "Pickup_077_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        23,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-078",
+      "node": "Pickup_078_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        97,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-079",
+      "node": "Pickup_079_organic",
+      "wasteType": "organic",
+      "district": "05 Central Gardens",
+      "position": [
+        14,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-080",
+      "node": "Pickup_080_plastic",
+      "wasteType": "plastic",
+      "district": "05 Central Gardens",
+      "position": [
+        106,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-081",
+      "node": "Pickup_081_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        143,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-082",
+      "node": "Pickup_082_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        217,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-083",
+      "node": "Pickup_083_plastic",
+      "wasteType": "plastic",
+      "district": "06 Maker Works",
+      "position": [
+        134,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-084",
+      "node": "Pickup_084_paper",
+      "wasteType": "paper",
+      "district": "06 Maker Works",
+      "position": [
+        226,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-085",
+      "node": "Pickup_085_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        143,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-086",
+      "node": "Pickup_086_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        217,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-087",
+      "node": "Pickup_087_plastic",
+      "wasteType": "plastic",
+      "district": "06 Maker Works",
+      "position": [
+        134,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-088",
+      "node": "Pickup_088_paper",
+      "wasteType": "paper",
+      "district": "06 Maker Works",
+      "position": [
+        226,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-089",
+      "node": "Pickup_089_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        263,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-090",
+      "node": "Pickup_090_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        337,
+        0.65,
+        106
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-091",
+      "node": "Pickup_091_plastic",
+      "wasteType": "plastic",
+      "district": "06 Maker Works",
+      "position": [
+        254,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-092",
+      "node": "Pickup_092_paper",
+      "wasteType": "paper",
+      "district": "06 Maker Works",
+      "position": [
+        346,
+        0.65,
+        60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-093",
+      "node": "Pickup_093_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        263,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-094",
+      "node": "Pickup_094_metal",
+      "wasteType": "metal",
+      "district": "06 Maker Works",
+      "position": [
+        337,
+        0.65,
+        -14
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-095",
+      "node": "Pickup_095_plastic",
+      "wasteType": "plastic",
+      "district": "06 Maker Works",
+      "position": [
+        254,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-096",
+      "node": "Pickup_096_paper",
+      "wasteType": "paper",
+      "district": "06 Maker Works",
+      "position": [
+        346,
+        0.65,
+        -60
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-097",
+      "node": "Pickup_097_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -337,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-098",
+      "node": "Pickup_098_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -263,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-099",
+      "node": "Pickup_099_paper",
+      "wasteType": "paper",
+      "district": "07 Old Town",
+      "position": [
+        -346,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-100",
+      "node": "Pickup_100_metal",
+      "wasteType": "metal",
+      "district": "07 Old Town",
+      "position": [
+        -254,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-101",
+      "node": "Pickup_101_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -337,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-102",
+      "node": "Pickup_102_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -263,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-103",
+      "node": "Pickup_103_paper",
+      "wasteType": "paper",
+      "district": "07 Old Town",
+      "position": [
+        -346,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-104",
+      "node": "Pickup_104_metal",
+      "wasteType": "metal",
+      "district": "07 Old Town",
+      "position": [
+        -254,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-105",
+      "node": "Pickup_105_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -217,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-106",
+      "node": "Pickup_106_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -143,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-107",
+      "node": "Pickup_107_paper",
+      "wasteType": "paper",
+      "district": "07 Old Town",
+      "position": [
+        -226,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-108",
+      "node": "Pickup_108_metal",
+      "wasteType": "metal",
+      "district": "07 Old Town",
+      "position": [
+        -134,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-109",
+      "node": "Pickup_109_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -217,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-110",
+      "node": "Pickup_110_glass",
+      "wasteType": "glass",
+      "district": "07 Old Town",
+      "position": [
+        -143,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-111",
+      "node": "Pickup_111_paper",
+      "wasteType": "paper",
+      "district": "07 Old Town",
+      "position": [
+        -226,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-112",
+      "node": "Pickup_112_metal",
+      "wasteType": "metal",
+      "district": "07 Old Town",
+      "position": [
+        -134,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-113",
+      "node": "Pickup_113_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        -97,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-114",
+      "node": "Pickup_114_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        -23,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-115",
+      "node": "Pickup_115_metal",
+      "wasteType": "metal",
+      "district": "08 Circular Hub",
+      "position": [
+        -106,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-116",
+      "node": "Pickup_116_glass",
+      "wasteType": "glass",
+      "district": "08 Circular Hub",
+      "position": [
+        -14,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-117",
+      "node": "Pickup_117_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        -97,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-118",
+      "node": "Pickup_118_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        -23,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-119",
+      "node": "Pickup_119_metal",
+      "wasteType": "metal",
+      "district": "08 Circular Hub",
+      "position": [
+        -106,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-120",
+      "node": "Pickup_120_glass",
+      "wasteType": "glass",
+      "district": "08 Circular Hub",
+      "position": [
+        -14,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-121",
+      "node": "Pickup_121_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        23,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-122",
+      "node": "Pickup_122_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        97,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-123",
+      "node": "Pickup_123_metal",
+      "wasteType": "metal",
+      "district": "08 Circular Hub",
+      "position": [
+        14,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-124",
+      "node": "Pickup_124_glass",
+      "wasteType": "glass",
+      "district": "08 Circular Hub",
+      "position": [
+        106,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-125",
+      "node": "Pickup_125_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        23,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-126",
+      "node": "Pickup_126_ewaste",
+      "wasteType": "ewaste",
+      "district": "08 Circular Hub",
+      "position": [
+        97,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-127",
+      "node": "Pickup_127_metal",
+      "wasteType": "metal",
+      "district": "08 Circular Hub",
+      "position": [
+        14,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-128",
+      "node": "Pickup_128_glass",
+      "wasteType": "glass",
+      "district": "08 Circular Hub",
+      "position": [
+        106,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-129",
+      "node": "Pickup_129_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        143,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-130",
+      "node": "Pickup_130_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        217,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-131",
+      "node": "Pickup_131_glass",
+      "wasteType": "glass",
+      "district": "09 Solar Heights",
+      "position": [
+        134,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-132",
+      "node": "Pickup_132_ewaste",
+      "wasteType": "ewaste",
+      "district": "09 Solar Heights",
+      "position": [
+        226,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-133",
+      "node": "Pickup_133_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        143,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-134",
+      "node": "Pickup_134_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        217,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-135",
+      "node": "Pickup_135_glass",
+      "wasteType": "glass",
+      "district": "09 Solar Heights",
+      "position": [
+        134,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-136",
+      "node": "Pickup_136_ewaste",
+      "wasteType": "ewaste",
+      "district": "09 Solar Heights",
+      "position": [
+        226,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-137",
+      "node": "Pickup_137_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        263,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-138",
+      "node": "Pickup_138_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        337,
+        0.65,
+        -134
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-139",
+      "node": "Pickup_139_glass",
+      "wasteType": "glass",
+      "district": "09 Solar Heights",
+      "position": [
+        254,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-140",
+      "node": "Pickup_140_ewaste",
+      "wasteType": "ewaste",
+      "district": "09 Solar Heights",
+      "position": [
+        346,
+        0.65,
+        -180
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    },
+    {
+      "id": "EM-141",
+      "node": "Pickup_141_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        263,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-142",
+      "node": "Pickup_142_paper",
+      "wasteType": "paper",
+      "district": "09 Solar Heights",
+      "position": [
+        337,
+        0.65,
+        -254
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 10,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-143",
+      "node": "Pickup_143_glass",
+      "wasteType": "glass",
+      "district": "09 Solar Heights",
+      "position": [
+        254,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 15,
+      "requiresSpecialHandling": false
+    },
+    {
+      "id": "EM-144",
+      "node": "Pickup_144_ewaste",
+      "wasteType": "ewaste",
+      "district": "09 Solar Heights",
+      "position": [
+        346,
+        0.65,
+        -300
+      ],
+      "interactionRadiusMeters": 3.5,
+      "points": 20,
+      "requiresSpecialHandling": true
+    }
+  ],
+  "buildingBoxColliders": [
+    {
+      "name": "Building",
+      "district": "01 Willow Homes",
+      "center": [
+        -323,
+        11.221587629293966,
+        322
+      ],
+      "size": [
+        26,
+        21.64317525858793,
+        25
+      ]
+    },
+    {
+      "name": "Building.001",
+      "district": "01 Willow Homes",
+      "center": [
+        -323,
+        9.895633880749047,
+        278
+      ],
+      "size": [
+        26,
+        18.991267761498094,
+        25
+      ]
+    },
+    {
+      "name": "Building.002",
+      "district": "01 Willow Homes",
+      "center": [
+        -277,
+        6.7562584446527865,
+        322
+      ],
+      "size": [
+        26,
+        12.712516889305572,
+        25
+      ]
+    },
+    {
+      "name": "Building.003",
+      "district": "01 Willow Homes",
+      "center": [
+        -277,
+        8.167995705591531,
+        278
+      ],
+      "size": [
+        26,
+        15.535991411183062,
+        25
+      ]
+    },
+    {
+      "name": "Building.004",
+      "district": "01 Willow Homes",
+      "center": [
+        -323,
+        11.787738894783539,
+        202
+      ],
+      "size": [
+        26,
+        22.775477789567077,
+        25
+      ]
+    },
+    {
+      "name": "Building.005",
+      "district": "01 Willow Homes",
+      "center": [
+        -323,
+        8.061817173135143,
+        158
+      ],
+      "size": [
+        26,
+        15.323634346270286,
+        25
+      ]
+    },
+    {
+      "name": "Building.006",
+      "district": "01 Willow Homes",
+      "center": [
+        -277,
+        8.314300471257404,
+        202
+      ],
+      "size": [
+        26,
+        15.828600942514809,
+        25
+      ]
+    },
+    {
+      "name": "Building.007",
+      "district": "01 Willow Homes",
+      "center": [
+        -277,
+        7.848178642015544,
+        158
+      ],
+      "size": [
+        26,
+        14.896357284031087,
+        25
+      ]
+    },
+    {
+      "name": "Building.008",
+      "district": "01 Willow Homes",
+      "center": [
+        -203,
+        6.911832452350926,
+        322
+      ],
+      "size": [
+        26,
+        13.023664904701851,
+        25
+      ]
+    },
+    {
+      "name": "Building.009",
+      "district": "01 Willow Homes",
+      "center": [
+        -203,
+        11.895886938550726,
+        278
+      ],
+      "size": [
+        26,
+        22.99177387710145,
+        25
+      ]
+    },
+    {
+      "name": "Building.010",
+      "district": "01 Willow Homes",
+      "center": [
+        -157,
+        10.095981446528038,
+        322
+      ],
+      "size": [
+        26,
+        19.391962893056075,
+        25
+      ]
+    },
+    {
+      "name": "Building.011",
+      "district": "01 Willow Homes",
+      "center": [
+        -157,
+        11.070023276690085,
+        278
+      ],
+      "size": [
+        26,
+        21.34004655338017,
+        25
+      ]
+    },
+    {
+      "name": "Building.012",
+      "district": "01 Willow Homes",
+      "center": [
+        -203,
+        10.310891150889447,
+        202
+      ],
+      "size": [
+        26,
+        19.821782301778892,
+        25
+      ]
+    },
+    {
+      "name": "Building.013",
+      "district": "01 Willow Homes",
+      "center": [
+        -203,
+        11.705204841554417,
+        158
+      ],
+      "size": [
+        26,
+        22.610409683108834,
+        25
+      ]
+    },
+    {
+      "name": "Building.014",
+      "district": "01 Willow Homes",
+      "center": [
+        -157,
+        7.956859695453911,
+        202
+      ],
+      "size": [
+        26,
+        15.113719390907821,
+        25
+      ]
+    },
+    {
+      "name": "Building.015",
+      "district": "01 Willow Homes",
+      "center": [
+        -157,
+        8.455468590051302,
+        158
+      ],
+      "size": [
+        26,
+        16.110937180102603,
+        25
+      ]
+    },
+    {
+      "name": "Building.016",
+      "district": "02 Market Quarter",
+      "center": [
+        -60,
+        5.9,
+        286
+      ],
+      "size": [
+        52,
+        11,
+        28
+      ]
+    },
+    {
+      "name": "Market stall",
+      "district": "02 Market Quarter",
+      "center": [
+        -90,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.001",
+      "district": "02 Market Quarter",
+      "center": [
+        -70,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.002",
+      "district": "02 Market Quarter",
+      "center": [
+        -50,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.003",
+      "district": "02 Market Quarter",
+      "center": [
+        -30,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Building.017",
+      "district": "02 Market Quarter",
+      "center": [
+        -60,
+        5.9,
+        166
+      ],
+      "size": [
+        52,
+        11,
+        28
+      ]
+    },
+    {
+      "name": "Market stall.004",
+      "district": "02 Market Quarter",
+      "center": [
+        -90,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.005",
+      "district": "02 Market Quarter",
+      "center": [
+        -70,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.006",
+      "district": "02 Market Quarter",
+      "center": [
+        -50,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.007",
+      "district": "02 Market Quarter",
+      "center": [
+        -30,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Building.018",
+      "district": "02 Market Quarter",
+      "center": [
+        60,
+        5.9,
+        286
+      ],
+      "size": [
+        52,
+        11,
+        28
+      ]
+    },
+    {
+      "name": "Market stall.008",
+      "district": "02 Market Quarter",
+      "center": [
+        30,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.009",
+      "district": "02 Market Quarter",
+      "center": [
+        50,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.010",
+      "district": "02 Market Quarter",
+      "center": [
+        70,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.011",
+      "district": "02 Market Quarter",
+      "center": [
+        90,
+        2,
+        315
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Building.019",
+      "district": "02 Market Quarter",
+      "center": [
+        60,
+        5.9,
+        166
+      ],
+      "size": [
+        52,
+        11,
+        28
+      ]
+    },
+    {
+      "name": "Market stall.012",
+      "district": "02 Market Quarter",
+      "center": [
+        30,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.013",
+      "district": "02 Market Quarter",
+      "center": [
+        50,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.014",
+      "district": "02 Market Quarter",
+      "center": [
+        70,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Market stall.015",
+      "district": "02 Market Quarter",
+      "center": [
+        90,
+        2,
+        195
+      ],
+      "size": [
+        12,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "Building.020",
+      "district": "03 Canal Walk",
+      "center": [
+        164,
+        7.9,
+        292
+      ],
+      "size": [
+        34,
+        15,
+        32
+      ]
+    },
+    {
+      "name": "Building.021",
+      "district": "03 Canal Walk",
+      "center": [
+        164,
+        7.9,
+        172
+      ],
+      "size": [
+        34,
+        15,
+        32
+      ]
+    },
+    {
+      "name": "Building.022",
+      "district": "03 Canal Walk",
+      "center": [
+        284,
+        7.9,
+        292
+      ],
+      "size": [
+        34,
+        15,
+        32
+      ]
+    },
+    {
+      "name": "Building.023",
+      "district": "03 Canal Walk",
+      "center": [
+        284,
+        7.9,
+        172
+      ],
+      "size": [
+        34,
+        15,
+        32
+      ]
+    },
+    {
+      "name": "Building.024",
+      "district": "04 Learning Campus",
+      "center": [
+        -323,
+        15.418176063972409,
+        82
+      ],
+      "size": [
+        26,
+        30.036352127944816,
+        25
+      ]
+    },
+    {
+      "name": "Building.025",
+      "district": "04 Learning Campus",
+      "center": [
+        -323,
+        15.358126441478113,
+        38
+      ],
+      "size": [
+        26,
+        29.916252882956226,
+        25
+      ]
+    },
+    {
+      "name": "Building.026",
+      "district": "04 Learning Campus",
+      "center": [
+        -277,
+        12.958840982361956,
+        82
+      ],
+      "size": [
+        26,
+        25.11768196472391,
+        25
+      ]
+    },
+    {
+      "name": "Building.027",
+      "district": "04 Learning Campus",
+      "center": [
+        -277,
+        19.059935357147133,
+        38
+      ],
+      "size": [
+        26,
+        37.31987071429427,
+        25
+      ]
+    },
+    {
+      "name": "Building.028",
+      "district": "04 Learning Campus",
+      "center": [
+        -323,
+        20.265365164461777,
+        -38
+      ],
+      "size": [
+        26,
+        39.730730328923556,
+        25
+      ]
+    },
+    {
+      "name": "Building.029",
+      "district": "04 Learning Campus",
+      "center": [
+        -323,
+        20.52395033774082,
+        -82
+      ],
+      "size": [
+        26,
+        40.247900675481645,
+        25
+      ]
+    },
+    {
+      "name": "Building.030",
+      "district": "04 Learning Campus",
+      "center": [
+        -277,
+        22.22197707975498,
+        -38
+      ],
+      "size": [
+        26,
+        43.64395415950996,
+        25
+      ]
+    },
+    {
+      "name": "Building.031",
+      "district": "04 Learning Campus",
+      "center": [
+        -277,
+        20.821176648774347,
+        -82
+      ],
+      "size": [
+        26,
+        40.8423532975487,
+        25
+      ]
+    },
+    {
+      "name": "Building.032",
+      "district": "04 Learning Campus",
+      "center": [
+        -203,
+        24.062092326216685,
+        82
+      ],
+      "size": [
+        26,
+        47.324184652433374,
+        25
+      ]
+    },
+    {
+      "name": "Building.033",
+      "district": "04 Learning Campus",
+      "center": [
+        -203,
+        15.16263189234751,
+        38
+      ],
+      "size": [
+        26,
+        29.52526378469502,
+        25
+      ]
+    },
+    {
+      "name": "Building.034",
+      "district": "04 Learning Campus",
+      "center": [
+        -157,
+        21.50536155756129,
+        82
+      ],
+      "size": [
+        26,
+        42.21072311512258,
+        25
+      ]
+    },
+    {
+      "name": "Building.035",
+      "district": "04 Learning Campus",
+      "center": [
+        -157,
+        14.380004595902461,
+        38
+      ],
+      "size": [
+        26,
+        27.96000919180492,
+        25
+      ]
+    },
+    {
+      "name": "Building.036",
+      "district": "04 Learning Campus",
+      "center": [
+        -203,
+        14.446351331497718,
+        -38
+      ],
+      "size": [
+        26,
+        28.092702662995436,
+        25
+      ]
+    },
+    {
+      "name": "Building.037",
+      "district": "04 Learning Campus",
+      "center": [
+        -203,
+        20.849823345398796,
+        -82
+      ],
+      "size": [
+        26,
+        40.899646690797596,
+        25
+      ]
+    },
+    {
+      "name": "Building.038",
+      "district": "04 Learning Campus",
+      "center": [
+        -157,
+        18.18926771486971,
+        -38
+      ],
+      "size": [
+        26,
+        35.578535429739425,
+        25
+      ]
+    },
+    {
+      "name": "Building.039",
+      "district": "04 Learning Campus",
+      "center": [
+        -157,
+        20.83119750027334,
+        -82
+      ],
+      "size": [
+        26,
+        40.862395000546684,
+        25
+      ]
+    },
+    {
+      "name": "Building.040",
+      "district": "06 Maker Works",
+      "center": [
+        180,
+        8.9,
+        56
+      ],
+      "size": [
+        60,
+        17,
+        46
+      ]
+    },
+    {
+      "name": "Freight container",
+      "district": "06 Maker Works",
+      "center": [
+        153,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.001",
+      "district": "06 Maker Works",
+      "center": [
+        175,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.002",
+      "district": "06 Maker Works",
+      "center": [
+        197,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Building.041",
+      "district": "06 Maker Works",
+      "center": [
+        180,
+        8.9,
+        -64
+      ],
+      "size": [
+        60,
+        17,
+        46
+      ]
+    },
+    {
+      "name": "Freight container.003",
+      "district": "06 Maker Works",
+      "center": [
+        153,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.004",
+      "district": "06 Maker Works",
+      "center": [
+        175,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.005",
+      "district": "06 Maker Works",
+      "center": [
+        197,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Building.042",
+      "district": "06 Maker Works",
+      "center": [
+        300,
+        8.9,
+        56
+      ],
+      "size": [
+        60,
+        17,
+        46
+      ]
+    },
+    {
+      "name": "Freight container.006",
+      "district": "06 Maker Works",
+      "center": [
+        273,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.007",
+      "district": "06 Maker Works",
+      "center": [
+        295,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.008",
+      "district": "06 Maker Works",
+      "center": [
+        317,
+        3,
+        93
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Building.043",
+      "district": "06 Maker Works",
+      "center": [
+        300,
+        8.9,
+        -64
+      ],
+      "size": [
+        60,
+        17,
+        46
+      ]
+    },
+    {
+      "name": "Freight container.009",
+      "district": "06 Maker Works",
+      "center": [
+        273,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.010",
+      "district": "06 Maker Works",
+      "center": [
+        295,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Freight container.011",
+      "district": "06 Maker Works",
+      "center": [
+        317,
+        3,
+        -27
+      ],
+      "size": [
+        17,
+        5.5,
+        8
+      ]
+    },
+    {
+      "name": "Building.044",
+      "district": "07 Old Town",
+      "center": [
+        -323,
+        10.639675214293527,
+        -158
+      ],
+      "size": [
+        26,
+        20.479350428587054,
+        25
+      ]
+    },
+    {
+      "name": "Building.045",
+      "district": "07 Old Town",
+      "center": [
+        -323,
+        8.194047455977035,
+        -202
+      ],
+      "size": [
+        26,
+        15.588094911954071,
+        25
+      ]
+    },
+    {
+      "name": "Building.046",
+      "district": "07 Old Town",
+      "center": [
+        -277,
+        9.404045922630976,
+        -158
+      ],
+      "size": [
+        26,
+        18.00809184526195,
+        25
+      ]
+    },
+    {
+      "name": "Building.047",
+      "district": "07 Old Town",
+      "center": [
+        -277,
+        10.927829854764036,
+        -202
+      ],
+      "size": [
+        26,
+        21.055659709528072,
+        25
+      ]
+    },
+    {
+      "name": "Building.048",
+      "district": "07 Old Town",
+      "center": [
+        -323,
+        9.364170191449551,
+        -278
+      ],
+      "size": [
+        26,
+        17.9283403828991,
+        25
+      ]
+    },
+    {
+      "name": "Building.049",
+      "district": "07 Old Town",
+      "center": [
+        -323,
+        11.379771982660943,
+        -322
+      ],
+      "size": [
+        26,
+        21.959543965321885,
+        25
+      ]
+    },
+    {
+      "name": "Building.050",
+      "district": "07 Old Town",
+      "center": [
+        -277,
+        11.688200918586995,
+        -278
+      ],
+      "size": [
+        26,
+        22.57640183717399,
+        25
+      ]
+    },
+    {
+      "name": "Building.051",
+      "district": "07 Old Town",
+      "center": [
+        -277,
+        8.827902178125747,
+        -322
+      ],
+      "size": [
+        26,
+        16.855804356251493,
+        25
+      ]
+    },
+    {
+      "name": "Building.052",
+      "district": "07 Old Town",
+      "center": [
+        -203,
+        8.057999563354707,
+        -158
+      ],
+      "size": [
+        26,
+        15.315999126709414,
+        25
+      ]
+    },
+    {
+      "name": "Building.053",
+      "district": "07 Old Town",
+      "center": [
+        -203,
+        10.222567226941491,
+        -202
+      ],
+      "size": [
+        26,
+        19.64513445388298,
+        25
+      ]
+    },
+    {
+      "name": "Building.054",
+      "district": "07 Old Town",
+      "center": [
+        -157,
+        6.641932413652505,
+        -158
+      ],
+      "size": [
+        26,
+        12.483864827305009,
+        25
+      ]
+    },
+    {
+      "name": "Building.055",
+      "district": "07 Old Town",
+      "center": [
+        -157,
+        9.993155238627796,
+        -202
+      ],
+      "size": [
+        26,
+        19.186310477255592,
+        25
+      ]
+    },
+    {
+      "name": "Building.056",
+      "district": "07 Old Town",
+      "center": [
+        -203,
+        9.070081659788409,
+        -278
+      ],
+      "size": [
+        26,
+        17.340163319576817,
+        25
+      ]
+    },
+    {
+      "name": "Building.057",
+      "district": "07 Old Town",
+      "center": [
+        -203,
+        10.11790698735272,
+        -322
+      ],
+      "size": [
+        26,
+        19.43581397470544,
+        25
+      ]
+    },
+    {
+      "name": "Building.058",
+      "district": "07 Old Town",
+      "center": [
+        -157,
+        8.946133254971002,
+        -278
+      ],
+      "size": [
+        26,
+        17.092266509942004,
+        25
+      ]
+    },
+    {
+      "name": "Building.059",
+      "district": "07 Old Town",
+      "center": [
+        -157,
+        10.735997053389642,
+        -322
+      ],
+      "size": [
+        26,
+        20.671994106779284,
+        25
+      ]
+    },
+    {
+      "name": "Building.060",
+      "district": "08 Circular Hub",
+      "center": [
+        -60,
+        8.4,
+        -197
+      ],
+      "size": [
+        62,
+        16,
+        28
+      ]
+    },
+    {
+      "name": "Sorting bay",
+      "district": "08 Circular Hub",
+      "center": [
+        -92,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.001",
+      "district": "08 Circular Hub",
+      "center": [
+        -79,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.002",
+      "district": "08 Circular Hub",
+      "center": [
+        -66,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.003",
+      "district": "08 Circular Hub",
+      "center": [
+        -53,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.004",
+      "district": "08 Circular Hub",
+      "center": [
+        -40,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.005",
+      "district": "08 Circular Hub",
+      "center": [
+        -27,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Building.061",
+      "district": "08 Circular Hub",
+      "center": [
+        -60,
+        8.4,
+        -317
+      ],
+      "size": [
+        62,
+        16,
+        28
+      ]
+    },
+    {
+      "name": "Sorting bay.006",
+      "district": "08 Circular Hub",
+      "center": [
+        -92,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.007",
+      "district": "08 Circular Hub",
+      "center": [
+        -79,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.008",
+      "district": "08 Circular Hub",
+      "center": [
+        -66,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.009",
+      "district": "08 Circular Hub",
+      "center": [
+        -53,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.010",
+      "district": "08 Circular Hub",
+      "center": [
+        -40,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.011",
+      "district": "08 Circular Hub",
+      "center": [
+        -27,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Building.062",
+      "district": "08 Circular Hub",
+      "center": [
+        60,
+        8.4,
+        -197
+      ],
+      "size": [
+        62,
+        16,
+        28
+      ]
+    },
+    {
+      "name": "Sorting bay.012",
+      "district": "08 Circular Hub",
+      "center": [
+        28,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.013",
+      "district": "08 Circular Hub",
+      "center": [
+        41,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.014",
+      "district": "08 Circular Hub",
+      "center": [
+        54,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.015",
+      "district": "08 Circular Hub",
+      "center": [
+        67,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.016",
+      "district": "08 Circular Hub",
+      "center": [
+        80,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.017",
+      "district": "08 Circular Hub",
+      "center": [
+        93,
+        2.5,
+        -165
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Building.063",
+      "district": "08 Circular Hub",
+      "center": [
+        60,
+        8.4,
+        -317
+      ],
+      "size": [
+        62,
+        16,
+        28
+      ]
+    },
+    {
+      "name": "Sorting bay.018",
+      "district": "08 Circular Hub",
+      "center": [
+        28,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.019",
+      "district": "08 Circular Hub",
+      "center": [
+        41,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.020",
+      "district": "08 Circular Hub",
+      "center": [
+        54,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.021",
+      "district": "08 Circular Hub",
+      "center": [
+        67,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.022",
+      "district": "08 Circular Hub",
+      "center": [
+        80,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Sorting bay.023",
+      "district": "08 Circular Hub",
+      "center": [
+        93,
+        2.5,
+        -285
+      ],
+      "size": [
+        10,
+        4,
+        15
+      ]
+    },
+    {
+      "name": "Building.064",
+      "district": "09 Solar Heights",
+      "center": [
+        157,
+        23.56105626309153,
+        -158
+      ],
+      "size": [
+        26,
+        46.32211252618306,
+        25
+      ]
+    },
+    {
+      "name": "Building.065",
+      "district": "09 Solar Heights",
+      "center": [
+        157,
+        18.67964585543574,
+        -202
+      ],
+      "size": [
+        26,
+        36.559291710871484,
+        25
+      ]
+    },
+    {
+      "name": "Building.066",
+      "district": "09 Solar Heights",
+      "center": [
+        203,
+        19.74138580842412,
+        -158
+      ],
+      "size": [
+        26,
+        38.68277161684824,
+        25
+      ]
+    },
+    {
+      "name": "Building.067",
+      "district": "09 Solar Heights",
+      "center": [
+        203,
+        15.196914289568317,
+        -202
+      ],
+      "size": [
+        26,
+        29.593828579136634,
+        25
+      ]
+    },
+    {
+      "name": "Building.068",
+      "district": "09 Solar Heights",
+      "center": [
+        157,
+        14.48661814565848,
+        -278
+      ],
+      "size": [
+        26,
+        28.17323629131696,
+        25
+      ]
+    },
+    {
+      "name": "Building.069",
+      "district": "09 Solar Heights",
+      "center": [
+        157,
+        13.624894770832276,
+        -322
+      ],
+      "size": [
+        26,
+        26.44978954166455,
+        25
+      ]
+    },
+    {
+      "name": "Building.070",
+      "district": "09 Solar Heights",
+      "center": [
+        203,
+        22.364926123239634,
+        -278
+      ],
+      "size": [
+        26,
+        43.92985224647927,
+        25
+      ]
+    },
+    {
+      "name": "Building.071",
+      "district": "09 Solar Heights",
+      "center": [
+        203,
+        21.91659645893923,
+        -322
+      ],
+      "size": [
+        26,
+        43.033192917878466,
+        25
+      ]
+    },
+    {
+      "name": "Building.072",
+      "district": "09 Solar Heights",
+      "center": [
+        277,
+        14.172142829292136,
+        -158
+      ],
+      "size": [
+        26,
+        27.544285658584272,
+        25
+      ]
+    },
+    {
+      "name": "Building.073",
+      "district": "09 Solar Heights",
+      "center": [
+        277,
+        17.82787504343721,
+        -202
+      ],
+      "size": [
+        26,
+        34.85575008687442,
+        25
+      ]
+    },
+    {
+      "name": "Building.074",
+      "district": "09 Solar Heights",
+      "center": [
+        323,
+        14.013801543090233,
+        -158
+      ],
+      "size": [
+        26,
+        27.227603086180466,
+        25
+      ]
+    },
+    {
+      "name": "Building.075",
+      "district": "09 Solar Heights",
+      "center": [
+        323,
+        24.592671967984096,
+        -202
+      ],
+      "size": [
+        26,
+        48.385343935968194,
+        25
+      ]
+    },
+    {
+      "name": "Building.076",
+      "district": "09 Solar Heights",
+      "center": [
+        277,
+        15.389668536868061,
+        -278
+      ],
+      "size": [
+        26,
+        29.979337073736122,
+        25
+      ]
+    },
+    {
+      "name": "Building.077",
+      "district": "09 Solar Heights",
+      "center": [
+        277,
+        19.733159463357097,
+        -322
+      ],
+      "size": [
+        26,
+        38.6663189267142,
+        25
+      ]
+    },
+    {
+      "name": "Building.078",
+      "district": "09 Solar Heights",
+      "center": [
+        323,
+        19.764716428012935,
+        -278
+      ],
+      "size": [
+        26,
+        38.72943285602587,
+        25
+      ]
+    },
+    {
+      "name": "Building.079",
+      "district": "09 Solar Heights",
+      "center": [
+        323,
+        19.236976549521142,
+        -322
+      ],
+      "size": [
+        26,
+        37.673953099042286,
+        25
+      ]
+    },
+    {
+      "name": "Depot kiosk",
+      "district": "10 Player Depot",
+      "center": [
+        -382,
+        4,
+        300
+      ],
+      "size": [
+        14,
+        7,
+        20
+      ]
+    }
+  ],
+  "suggestedObjectives": [
+    {
+      "name": "First round",
+      "targets": {
+        "organic": 3,
+        "plastic": 2,
+        "paper": 2
+      }
+    },
+    {
+      "name": "Canal cleanup",
+      "targets": {
+        "glass": 4,
+        "metal": 2
+      }
+    },
+    {
+      "name": "Circular city",
+      "targets": {
+        "organic": 3,
+        "plastic": 3,
+        "paper": 3,
+        "metal": 3,
+        "glass": 3,
+        "ewaste": 3
+      }
+    }
+  ]
+}
