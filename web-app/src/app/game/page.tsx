@@ -97,7 +97,7 @@ export default function CollectionGamePage() {
  const stationAction = !nearPickup && Boolean(state.interaction);
  const interactionReady=stationAction?state.speed<=10:nearPickup&&state.speed<=29;
  const notice = active && state.message && !["Follow the marker.", "Your round starts now.", "Find the coloured"].some(prefix => state.message.startsWith(prefix));
- return <main className={`eco-game${active ? " is-in-round" : ""}`}>
+ return <main className={`eco-game${active ? " is-in-round" : ""}`} onClickCapture={event=>{if(active)(event.target as Element).closest<HTMLButtonElement>("button")?.blur();}}>
   <div className="eco-game-world" ref={host} aria-label="3D waste collection game" />
   <div className="eco-game-vignette" />
   <header className="eco-game-header">
