@@ -2,6 +2,7 @@
 import {useId,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Eye,EyeOff,KeyRound,Leaf,Loader2,Mail,MailCheck,ShieldCheck,TriangleAlert} from 'lucide-react';
 import Dropdown from './dropdown';
+import GoogleSignIn from './google-signin';
 import styles from './auth-screens.module.css';
 import flow from './simple-flow.module.css';
 export type AuthMode='login'|'signup'|'forgot-password'|'send-signin'|'resend-verification';
@@ -28,6 +29,7 @@ export default function AuthDialogContent({mode,busy,feedback,accountType,onAcco
   <div className={`${styles.mark} ${sent?styles.successMark:''}`}><Icon size={26} strokeWidth={1.6}/></div>
   <header className={styles.header}><h2 id="auth-dialog-title" className={styles.title}>{sent?'Check your inbox.':helperOnly&&mode==='signup'?'Join the collection team.':content.title}</h2><p id="auth-dialog-description" className={styles.description}>{sent?'If an eligible account matches your email, a link will arrive shortly. Check your spam folder too.':helperOnly&&mode==='signup'?'Create your helper account. Verify your email, then request approval to collect.':helperOnly&&mode==='login'?'Sign in to your collections, receipts and earnings.':content.description}</p></header>
   {!sent&&<AuthMessage feedback={feedback}/>}
+  {!emailOnly&&<GoogleSignIn accountType={helperOnly?'helper':accountType} disabled={busy}/>}
   {sent?<>
    {email&&<p className={styles.email}>{email}</p>}
    <p className={styles.helperNote}>Links are single-use and expire after 15 minutes. Use the newest email you receive.</p>
