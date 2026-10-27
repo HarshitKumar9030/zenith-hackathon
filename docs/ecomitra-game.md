@@ -22,6 +22,8 @@ The 800 × 800 metre city has nine districts and 144 possible pickup locations. 
 | F | Toggle browser fullscreen |
 | Enter | Start, resume or replay |
 
+The driving HUD contains a compact timer / score / progress bar, a small corner map and a nearest-pickup chip. The collect button appears only within collection range; brief action feedback disappears automatically. The full category breakdown is available through the map or pause screen, and sound / fullscreen settings are in the pause menu. There is no persistent mission panel or bottom keybind strip.
+
 Buttons are provided for collection, sound, fullscreen and pause. Basic touch driving buttons appear on small screens, but keyboard on a large display is the primary experience. There is no controller or TV remote support in this iteration. Losing window focus or hiding the tab pauses play and clears held movement keys.
 
 ## Score and ending
