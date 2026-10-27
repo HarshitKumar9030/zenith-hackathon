@@ -26,7 +26,7 @@ The 800 × 800 metre city has nine districts and 144 possible pickup locations. 
 
 The driving HUD contains a compact timer / score / progress bar, a small circular, truck-centred radar with a north indicator and an off-screen target arrow and a nearest-pickup chip. The collect button appears only within collection range; brief action feedback disappears automatically. The full category breakdown is available through the map or pause screen, and sound / fullscreen settings are in the pause menu. There is no persistent mission panel or bottom keybind strip.
 
-Buttons are provided for collection, sound, fullscreen and pause. Basic touch driving buttons appear on small screens, but keyboard on a large display is the primary experience. There is no controller or TV remote support in this iteration. Losing window focus or hiding the tab pauses play and clears held movement keys.
+Buttons are provided for collection, sound, fullscreen and pause. Touch devices and viewports under 900 pixels use a steering pad and separate hold-to-drive pedals. Keyboard on a large display remains supported. There is no controller or TV remote support in this iteration. Losing window focus or hiding the tab pauses play and clears held movement keys.
 
 ## Score and ending
 
@@ -42,9 +42,9 @@ The end screen presents the truck on a separate platform with animated confetti,
 - `/public/game/`: city GLB, truck GLB, map data and truck render, served locally with the app.
 - `docs/ecomitra-game-map.md`: editable map source, district details and coordinate conventions.
 
-The GLB city has approximately 79,000 triangles; the detailed truck adds about 40,000. Pixel ratio is capped at 1.5. Buildings, stalls, containers and sorting bays have approximate box collision, and movement stops at the playable city boundary. Trees, benches and small scenery do not have physical collision. Truck movement is arcade-style; suspension, wheel-to-ground terrain physics, traffic, gamepad input, multiplayer, cloud scoreboards and mobile performance certification are future work. No specific TV frame rate is claimed.
+The GLB city has approximately 79,000 triangles; the detailed truck adds about 40,000. Pixel ratio is capped at 1.5. Buildings, stalls, containers and sorting bays have approximate box collision, and movement stops at the playable city boundary. Trees, benches and small scenery do not have physical collision. Truck movement is arcade-style; suspension, wheel-to-ground terrain physics, physical traffic collision, gamepad input, multiplayer, cloud scoreboards and mobile performance certification are future work. No specific TV frame rate is claimed.
 
-The Next.js package installed in this workspace does not include the `dist/docs/` guide mentioned in its generated AGENTS instructions. This route uses a client component, dynamically imports the WebGL engine in an effect, and disposes of frames, listeners, audio, geometry and materials on unmount.
+The installed Next.js client-component and lazy-loading guides were consulted for the touch update. This route uses client components, imports the WebGL engine in an effect, and disposes of frames, listeners, audio, geometry and materials on unmount.
 
 ## Verification
 
@@ -77,3 +77,21 @@ At the end of a round, **Email my result** reveals an optional email form. `/api
 The endpoint rejects cross-origin requests and oversized / malformed payloads. MongoDB's existing TTL-indexed `auth_attempts` collection limits sending to three attempts per recipient per hour and twelve per source IP per hour. It stores hashed bucket identifiers rather than raw addresses or IPs, and expires them after two hours. No email addresses or results are added to a marketing list. Scores remain self-reported game results and are not verified competition entries.
 
 Upgrade validation: focused tests cover email payload bounds, score recomputation and real PNG dimensions; invalid-address and cross-origin HTTP requests were rejected; SMTP connection and authentication were verified without sending an email. Inbox delivery is not independently confirmed. Browser checks cover collection, keyboard orbit rotation, circular radar, pause and the optional email form.
+
+
+## Touch driving and living city
+
+Touch controls replace the old four-arrow buttons:
+
+- Left steering pad: horizontal analog steering with a 10% dead zone. Slide with your thumb; releasing returns steering to centre.
+- Hold **GO** to accelerate. Hold **BRAKE** to stop; braking overrides acceleration. Hold **REVERSE** to back up.
+- The collect button appears above the pedals only when within pickup range. Slow down first; the button indicates when braking is needed.
+- Swipe the uncovered 3D world to look around in 360° camera mode. A stationary tap does not rotate it. Two-finger gestures retain OrbitControls zoom. Touch driving gently returns the camera behind the truck four seconds after the last camera swipe.
+
+Controls support independent pointer IDs and pointer capture. Release, cancellation, lost capture, window blur, visibility changes, pause, map opening and unmount clear held inputs. Thumb controls respect safe-area insets, and portrait / landscape layouts put the radar above the pedals. The short-height start screen scrolls so its start button stays reachable. Keyboard, cursor-based camera and TV HUD remain available.
+
+`city-life.ts` adds 18 animated cars, 36 walking figures, 12 birds, 50 streetlights, three shelters with benches and 44 moving market flags. Cars follow closed road loops and stop near the player; people stay on paths around blocks. These are decorative actors, with no physical NPC collision, traffic enforcement or effect on scores. Streetlights are geometry with emissive panels, not dozens of real-time point lights. Traffic, walkers, flags and birds stop when the round is paused, and the entire ambience group is hidden during the finish presentation. A short coloured particle burst marks each collected pickup.
+
+Actors use instanced meshes and shared geometry / materials; resources are released on disposal. Coarse-pointer devices use a 1.25 pixel-ratio cap and 1024-pixel shadows, compared with 1.5 / 2048 on desktop. Actual performance and multi-touch feel still need testing on physical phones; viewport inspection is not a device benchmark.
+
+Touch validation includes simultaneous independent input state, release / reset behaviour, opposing pedals and steering bounds / dead zone. Browser checks include holding GO, braking, collecting with the mobile button, steering-pad release and portrait / landscape spacing.

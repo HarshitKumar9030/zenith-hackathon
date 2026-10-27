@@ -199,6 +199,7 @@ export class CollectionGame {
     if ((event.target as HTMLElement)?.closest("input, textarea, select, a")) return;
     if ((event.target as HTMLElement)?.closest("button") && ["Enter", " "].includes(event.key)) return;
     const key = event.key.toLowerCase();
+    if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright","j","l","i","k"].includes(key))this.touchDriving=false;
     if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "tab"].includes(key) && key !== "tab") event.preventDefault();
     this.keys.add(key);
     if (event.repeat) return;
