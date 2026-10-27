@@ -26,6 +26,22 @@ try{
  assert(cancelled.headers.get('set-cookie')?.includes('Path=/api/auth/google'));
  const replay=await fetch(base+'/api/auth/google/callback?state='+state+'&code=fake',{headers:{cookie},redirect:'manual'});assert(new URL(replay.headers.get('location')!).searchParams.get('authError')==='google_expired');
  assert.equal(await database.collection('users').countDocuments(),1);
+ const rate=(body:unknown,session=token)=>fetch(base+'/api/scan-feedback',{method:'POST',headers:{cookie:`ww_session=${session}`,'Content-Type':'application/json',origin:base},body:JSON.stringify(body)});
+ assert.equal((await fetch(base+'/api/scan-feedback')).status,401);
+ assert.equal((await rate({stars:5})).status,403);
+ const feedbackUser=new ObjectId(),feedbackToken=randomBytes(32).toString('hex');
+ await database.collection('users').insertOne({_id:feedbackUser,email:'feedback-qa@example.test',emailVerifiedAt:new Date(),scanFeedbackEligibleAt:new Date(),scanFeedbackSource:'station'});
+ await database.collection('sessions').insertOne({_id:createHash('sha256').update(feedbackToken).digest('hex') as never,userId:feedbackUser,expiresAt:new Date(Date.now()+3600000)});
+ for(const stars of [0,6,2.5,'5'])assert.equal((await rate({stars},feedbackToken)).status,400);
+ assert.equal((await rate({stars:5,userId:String(userId)},feedbackToken)).status,400);
+ assert.equal((await rate({stars:5,comment:'a'.repeat(1001)},feedbackToken)).status,400);
+ const post={stars:4,comment:'  Clear and easy to use.  '};
+ assert((await Promise.all([rate(post,feedbackToken),rate(post,feedbackToken)])).every(r=>r.status===200));
+ const stored=await database.collection('scan_feedback').findOne({_id:feedbackUser});assert.equal(stored?.stars,4);assert.equal(stored?.comment,'Clear and easy to use.');assert.equal(stored?.source,'station');assert.equal(await database.collection('scan_feedback').countDocuments(),1);
+ await rate({stars:1},feedbackToken);assert.equal((await database.collection('scan_feedback').findOne({_id:feedbackUser}))?.stars,4);
+ const status=await(await fetch(base+'/api/scan-feedback',{headers:{cookie:`ww_session=${feedbackToken}`}})).json();assert.equal(status.eligible,false);assert.equal(status.submitted,true);
+ const otherStatus=await(await fetch(base+'/api/scan-feedback',{headers:{cookie:`ww_session=${token}`}})).json();assert.equal(otherStatus.submitted,false);
+ console.log('PASS: first-scan gate, authenticated private feedback, validation, trimming, concurrent retry safety and no overwrite');
  console.log('PASS: signed-out scanner blocked; OAuth PKCE, callback, mismatched state, cancellation, one-time state and cookie cleanup');
  if(process.env.STATION_QA_LIVE_SCAN==='1'){
   const image='data:image/jpeg;base64,'+(await sharp(await readFile('public/quiz images/easy/banana peel.jfif')).resize(1000,1000,{fit:'inside'}).jpeg().toBuffer()).toString('base64');

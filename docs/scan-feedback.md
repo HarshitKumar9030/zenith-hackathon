@@ -1,0 +1,9 @@
+# First-scan feedback
+
+After the first successfully processed photograph, the dashboard scanner and standalone scan station can display an inline feedback card. Five keyboard-accessible radio stars select a rating; the text comment is optional and limited to 1,000 characters. The card can be dismissed without interrupting scanning, and shows a saved confirmation only after MongoDB acknowledges the write. Quiz scores and Discovery Points are unaffected.
+
+`users.scanFeedbackEligibleAt` and `scanFeedbackSource` record first-scan eligibility, without retaining a station image. `scanFeedbackDismissedAt` persists Not now/dismiss. The prompt is once per signed-in account, including a shared stall operator account; it is not a separate rating for every anonymous visitor. Refreshing or signing in again does not repeat a submitted/dismissed prompt.
+
+`GET /api/scan-feedback` returns only the current account's eligibility/submission state. `POST /api/scan-feedback` accepts `{stars: 1..5, comment?: string}` or `{action: "dismiss"}`. Both require an existing authenticated session; writes require the same origin. The server rejects ratings before the first successful photograph, non-integer/out-of-range stars, unknown fields and oversized comments.
+
+The `scan_feedback` collection stores one document per account using the account ObjectId as `_id` (MongoDB's built-in unique index). Fields: userId, stars, comment (trimmed string or null), source (server-derived app/station), firstScanAt, createdAt and version. Insert-only upsert preserves the first submission across network retries and concurrent requests. No duplicated email, IP, image or payment data is saved. No public feedback feed is added; this is private product feedback. Operators can inspect the collection with authorized MongoDB tooling.

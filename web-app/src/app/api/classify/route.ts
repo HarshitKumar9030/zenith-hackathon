@@ -153,8 +153,16 @@ export async function POST(request: Request) {
       identification,
       guide as unknown as Guide | null,
     );
+    let feedbackEligible=false;
+    if(input.image){
+      try{
+        await database.collection('users').updateOne({_id:user._id,scanFeedbackEligibleAt:{$exists:false}},{$set:{scanFeedbackEligibleAt:new Date(),scanFeedbackSource:input.station?'station':'app'}});
+        const submitted=await database.collection('scan_feedback').findOne({_id:user._id},{projection:{_id:1}});
+        feedbackEligible=!submitted&&!user.scanFeedbackDismissedAt;
+      }catch{console.error('Scan feedback eligibility could not be recorded');}
+    }
     // Shared stall scans must never alter a personal points balance or history.
-    if(input.station)return NextResponse.json({identification,latencyMs:Math.round(performance.now()-start)});
+    if(input.station)return NextResponse.json({identification,feedbackEligible,latencyMs:Math.round(performance.now()-start)});
     const record = {
       preview: input.preview,
       expiresAt: new Date(Date.now() + 86400000),
@@ -184,6 +192,7 @@ export async function POST(request: Request) {
       ...record,
       _id: String(saved.insertedId),
       discoveryPointsAwarded: discovery.awarded,
+      feedbackEligible,
       discovery,
       userId: undefined,
     });
