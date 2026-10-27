@@ -9,11 +9,13 @@ export async function GET(request:Request,context:{params:Promise<{action:string
  const {action}=await context.params;
  if(action==='status')return NextResponse.json({configured:googleConfigured()});
  const url=new URL(request.url),jar=await cookies();
+ // Next's internal request URL may use its bind address; validate the browser host.
+ url.host=request.headers.get('host')||url.host;
  let returnTo=googleReturnPath(url.searchParams.get('returnTo'));
  const fail=(code:string)=>{const target=new URL(returnTo,url.origin);target.searchParams.set('authError',code);return NextResponse.redirect(target);};
  if(!googleConfigured())return fail('google_unconfigured');
  try{
-  const client=googleClient(request.url),database=await db();
+  const client=googleClient(url.toString()),database=await db();
   const states=database.collection('google_oauth_states');
   if(action==='start'){
    const state=randomBytes(32).toString('hex'),nonce=randomBytes(32).toString('hex');
