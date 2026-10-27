@@ -9,8 +9,9 @@ interface Props {
  nearby: boolean;
  collectionReady: boolean;
  item: string;
+ actionLabel?: string;
 }
-export default function MobileControls({enabled,onDrive,onCollect,nearby,collectionReady,item}:Props) {
+export default function MobileControls({enabled,onDrive,onCollect,nearby,collectionReady,item,actionLabel}:Props) {
  const input = useRef(new TouchDriveState());
  const joystickPointer = useRef<number|null>(null);
  const [knob,setKnob] = useState(0),[pressed,setPressed] = useState<Record<string,boolean>>({});
@@ -60,6 +61,6 @@ export default function MobileControls({enabled,onDrive,onCollect,nearby,collect
    <button className={`eco-mobile-brake${pressed.brake?" is-held":""}`} aria-label="Hold to brake" {...pedalProps("brake")}><Hand size={21}/><span>BRAKE</span></button>
    <button className={`eco-mobile-gas${pressed.accelerate?" is-held":""}`} aria-label="Hold to accelerate" {...pedalProps("accelerate")}><ChevronsUp size={30}/><span>GO</span></button>
   </div>
-  {nearby && <button className="eco-mobile-collect" disabled={!collectionReady||!enabled} onClick={onCollect}><Recycle size={19}/><span>{collectionReady?`Collect ${item.toLowerCase()}`:"Brake to collect"}</span></button>}
+  {nearby && <button className="eco-mobile-collect" disabled={!collectionReady||!enabled} onClick={onCollect}><Recycle size={19}/><span>{collectionReady?(actionLabel??`Collect ${item.toLowerCase()}`):"Brake to interact"}</span></button>}
  </div>;
 }
