@@ -20,6 +20,10 @@ Browser tracking is foreground-oriented. Do not promise continuous lock-screen t
 
 ## Production controls
 
+### Vercel dependency installation
+
+Use `web-app` as the Vercel project root. The app pins `pnpm@10.20.0` and commits `web-app/pnpm-lock.yaml`; Vercel can keep its default frozen-lockfile installation. The game dependency update initially omitted `three` and `@types/three` from that lockfile, causing `ERR_PNPM_OUTDATED_LOCKFILE`. It is now synchronized. After changing dependencies, run `pnpm install` in `web-app` and commit the updated manifest and lockfile together. Verify with `pnpm install --frozen-lockfile --lockfile-only --ignore-scripts` and `pnpm build`. Do not work around mismatches by disabling frozen installs in CI.
+
 Production signup requires configured email delivery by default. Production login and session reads also reject unverified accounts, including legacy accounts. The explicit `ALLOW_UNVERIFIED_SIGNUP=true` override is for isolated QA only and fails the production configuration check. Demo auto-assignment remains disabled.
 
 Security headers disable content-type sniffing and framing, restrict camera/geolocation to this origin, disallow microphone use and object embedding, and limit base URLs. API responses are marked private/no-store. This is a baseline CSP, not a complete script-nonce CSP or a penetration-test certificate. The dependency audit reported no known production-package vulnerabilities at the time of checking.
