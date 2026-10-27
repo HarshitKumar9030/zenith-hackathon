@@ -17,3 +17,25 @@ test('Kahoot-style category choices always contain one accepted answer and three
  const {quizCategoryChoices}=await import('./waste-quiz');
  for(const question of quizBank){const options=quizCategoryChoices(question);assert.equal(options.length,4);assert.equal(new Set(options.map(o=>o.value)).size,4);assert.equal(options.filter(o=>question.categories.includes(o.value)).length,1);}
 });
+
+test('type and category answer slots are well distributed and never change the source options',async()=>{
+ const {quizTypeChoices,quizCategoryChoices}=await import('./waste-quiz');
+ let seed=20261027;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ const typeCounts=[0,0,0],categoryCounts=[0,0,0,0],before=JSON.stringify(typeOptions),question=quizBank[0];
+ for(let i=0;i<6000;i++){
+  const types=quizTypeChoices(random);assert.equal(new Set(types.map(o=>o.value)).size,3);typeCounts[types.findIndex(o=>o.value==='biodegradable')]++;
+  const categories=quizCategoryChoices(question,random);categoryCounts[categories.findIndex(o=>question.categories.includes(o.value))]++;
+ }
+ for(const count of typeCounts)assert(count>1750&&count<2250,JSON.stringify(typeCounts));
+ for(const count of categoryCounts)assert(count>1250&&count<1750,JSON.stringify(categoryCounts));
+ assert.equal(JSON.stringify(typeOptions),before);
+});
+test('a photo shares one ten-second deadline across both prompts, including background time',async()=>{
+ const {quizSecondsRemaining}=await import('./waste-quiz'),deadline=10000;
+ assert.equal(quizSecondsRemaining(deadline,0),10);
+ assert.equal(quizSecondsRemaining(deadline,3100),7);
+ assert.equal(quizSecondsRemaining(deadline,4200),6);
+ assert.equal(quizSecondsRemaining(deadline,9999),1);
+ assert.equal(quizSecondsRemaining(deadline,10000),0);
+ assert.equal(quizSecondsRemaining(deadline,30000),0);
+});

@@ -5,10 +5,13 @@ export type QuizAnswer={type:string;category:string};
 export const quizBank:QuizItem[]=rawBank;
 export const typeOptions=[{value:'biodegradable',label:'Biodegradable'},{value:'non_biodegradable',label:'Non-biodegradable'},{value:'recyclable',label:'Recyclable'}];
 export const categoryOptions=[['plastic','Plastic'],['paper','Paper'],['cardboard','Cardboard'],['glass','Glass'],['metal','Metal'],['food_waste','Food waste'],['garden_waste','Garden waste'],['textile','Textile'],['wood','Wood'],['rubber','Rubber'],['ceramic','Ceramic'],['e_waste','Electronic waste'],['hazardous','Hazardous waste'],['sanitary','Sanitary waste'],['oil','Oil'],['composite_or_other','Mixed materials / other']].map(([value,label])=>({value,label}));
-export function shuffle<T>(items:readonly T[],random:()=>number=Math.random):T[]{
+export function quizRandom(){return globalThis.crypto?.getRandomValues?globalThis.crypto.getRandomValues(new Uint32Array(1))[0]/4294967296:Math.random();}
+export function quizSecondsRemaining(deadline:number,now:number){return Math.max(0,Math.ceil((deadline-now)/1000));}
+export function quizTypeChoices(random:()=>number=quizRandom){return shuffle(typeOptions,random);}
+export function shuffle<T>(items:readonly T[],random:()=>number=quizRandom):T[]{
  const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;
 }
-export function makeQuiz(random:()=>number=Math.random):QuizItem[]{
+export function makeQuiz(random:()=>number=quizRandom):QuizItem[]{
  const selected=Object.entries({easy:5,medium:2,hard:3}).flatMap(([difficulty,count])=>{
   const pool=quizBank.filter(q=>q.difficulty===difficulty);
   if(pool.length<count)throw new Error(`Not enough ${difficulty} quiz images`);
@@ -23,7 +26,7 @@ export function gradeQuiz(questions:QuizItem[],answers:Record<string,QuizAnswer>
 export function quizImage(item:QuizItem){return '/quiz%20images/'+item.id.split('/').map(encodeURIComponent).join('/');}
 export function answerLabel(value:string,kind:'type'|'category'){return (kind==='type'?typeOptions:categoryOptions).find(o=>o.value===value)?.label??'Not answered';}
 /** Four readable choices: one accepted category plus three genuinely wrong alternatives. */
-export function quizCategoryChoices(question:QuizItem,random:()=>number=Math.random){
+export function quizCategoryChoices(question:QuizItem,random:()=>number=quizRandom){
  const correct=categoryOptions.find(o=>o.value===question.categories[0]);
  if(!correct)throw new Error('Quiz category is not available');
  return shuffle([correct,...shuffle(categoryOptions.filter(o=>!question.categories.includes(o.value)),random).slice(0,3)],random);
