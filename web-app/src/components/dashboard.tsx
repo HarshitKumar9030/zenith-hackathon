@@ -21,6 +21,7 @@ import {
   Type,
 } from "lucide-react";
 import ScanArt from "./scan-art";
+import ScanFeedback from "./scan-feedback";
 import CapturedFrameDrop from "./captured-frame-drop";
 import { motion, useReducedMotion } from "framer-motion";
 import DescriptionDetailsForm, {
@@ -89,6 +90,7 @@ async function api(path: string, method = "GET", body?: unknown) {
 }
 export default function Dashboard() {
   const {native} = useNativeHelper();
+  const [feedbackEligible,setFeedbackEligible]=useState(false);
   const [sessionReady,setSessionReady] = useState(false);
   const [photoFlight, setPhotoFlight] = useState(false);
   const [authFeedback,setAuthFeedback]=useState<AuthFeedback>(null);
@@ -268,6 +270,7 @@ export default function Dashboard() {
         image: mode === "photo" ? image : undefined,
       });
       setResult(data);
+      setFeedbackEligible(Boolean(data.feedbackEligible));
       if (data.discovery?.message) setMessage(data.discovery.message);
       void refresh();
     } catch (e) {
@@ -291,6 +294,7 @@ export default function Dashboard() {
     });
     if (currentPage.current === "Identify waste" && epoch === scanEpoch.current) {
       setResult(data);
+      setFeedbackEligible(Boolean(data.feedbackEligible));
       if (data.discovery?.message) setMessage(data.discovery.message);
       if (data.discovery && !['earned','no_photo','no_waste'].includes(data.discovery.reason)) setLiveStop(value=>value+1);
     }
@@ -369,6 +373,7 @@ export default function Dashboard() {
           </span>
         </div>
         <WasteProperties identification={item.identification} />
+        {page==="Identify waste"&&<ScanFeedback key={user?.id} eligible={feedbackEligible}/>}
         <ConfirmationChecklist
           key={item._id + JSON.stringify(item.identification.detected_items) + String(editScanId===item._id)}
           startEditing={editScanId===item._id}
