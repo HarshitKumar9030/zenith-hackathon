@@ -1,0 +1,101 @@
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowRight, Check, Download, Expand, Leaf, Map, Pause, Play, RotateCcw, Trophy, Volume2, VolumeX, X } from "lucide-react";
+import { emptyCargo, TOTAL_TARGET, WASTE, WASTE_TYPES } from "@/lib/collection-game-rules";
+import type { CityData, CollectionGame, GameState } from "./game-engine";
+import "./game.css";
+const INITIAL: GameState = { phase: "loading", seconds: 300, score: 0, cargo: emptyCargo(), collected: [], nearest: null, distance: 0, speed: 0, x: -360, z: 330, heading: 0, message: "Building your route…", district: "Circular City", camera: 0, sound: true };
+const time = (s: number) => { const total = Math.max(0, Math.ceil(s)); return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`; };
+function CityMap({ state, data, large = false }: { state: GameState; data: CityData | null; large?: boolean }) {
+ return <svg viewBox="0 0 800 800" role="img" aria-label="City map. Coloured dots show collection spots, the white arrow is your truck.">
+  <rect width="800" height="800" rx="28" fill="#223e35" />
+  {data?.districts.map(d => <g key={d.id}><rect x={d.center[0] + 290} y={d.center[2] + 290} width="220" height="220" rx="12" fill="#345347" /></g>)}
+  {[-360, -240, -120, 0, 120, 240, 360].map(v => <g key={v} stroke="#819c86" strokeWidth={large ? 9 : 12}><path d={`M${v + 400} 30V770`} /><path d={`M30 ${v + 400}H770`} /></g>)}
+  {large && data?.districts.map(d => <g key={d.id}><rect x={d.center[0] + 315} y={d.center[2] + 412} width="170" height="29" rx="8" fill="#19392e" /><text x={d.center[0] + 400} y={d.center[2] + 432} textAnchor="middle" fill="#e4f0d5" fontSize="16" fontWeight="600">{d.id.slice(3)}</text></g>)}
+  {data?.collectibles.filter(p => !state.collected.includes(p.id) && state.cargo[p.wasteType] < WASTE[p.wasteType].target).map(p => <circle key={p.id} cx={p.position[0] + 400} cy={p.position[2] + 400} r={large ? 5 : 6} fill={WASTE[p.wasteType].color} opacity={state.nearest?.id === p.id ? 1 : .6} />)}
+  {state.nearest && <g><path d={`M${state.x + 400} ${state.z + 400}L${state.nearest.position[0] + 400} ${state.nearest.position[2] + 400}`} stroke="#f0f7cd" strokeDasharray="8 7" strokeWidth="2" opacity=".7" /><circle cx={state.nearest.position[0] + 400} cy={state.nearest.position[2] + 400} r="13" fill="none" stroke="white" strokeWidth="3" /></g>}
+  <g transform={`translate(${state.x + 400} ${state.z + 400}) rotate(${-state.heading * 180 / Math.PI})`}><circle r="15" fill="#132d24" /><path d="M18 0L-11 -10L-5 0L-11 10Z" fill="#fffbe7" stroke="#142e23" strokeWidth="2" /></g>
+ </svg>;
+}
+export default function CollectionGamePage() {
+ const host = useRef<HTMLDivElement>(null), engine = useRef<CollectionGame | null>(null);
+ const [state, setState] = useState<GameState>(INITIAL), [data, setData] = useState<CityData | null>(null);
+ const [mapOpen, setMapOpen] = useState(false), [best, setBest] = useState(0), [saving, setSaving] = useState(false), [shareMessage, setShareMessage] = useState("");
+ const mapRef = useRef(false), resumeAfterMap = useRef(false), stateRef = useRef(state);
+ stateRef.current = state;
+ useEffect(() => {
+  let cancelled = false;
+  import("./game-engine").then(({ CollectionGame }) => {
+   if (!cancelled && host.current) { try { engine.current = new CollectionGame(host.current, setState, setData); } catch { setState(s => ({ ...s, phase: "error", message: "This browser cannot start 3D graphics. Enable hardware acceleration or try Chrome or Edge." })); } }
+  }).catch(() => { if (!cancelled) setState(s => ({ ...s, phase: "error", message: "Game files could not load. Reload to try again." })); });
+  try { setBest(Number(localStorage.getItem("ecomitra-city-best")) || 0); } catch { /* Private browsing still supports play. */ }
+  return () => { cancelled = true; engine.current?.dispose(); engine.current = null; };
+ }, []);
+ useEffect(() => { if (state.phase === "finished" && state.score > best) { setBest(state.score); try { localStorage.setItem("ecomitra-city-best", String(state.score)); } catch { /* Local best is optional. */ } } }, [state.phase, state.score, best]);
+ const fullscreen = useCallback(() => { if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); else void document.documentElement.requestFullscreen().catch(() => {}); }, []);
+ const toggleMap = useCallback(() => {
+  if (!["playing", "paused"].includes(stateRef.current.phase)) return;
+  if (!mapRef.current) { resumeAfterMap.current = stateRef.current.phase === "playing"; if (resumeAfterMap.current) engine.current?.togglePause(); }
+  else if (resumeAfterMap.current && stateRef.current.phase === "paused") engine.current?.togglePause();
+  mapRef.current = !mapRef.current; setMapOpen(mapRef.current);
+ }, []);
+ useEffect(() => {
+  const key = (e: KeyboardEvent) => {
+   if ((e.target as HTMLElement)?.closest("input,textarea,select")) return;
+   if (mapRef.current && ["p", "enter"].includes(e.key.toLowerCase()) && !(e.target as HTMLElement)?.closest("button")) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+   if (e.key.toLowerCase() === "m" || (e.key === "Escape" && mapRef.current)) { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) toggleMap(); }
+   if (e.key.toLowerCase() === "f") { e.preventDefault(); if (!e.repeat) fullscreen(); }
+  }; window.addEventListener("keydown", key, true); return () => window.removeEventListener("keydown", key, true);
+ }, [fullscreen, toggleMap]);
+ async function saveStory() {
+  setSaving(true); setShareMessage("");
+  try {
+   const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1920;
+   const c = canvas.getContext("2d"); if (!c) throw new Error("Unable to make your card.");
+   c.fillStyle = "#132e25"; c.fillRect(0, 0, 1080, 1920);
+   const grad = c.createRadialGradient(800, 500, 0, 800, 500, 800); grad.addColorStop(0, "#416347"); grad.addColorStop(1, "#132e25"); c.fillStyle = grad; c.fillRect(0, 0, 1080, 1920);
+   c.fillStyle = "#b9eb7c"; c.font = "600 34px Arial"; c.fillText("ECOMITRA  /  CIRCULAR CITY", 80, 120);
+   c.fillStyle = "#f2f3dd"; c.font = "bold 86px Arial"; c.fillText(state.collected.length === TOTAL_TARGET ? "City. Cleaned." : "Every pickup", 80, 280); c.fillText(state.collected.length === TOTAL_TARGET ? "Mission. Complete." : "makes a difference.", 80, 380);
+   const image = new Image(); image.src = "/game/truck-preview.png"; await image.decode();
+   c.save(); c.beginPath(); c.roundRect(80, 450, 920, 650, 40); c.clip(); c.drawImage(image, 80, 430, 920, 690); c.restore();
+   c.fillStyle = "#b9eb7c"; c.font = "bold 150px Arial"; c.fillText(state.score.toLocaleString(), 80, 1290);
+   c.fillStyle = "#e8eadb"; c.font = "30px Arial"; c.fillText("COLLECTION SCORE", 84, 1340);
+   const typesFound = WASTE_TYPES.filter(t => state.cargo[t] > 0).length;
+   c.font = "bold 34px Arial"; c.fillText(`${state.collected.length} / ${TOTAL_TARGET} pickups   ·   ${typesFound} waste ${typesFound === 1 ? "type" : "types"}`, 80, 1440);
+   WASTE_TYPES.forEach((t, i) => { const x = 80 + (i % 3) * 310, y = 1535 + Math.floor(i / 3) * 100; c.fillStyle = WASTE[t].color; c.font = "bold 30px Arial"; c.fillText(`${WASTE[t].label}  ${state.cargo[t]}`, x, y); });
+   c.fillStyle = "#d6dfcc"; c.font = "28px Arial"; c.fillText("Drive. Discover. Collect.", 80, 1790); c.font = "22px Arial"; c.fillText("EcoMitra game result · simulated waste collection", 80, 1840);
+   const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("Image export failed.")), "image/png"));
+   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = "ecomitra-my-city-score.png"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);
+   setShareMessage("Your 1080 × 1920 story card is downloaded. Share it wherever you like.");
+  } catch { setShareMessage("Could not save the image. Try again in Chrome or Edge."); } finally { setSaving(false); }
+ }
+ const active = state.phase === "playing" || state.phase === "paused", done = state.collected.length === TOTAL_TARGET;
+ return <main className="eco-game">
+  <div className="eco-game-world" ref={host} aria-label="3D waste collection game" />
+  <div className="eco-game-vignette" />
+  <header className="eco-game-header">
+   <a href="/" className="eco-game-brand"><Leaf size={28} /><span>EcoMitra<small>CIRCULAR CITY</small></span></a>
+   <div className="eco-game-top-actions"><span className="eco-game-edition">THE COLLECTION GAME · VOL. 01</span><button onClick={() => engine.current?.toggleSound()} aria-label={state.sound ? "Mute sound" : "Enable sound"}>{state.sound ? <Volume2 /> : <VolumeX />}</button><button onClick={fullscreen} aria-label="Toggle fullscreen"><Expand /></button>{active && <button onClick={() => engine.current?.togglePause()} aria-label="Pause game"><Pause /></button>}</div>
+  </header>
+  {(state.phase === "loading" || state.phase === "ready" || state.phase === "error") && <section className="eco-game-start">
+   <div className="eco-game-eyebrow"><span /> ONE TRUCK. A WHOLE CITY OF POSSIBILITY.</div>
+   <h1>A little drive.<br /><em>A big difference.</em></h1>
+   <p>Take the wheel. Explore nine neighbourhoods. Find and collect six types of waste before your five minutes are up.</p>
+   <div className="eco-game-start-stats"><span><b>800 m</b>city to explore</span><span><b>12</b>target pickups</span><span><b>05:00</b>on the clock</span></div>
+   {state.phase === "error" ? <div className="eco-game-error" role="alert"><p>{state.message}</p><button className="eco-game-primary" onClick={() => location.reload()}>Try again <RotateCcw size={18} /></button></div> : <button className="eco-game-primary" disabled={state.phase === "loading"} onClick={() => engine.current?.start()}>{state.phase === "loading" ? <><span className="eco-game-spinner" /> Loading your city…</> : <>Let’s clean this city <ArrowRight size={22} /></>}</button>}
+   <div className="eco-game-keyguide"><span><kbd>W A S D</kbd> or arrows to drive</span><span><kbd>E</kbd> collect</span><span><kbd>Space</kbd> brake</span><span><kbd>F</kbd> full screen</span></div>
+   <small className="eco-game-local-note">A standalone game. Scores stay on this device and do not affect Discovery Points.</small>
+  </section>}
+  {active && <>
+   <div className="eco-game-hud"><div><span>YOUR ROUND</span><strong>{state.score.toLocaleString()}<small>pts</small></strong></div><div className={state.seconds < 30 ? "eco-game-time-low" : ""}><span>TIME LEFT</span><strong>{time(state.seconds)}</strong></div><div><span>COLLECTED</span><strong>{state.collected.length}<small>/ {TOTAL_TARGET}</small></strong></div></div>
+   <aside className="eco-game-mission"><div className="eco-game-eyebrow">YOUR COLLECTION LIST</div><h2>Six types. One cleaner city.</h2><div className="eco-game-targets">{WASTE_TYPES.map(t => <div key={t} className={state.cargo[t] === WASTE[t].target ? "is-complete" : ""}><i style={{ background: WASTE[t].color }} /><span>{WASTE[t].label}</span><b>{state.cargo[t]}/{WASTE[t].target}</b>{state.cargo[t] === WASTE[t].target && <Check size={14} />}</div>)}</div></aside>
+   <div className="eco-game-pickup" role="status"><span className="eco-game-pickup-icon"><Leaf /></span><div><b>{state.nearest ? `${WASTE[state.nearest.wasteType].label} · ${Math.round(state.distance)} m away` : "Collection complete"}</b><span>{state.message}</span></div><button disabled={!state.nearest || state.distance > 20 || state.speed > 29 || state.phase !== "playing"} onClick={() => engine.current?.collect()}><kbd>E</kbd> Collect</button></div>
+   <aside className="eco-game-minimap"><div><span>{state.district}</span><button onClick={toggleMap} aria-label="Open city map"><Map size={18} /><kbd>M</kbd></button></div><button onClick={toggleMap} aria-label="Expand city map"><CityMap state={state} data={data} /></button><footer><span><i />Nearest pickup</span><b>{state.speed}<small> km/h</small></b></footer></aside>
+   <div className="eco-game-controls"><span><kbd>WASD / ↑←↓→</kbd> Drive</span><span><kbd>Space</kbd> Brake</span><span><kbd>C</kbd> Camera</span><span><kbd>R</kbd> Rescue</span><span><kbd>P</kbd> Pause</span></div>
+   <div className="eco-game-touch"><div><button aria-label="Turn left" onPointerDown={() => engine.current?.setControl("a", true)} onPointerUp={() => engine.current?.setControl("a", false)} onPointerLeave={() => engine.current?.setControl("a", false)}>←</button><button aria-label="Turn right" onPointerDown={() => engine.current?.setControl("d", true)} onPointerUp={() => engine.current?.setControl("d", false)} onPointerLeave={() => engine.current?.setControl("d", false)}>→</button></div><div><button aria-label="Reverse" onPointerDown={() => engine.current?.setControl("s", true)} onPointerUp={() => engine.current?.setControl("s", false)} onPointerLeave={() => engine.current?.setControl("s", false)}>↓</button><button aria-label="Accelerate" onPointerDown={() => engine.current?.setControl("w", true)} onPointerUp={() => engine.current?.setControl("w", false)} onPointerLeave={() => engine.current?.setControl("w", false)}>↑</button></div></div>
+  </>}
+  {state.phase === "paused" && !mapOpen && <div className="eco-game-modal"><section className="eco-game-pause"><span className="eco-game-eyebrow">TAKE A BREATHER</span><h2>Your city can wait.</h2><p>The clock is paused. Ready when you are.</p><button className="eco-game-primary" onClick={() => engine.current?.togglePause()}><Play size={20} /> Back to the city</button><button className="eco-game-secondary" onClick={toggleMap}><Map size={18} /> Explore the map</button><button className="eco-game-secondary" onClick={() => engine.current?.endRound()}><Trophy size={18} /> Finish this round</button><p className="eco-game-hint">WASD / arrows: drive · E: collect · Space: brake<br />M: map · C: camera · R: rescue · F: full screen · P: pause</p></section></div>}
+  {mapOpen && <div className="eco-game-modal"><section className="eco-game-map-panel"><header><div><span className="eco-game-eyebrow">PLAN YOUR NEXT TURN</span><h2>Your city, at a glance.</h2></div><button onClick={toggleMap} aria-label="Close map"><X /></button></header><div className="eco-game-large-map"><CityMap state={state} data={data} large /></div><footer>{WASTE_TYPES.map(t => <span key={t}><i style={{ background: WASTE[t].color }} />{WASTE[t].label}</span>)}</footer><p>The clock is paused. White arrow: your truck. White ring: nearest needed pickup. Press M to return.</p></section></div>}
+  {state.phase === "finished" && <div className="eco-game-finish"><section className="eco-game-result"><div className="eco-game-result-icon"><Trophy size={34} /></div><span className="eco-game-eyebrow">{done ? "ALL SIX TYPES. MISSION COMPLETE." : "YOUR ROUND, YOUR IMPACT."}</span><h1>{done ? <>City. Cleaned.<br /><em>Nicely driven.</em></> : <>Good drive.<br /><em>Cleaner streets.</em></>}</h1><p>{done ? "You found every type on your list. Your time bonus is included below." : "Every pickup counted. Take another round and complete the collection."}</p><div className="eco-game-final-score">{state.score.toLocaleString()}<span>COLLECTION SCORE</span></div><div className="eco-game-result-stats"><span><b>{state.collected.length}/{TOTAL_TARGET}</b>pickups</span><span><b>{time(state.seconds)}</b>time left</span><span><b>{best.toLocaleString()}</b>local best</span></div><div className="eco-game-result-cargo">{WASTE_TYPES.map(t => <span key={t}><i style={{ background: WASTE[t].color }} />{WASTE[t].label}<b>{state.cargo[t]}</b></span>)}</div><div className="eco-game-result-actions"><button className="eco-game-primary" onClick={saveStory} disabled={saving}><Download size={20} />{saving ? "Making your card…" : "Save my story card"}</button><button className="eco-game-secondary" onClick={() => { setShareMessage(""); engine.current?.start(); }}><RotateCcw size={18} /> One more round</button></div><p className="eco-game-share-note" role="status">{shareMessage || "A portrait score card, ready for your story. Game points are separate from Discovery Points."}</p></section></div>}
+ </main>;
+}
