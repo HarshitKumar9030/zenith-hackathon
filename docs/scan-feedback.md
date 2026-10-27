@@ -21,3 +21,9 @@ Station reviews use the **same `scan_feedback` collection**, keyed by `station:`
 Operations → Reviews loads all saved app and visitor reviews, newest first, in pages of 30 with no dependency on the collections/jobs load limit. Search covers names, contact details and comments; source and exact-star filters combine with it. Summary cards show the filtered review count, average rating, visitor count and five-star count across all matching pages. Refresh returns to the newest page.
 
 `GET /api/ops-reviews` requires server-verified administrator access; residents, helpers and signed-out requests receive 403. The API returns only review display fields and, for legacy/app reviews, the linked account's name/email via a restricted lookup. It never returns review tickets, session identifiers, password data or raw user records. Contact information remains private to administrators, with private/no-store caching. Visitor records stay unlinked in the database. A createdAt/_id index supports the review listing.
+
+## Demo review samples
+
+The admin inbox supports explicitly marked demo samples (`source: demo`, `isDemo: true`). They display a DEMO badge and “Not visitor feedback”, and are excluded from the genuine average, visitor and five-star statistics. Matching review counts include them because they are displayed records. Use the Demo samples source filter to view them alone. Demo-only results display no average rating.
+
+`web-app/scripts/seed-demo-reviews.mjs` inserts an idempotent batch of 30 fictional sample comments in informal English. Names are Demo visitor 01–30; contacts are null, no account is linked, and timestamps show actual insertion time. It never overwrites real feedback or creates fictional visitor identities. Run with an explicit environment-file path that supplies the intended MongoDB URI/database; do not commit that file.
