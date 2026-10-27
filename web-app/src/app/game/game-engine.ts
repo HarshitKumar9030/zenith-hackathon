@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { CityLife } from "./city-life";
+import type { TouchDrive } from "@/lib/collection-game-touch";
 import { EngineAudio } from "./engine-audio";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { blocked, canCollect, emptyCargo, finalScore, ROUND_SECONDS, TOTAL_TARGET, WASTE, WASTE_TYPES, type BoxCollider, type WasteType } from "@/lib/collection-game-rules";
@@ -17,6 +19,11 @@ export class CollectionGame {
   private finishStage = new THREE.Group();
   private wheels: THREE.Object3D[] = [];
   private keys = new Set<string>();
+  private touch:TouchDrive={steering:0,throttle:0,brake:false};
+  private touchDriving=false;
+  private touchCameraUntil=0;
+  private touchPointers=new Map<number,{x:number;y:number}>();
+  private life:CityLife;
   private taken = new Set<string>();
   private cargo = emptyCargo();
   private phase: Phase = "loading";
@@ -50,7 +57,7 @@ export class CollectionGame {
   private reusable = new THREE.Object3D();
   constructor(private host: HTMLElement, private update: (s: GameState) => void, private loaded: (data: CityData) => void) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.matchMedia("(pointer: coarse)").matches?1.25:1.5));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
@@ -64,7 +71,7 @@ export class CollectionGame {
     this.scene.fog = new THREE.Fog("#d6e5e8", 220, 650);
     this.scene.add(new THREE.HemisphereLight(0xe8f3ff, 0x566c42, 1.3));
     this.sun = new THREE.DirectionalLight(0xffedcb, 2.6);
-    this.sun.castShadow = true; this.sun.shadow.mapSize.set(2048,2048);
+    this.sun.castShadow = true; this.sun.shadow.mapSize.setScalar(window.matchMedia("(pointer: coarse)").matches?1024:2048);
     Object.assign(this.sun.shadow.camera,{left:-120,right:120,top:120,bottom:-120,near:1,far:350});
     this.sun.shadow.camera.updateProjectionMatrix(); this.sun.shadow.bias=-.00015; this.sun.shadow.normalBias=.12;
     this.scene.add(this.sun,this.sun.target);
@@ -86,6 +93,11 @@ export class CollectionGame {
     this.confetti.visible = false;
     for (let i = 0; i < 100; i++) this.confetti.setColorAt(i, new THREE.Color(WASTE[WASTE_TYPES[i % 6]].color));
     this.scene.add(this.confetti);
+    this.life=new CityLife();this.scene.add(this.life.root);this.life.root.visible=false;
+    this.renderer.domElement.addEventListener("pointerdown",this.touchLookStart);
+    this.renderer.domElement.addEventListener("pointerup",this.touchLookEnd);
+    this.renderer.domElement.addEventListener("pointercancel",this.touchLookEnd);
+    this.renderer.domElement.addEventListener("lostpointercapture",this.touchLookEnd);
     this.renderer.domElement.addEventListener("pointermove",this.cursorMove);
     this.renderer.domElement.addEventListener("pointerleave",this.cursorLeave);
     this.resizeObserver = new ResizeObserver(this.resize); this.resizeObserver.observe(host); this.resize();
@@ -94,8 +106,27 @@ export class CollectionGame {
     this.frame = requestAnimationFrame(this.tick);
     void this.load();
   }
+  private touchLookStart=(event:PointerEvent)=>{
+    if(event.pointerType!=="touch"||this.phase!=="playing"||this.view!==2)return;
+    this.touchPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    this.touchDriving=true;this.cursorYaw=null;this.touchCameraUntil=performance.now()+4000;
+  };
+  private touchLookEnd=(event:PointerEvent)=>{this.touchPointers.delete(event.pointerId);};
   private cursorMove = (event:PointerEvent) => {
+    if(event.pointerType==="touch"){
+      const previous=this.touchPointers.get(event.pointerId);
+      if(previous&&this.phase==="playing"&&this.view===2){
+        if(this.touchPointers.size===1){
+          const bounds=this.renderer.domElement.getBoundingClientRect();
+          this.orbit.rotateLeft((event.clientX-previous.x)/bounds.width*Math.PI*1.8);
+          this.orbit.rotateUp((event.clientY-previous.y)/bounds.height*Math.PI);
+          this.touchCameraUntil=performance.now()+4000;
+        }
+        this.touchPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      }return;
+    }
     if(event.pointerType!=="mouse"||this.phase!=="playing"||this.view!==2)return;
+    this.touchDriving=false;
     const bounds=this.renderer.domElement.getBoundingClientRect();
     this.cursorYaw=(event.clientX-bounds.left)/bounds.width*Math.PI*2-Math.PI-.65;
     this.cursorPolar=.35+THREE.MathUtils.clamp((event.clientY-bounds.top)/bounds.height,0,1)*.7;
@@ -118,7 +149,7 @@ export class CollectionGame {
       const city = (results[0] as PromiseFulfilledResult<Awaited<ReturnType<GLTFLoader["loadAsync"]>>>).value;
       const truck = (results[1] as PromiseFulfilledResult<Awaited<ReturnType<GLTFLoader["loadAsync"]>>>).value;
       this.data = (results[2] as PromiseFulfilledResult<CityData>).value;
-      this.city.add(city.scene); this.truck.add(truck.scene);
+      this.city.add(city.scene); this.truck.add(truck.scene);this.life.root.visible=true;
       // Fine road grain and reflective windows add depth without external assets.
       const roadCanvas=document.createElement("canvas");roadCanvas.width=roadCanvas.height=256;
       const ctx=roadCanvas.getContext("2d");
@@ -147,15 +178,15 @@ export class CollectionGame {
   }
   start() {
     if (!this.data || this.phase === "error") return;
-    this.cursorYaw=null;this.taken.clear(); this.cargo = emptyCargo(); this.seconds = ROUND_SECONDS; this.heading = Math.PI / 2; this.speed = 0;
+    this.cursorYaw=null;this.clearTouchDrive();this.life.reset();this.taken.clear(); this.cargo = emptyCargo(); this.seconds = ROUND_SECONDS; this.heading = Math.PI / 2; this.speed = 0;
     for (const p of this.data.collectibles) { const o = this.city.getObjectByName(p.node); if (o) o.visible = true; }
     this.truck.position.fromArray(this.data.playerStart); this.truck.position.y = .35;
-    this.phase = "playing"; this.city.visible = true; this.finishStage.visible = false; this.confetti.visible = false;
+    this.phase = "playing"; this.city.visible = true;this.life.root.visible=true; this.finishStage.visible = false; this.confetti.visible = false;
     this.camera.position.copy(this.truck.position).add(new THREE.Vector3(-16, 16, 21));
       this.orbit.target.copy(this.truck.position).add(new THREE.Vector3(0,1,0));this.orbit.update(); this.keys.clear(); this.say("Your round starts now. Follow the glowing marker.", 5);
     this.tone(523); this.emit();
   }
-  togglePause() { if (this.phase === "playing") { this.phase = "paused"; this.keys.clear();this.motor.update(this.speed,false,false); } else if (this.phase === "paused") this.phase = "playing"; this.emit(); }
+  togglePause() { if (this.phase === "playing") { this.phase = "paused"; this.keys.clear();this.clearTouchDrive();this.motor.update(this.speed,false,false); } else if (this.phase === "paused") this.phase = "playing"; this.emit(); }
   toggleCamera() {
     this.view=(this.view+1)%3;this.cursorYaw=null;
     this.orbit.target.copy(this.truck.position).add(new THREE.Vector3(0,1,0));this.orbit.update();
@@ -178,6 +209,12 @@ export class CollectionGame {
     if (key === "enter") { if (this.phase === "ready" || this.phase === "finished") this.start(); else if (this.phase === "paused") this.togglePause(); }
   };
   private keyup = (event: KeyboardEvent) => { this.keys.delete(event.key.toLowerCase()); };
+  setTouchDrive(input:TouchDrive){
+    if(this.phase!=="playing"){this.clearTouchDrive();return;}
+    this.touch={steering:Math.max(-1,Math.min(1,input.steering)),throttle:Math.max(-1,Math.min(1,input.throttle)),brake:input.brake};
+    if(input.steering||input.throttle||input.brake)this.touchDriving=true;
+  }
+  private clearTouchDrive(){this.touch={steering:0,throttle:0,brake:false};this.touchPointers.clear();}
   setControl(key: string, pressed: boolean) { if (pressed) this.keys.add(key); else this.keys.delete(key); }
   private tone(frequency:number){this.motor.cue(frequency);}
   private say(text: string, seconds = 3) { this.message = text; this.messageUntil = performance.now() + seconds * 1000; }
@@ -187,6 +224,7 @@ export class CollectionGame {
     if (Math.abs(this.speed) > 8) { this.say("Slow down or hold Space to collect."); return; }
     const p = this.nearest;
     if (!canCollect(p.wasteType, this.cargo, this.taken, p.id)) return;
+    this.life.burst(p.position,WASTE[p.wasteType].color);
     this.taken.add(p.id); this.cargo[p.wasteType]++;
     const object = this.city.getObjectByName(p.node); if (object) object.visible = false;
     this.say(p.wasteType === "ewaste" ? "E-waste secured for specialist processing. +200" : `${WASTE[p.wasteType].label} collected. +${WASTE[p.wasteType].points}`);
@@ -199,7 +237,7 @@ export class CollectionGame {
     this.truck.position.set(snap(this.truck.position.x), .35, snap(this.truck.position.z)); this.speed = 0; this.say("Back on the road. Keep going!");
   }
   endRound() { if (this.phase === "playing" || this.phase === "paused") this.finish(); }
-  private finish() { this.city.visible = false; this.finishStage.visible = true; this.truck.position.set(0,.35,0); this.truck.rotation.y = -.3; this.phase = "finished"; this.motor.update(0,false,false);this.keys.clear(); this.speed = 0; this.confettiTime = 0; this.confetti.visible = true; this.ring.visible = this.beam.visible = false; this.tone(1046); this.emit(); }
+  private finish() { this.clearTouchDrive();this.life.root.visible=false;this.city.visible = false; this.finishStage.visible = true; this.truck.position.set(0,.35,0); this.truck.rotation.y = -.3; this.phase = "finished"; this.motor.update(0,false,false);this.keys.clear(); this.speed = 0; this.confettiTime = 0; this.confetti.visible = true; this.ring.visible = this.beam.visible = false; this.tone(1046); this.emit(); }
   private distance(p: Pickup) { return Math.hypot(this.truck.position.x - p.position[0], this.truck.position.z - p.position[2]); }
   private emit() {
     const pos = this.truck.position;
@@ -211,10 +249,11 @@ export class CollectionGame {
     const dt = Math.min((now - (this.lastTime || now)) / 1000, .05); this.lastTime = now;
     if (this.phase === "playing" && this.data) {
       this.seconds = Math.max(0, this.seconds - dt);
-      const input = Number(this.keys.has("w") || this.keys.has("arrowup")) - Number(this.keys.has("s") || this.keys.has("arrowdown"));
-      this.speed += (input * 15 - this.speed * (this.keys.has(" ") ? 7 : .55)) * dt;
+      const braking=this.keys.has(" ")||this.touch.brake;
+      const input = braking?0:THREE.MathUtils.clamp(Number(this.keys.has("w") || this.keys.has("arrowup")) - Number(this.keys.has("s") || this.keys.has("arrowdown"))+this.touch.throttle,-1,1);
+      this.speed += (input * 15 - this.speed * (braking ? 7 : .55)) * dt;
       this.speed = THREE.MathUtils.clamp(this.speed, -10, 26);
-      const steering = Number(this.keys.has("a") || this.keys.has("arrowleft")) - Number(this.keys.has("d") || this.keys.has("arrowright"));
+      const steering = THREE.MathUtils.clamp(Number(this.keys.has("a") || this.keys.has("arrowleft")) - Number(this.keys.has("d") || this.keys.has("arrowright"))-this.touch.steering,-1,1);
       this.heading += steering * Math.min(Math.abs(this.speed) / 8, 1) * Math.sign(this.speed) * 1.65 * dt;
       this.truck.rotation.y = this.heading;
       const x = this.truck.position.x + Math.cos(this.heading) * this.speed * dt;
@@ -233,7 +272,8 @@ export class CollectionGame {
       (this.beam.material as THREE.MeshBasicMaterial).color.set(WASTE[this.nearest.wasteType].color);
       this.ring.scale.setScalar(1.3 + Math.sin(now / 220) * .1);
     } else { this.ring.visible = this.beam.visible = false; }
-    this.motor.update(this.speed,this.keys.has("w")||this.keys.has("arrowup")||this.keys.has("s")||this.keys.has("arrowdown"),this.phase==="playing");
+    this.motor.update(this.speed,this.keys.has("w")||this.keys.has("arrowup")||this.keys.has("s")||this.keys.has("arrowdown")||this.touch.throttle!==0,this.phase==="playing");
+    if(this.life.root.visible)this.life.update(dt,this.truck.position,this.phase==="playing"||this.phase==="ready");
     this.target.copy(this.truck.position);
     this.sun.position.copy(this.target).add(new THREE.Vector3(-50,90,45));this.sun.target.position.copy(this.target);
     const offset = this.view===1 ? new THREE.Vector3(0, 95, 32) : new THREE.Vector3(-16, 16, 21);
@@ -244,6 +284,11 @@ export class CollectionGame {
       this.camera.position.add(lookTarget.clone().sub(this.orbit.target));this.orbit.target.copy(lookTarget);
       if(this.phase==="playing"){
         if(["j","l","i","k"].some(key=>this.keys.has(key)))this.cursorYaw=null;
+        if(this.touchDriving&&now>this.touchCameraUntil){
+          const chaseYaw=this.heading-Math.PI/2,delta=this.orbit.getAzimuthalAngle()-chaseYaw;
+          this.orbit.rotateLeft(Math.atan2(Math.sin(delta),Math.cos(delta))*.025);
+          this.orbit.rotateUp((this.orbit.getPolarAngle()-.88)*.02);
+        }
         if(this.cursorYaw!==null){
           const delta=this.orbit.getAzimuthalAngle()-this.cursorYaw;
           this.orbit.rotateLeft(Math.atan2(Math.sin(delta),Math.cos(delta))*.1);
@@ -283,6 +328,7 @@ export class CollectionGame {
     this.disposed = true; this.abort.abort(); cancelAnimationFrame(this.frame); this.resizeObserver.disconnect(); this.keys.clear();
     window.removeEventListener("keydown", this.keydown); window.removeEventListener("keyup", this.keyup); window.removeEventListener("blur", this.blur); document.removeEventListener("visibilitychange", this.visibility);
     this.renderer.domElement.removeEventListener("pointermove",this.cursorMove);this.renderer.domElement.removeEventListener("pointerleave",this.cursorLeave);
-    this.orbit.dispose(); this.motor.dispose(); this.environment.dispose(); this.roadTexture?.dispose(); this.sun.shadow.dispose(); this.disposeObject(this.scene); this.renderer.dispose(); this.renderer.domElement.remove();
+    this.renderer.domElement.removeEventListener("pointerdown",this.touchLookStart);this.renderer.domElement.removeEventListener("pointerup",this.touchLookEnd);this.renderer.domElement.removeEventListener("pointercancel",this.touchLookEnd);this.renderer.domElement.removeEventListener("lostpointercapture",this.touchLookEnd);
+    this.clearTouchDrive();this.life.dispose();this.orbit.dispose(); this.motor.dispose(); this.environment.dispose(); this.roadTexture?.dispose(); this.sun.shadow.dispose(); this.disposeObject(this.scene); this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }
