@@ -1,3 +1,4 @@
+import {issueStationFeedback} from '@/lib/station-feedback';
 import { fingerprintScan } from "@/lib/scan-fingerprint";
 import { recordDiscoveryScan, discoveryScanMessage } from "@/lib/discovery-scans";
 import { scannerGenerationConfig } from "@/lib/scanner-config";
@@ -154,7 +155,7 @@ export async function POST(request: Request) {
       guide as unknown as Guide | null,
     );
     let feedbackEligible=false;
-    if(input.image){
+    if(input.image&&!input.station){
       try{
         await database.collection('users').updateOne({_id:user._id,scanFeedbackEligibleAt:{$exists:false}},{$set:{scanFeedbackEligibleAt:new Date(),scanFeedbackSource:input.station?'station':'app'}});
         const submitted=await database.collection('scan_feedback').findOne({_id:user._id},{projection:{_id:1}});
@@ -162,7 +163,11 @@ export async function POST(request: Request) {
       }catch{console.error('Scan feedback eligibility could not be recorded');}
     }
     // Shared stall scans must never alter a personal points balance or history.
-    if(input.station)return NextResponse.json({identification,feedbackEligible,latencyMs:Math.round(performance.now()-start)});
+    if(input.station){
+      let feedbackTicket:string|null=null;
+      try{feedbackTicket=await issueStationFeedback(database);}catch{console.error('Station review ticket could not be issued');}
+      return NextResponse.json({identification,feedbackEligible:Boolean(feedbackTicket),feedbackTicket,latencyMs:Math.round(performance.now()-start)});
+    }
     const record = {
       preview: input.preview,
       expiresAt: new Date(Date.now() + 86400000),

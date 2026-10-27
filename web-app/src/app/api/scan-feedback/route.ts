@@ -3,6 +3,7 @@ import {checkOrigin,currentUser} from '@/lib/auth';
 import {db} from '@/lib/db';
 import {scanFeedbackSchema,feedbackAvailable} from '@/lib/scan-feedback';
 import {z} from 'zod';
+import {saveStationFeedback} from '@/lib/station-feedback';
 export async function GET(){
  try{const user=await currentUser();if(!user)return NextResponse.json({error:'Sign in to leave feedback.'},{status:401});const saved=await(await db()).collection('scan_feedback').findOne({_id:user._id});return NextResponse.json({eligible:feedbackAvailable(user,Boolean(saved)),submitted:Boolean(saved)});}
  catch{return NextResponse.json({error:'Feedback is temporarily unavailable.'},{status:503});}
@@ -10,9 +11,13 @@ export async function GET(){
 export async function POST(request:Request){
  try{
   try{checkOrigin(request);}catch{return NextResponse.json({error:'Cross-origin request rejected.'},{status:403});}
-  const user=await currentUser();if(!user)return NextResponse.json({error:'Sign in to leave feedback.'},{status:401});
   if(Number(request.headers.get('content-length'))>10000)return NextResponse.json({error:'Your feedback is too long.'},{status:413});
   const data=await request.json(),database=await db(),ratings=database.collection('scan_feedback');
+  if(data?.ticket!==undefined){
+   if(!await saveStationFeedback(database,data))return NextResponse.json({error:'This scan review has expired. Complete another scan to leave feedback.'},{status:403});
+   return NextResponse.json({ok:true,submitted:true});
+  }
+  const user=await currentUser();if(!user)return NextResponse.json({error:'Sign in to leave feedback.'},{status:401});
   if(!user.scanFeedbackEligibleAt)return NextResponse.json({error:'Complete your first scan before rating.'},{status:403});
   if(data?.action==='dismiss'){
    await database.collection('users').updateOne({_id:user._id},{$set:{scanFeedbackDismissedAt:new Date()}});
@@ -23,7 +28,7 @@ export async function POST(request:Request){
   await ratings.updateOne({_id:user._id},{$setOnInsert:{userId:user._id,stars:input.stars,comment:input.comment||null,source:user.scanFeedbackSource==='station'?'station':'app',firstScanAt:user.scanFeedbackEligibleAt,createdAt:new Date(),version:1}},{upsert:true});
   return NextResponse.json({ok:true,submitted:true});
  }catch(error){
-  if(error instanceof z.ZodError||error instanceof SyntaxError)return NextResponse.json({error:'Choose 1–5 stars and keep your comment under 1,000 characters.'},{status:400});
+  if(error instanceof z.ZodError||error instanceof SyntaxError)return NextResponse.json({error:error instanceof z.ZodError?error.issues[0].message:'Enter valid feedback and try again.'},{status:400});
   if((error as {code?:number}).code===11000)return NextResponse.json({ok:true,submitted:true});
   return NextResponse.json({error:'Could not save your feedback. Please try again.'},{status:503});
  }
