@@ -5,6 +5,7 @@ import {randomBytes,createHash,scryptSync} from 'node:crypto';
 import {readFile,writeFile,unlink} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
+import {issueStationFeedback} from '../src/lib/station-feedback';
 nextEnv.loadEnvConfig(process.cwd());
 const uri=process.env.MONGODB_URI||'mongodb://127.0.0.1:27017';
 if(!/127\.0\.0\.1|localhost/.test(uri))throw new Error('Local MongoDB required.');
@@ -47,6 +48,23 @@ try{
   const image='data:image/jpeg;base64,'+(await sharp(await readFile('public/quiz images/easy/banana peel.jfif')).resize(1000,1000,{fit:'inside'}).jpeg().toBuffer()).toString('base64');
   const response=await fetch(base+'/api/classify',{method:'POST',headers:{cookie:`ww_session=${token}`,'Content-Type':'application/json',origin:base},body:JSON.stringify({station:true,image})});const data=await response.json();assert.equal(response.status,200,data.error);assert(data.identification.detected_items.length>0);
   for(const collection of ['history','discovery_points','discovery_wallets','discovery_image_registry','discovery_review_images'])assert.equal(await database.collection(collection).countDocuments(),0,collection+' stays empty');
+  assert.equal(typeof data.feedbackTicket,'string');assert.equal(data.feedbackEligible,true);
+  const visitorPost=(body:unknown)=>fetch(base+'/api/scan-feedback',{method:'POST',headers:{'Content-Type':'application/json',origin:base},body:JSON.stringify(body)});
+  assert.equal((await visitorPost({ticket:'c'.repeat(64),stars:5,name:'Visitor'})).status,403);
+  assert.equal((await visitorPost({ticket:data.feedbackTicket,stars:5,name:''})).status,400);
+  const review={ticket:data.feedbackTicket,stars:5,name:'Stall visitor',contact:'',comment:'Quick and clear.'};
+  assert((await Promise.all([visitorPost(review),visitorPost(review)])).every(r=>r.status===200));
+  const guest=await database.collection('scan_feedback').findOne({name:'Stall visitor'});
+  assert.equal(guest?.accountLinked,false);assert.equal(guest?.contact,null);assert.equal(guest?.source,'station');
+  for(const key of ['userId','operatorId','email','session','image','ip'])assert.equal(guest?.[key],undefined,key);
+  assert.equal(await database.collection('scan_feedback').countDocuments({name:'Stall visitor'}),1);
+  const second=await issueStationFeedback(database);assert.notEqual(second,data.feedbackTicket);
+  assert.equal((await visitorPost({ticket:second,stars:4,name:'Second visitor',contact:'VISITOR@example.test'})).status,200);
+  assert.equal((await database.collection('scan_feedback').findOne({name:'Second visitor'}))?.contact,'visitor@example.test');
+  const expired=await issueStationFeedback(database);
+  await database.collection('scan_feedback_tickets').updateMany({expiresAt:{$gt:new Date()}},{$set:{expiresAt:new Date(Date.now()-1000)}});
+  assert.equal((await visitorPost({ticket:expired,stars:5,name:'Expired visitor'})).status,403);
+  console.log('PASS: per-scan anonymous reviews, required names, optional contacts, independent visitors, duplicate safety, expiry and no operator link');
   console.log('PASS: live image identification with no personal history, Discovery credits, penalties or review images');
  }
  if(process.env.STATION_QA_KEEP==='1'){
