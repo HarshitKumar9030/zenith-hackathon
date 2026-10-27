@@ -1,15 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { physicsStep, WORLD_WALLS, type Body, type Wall } from "@/lib/collection-game-physics";
+import { StreetInteractions } from "./street-interactions";
 import { CityLife } from "./city-life";
 import type { TouchDrive } from "@/lib/collection-game-touch";
 import { EngineAudio } from "./engine-audio";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { blocked, canCollect, emptyCargo, finalScore, ROUND_SECONDS, TOTAL_TARGET, WASTE, WASTE_TYPES, type BoxCollider, type WasteType } from "@/lib/collection-game-rules";
+import { canCollect, emptyCargo, finalScore, ROUND_SECONDS, TOTAL_TARGET, WASTE, WASTE_TYPES, type BoxCollider, type WasteType } from "@/lib/collection-game-rules";
 export interface Pickup { id: string; node: string; wasteType: WasteType; position: number[]; district: string }
 export interface CityData { collectibles: Pickup[]; playerStart: number[]; buildingBoxColliders: BoxCollider[]; districts: { id: string; center: number[] }[] }
 export type Phase = "loading" | "ready" | "playing" | "paused" | "finished" | "error";
-export interface GameState { phase: Phase; seconds: number; score: number; cargo: Record<WasteType, number>; collected: string[]; nearest: Pickup | null; distance: number; speed: number; x: number; z: number; heading: number; message: string; district: string; camera: number; sound: boolean }
+export interface GameState { phase: Phase; seconds: number; score: number; cargo: Record<WasteType, number>; collected: string[]; nearest: Pickup | null; distance: number; speed: number; x: number; z: number; heading: number; message: string; district: string; camera: number; sound: boolean; soundRunning?:boolean; interaction?: string }
 export class CollectionGame {
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(48, 1, .2, 1500);
@@ -24,6 +26,10 @@ export class CollectionGame {
   private touchCameraUntil=0;
   private touchPointers=new Map<number,{x:number;y:number}>();
   private life:CityLife;
+  private street=new StreetInteractions();
+  private solidWalls:Wall[]=[];
+  private drift={x:0,z:0};
+  private lastImpact=0;
   private taken = new Set<string>();
   private cargo = emptyCargo();
   private phase: Phase = "loading";
@@ -62,7 +68,7 @@ export class CollectionGame {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     const pmrem = new THREE.PMREMGenerator(this.renderer), room = new RoomEnvironment();
     this.environment = pmrem.fromScene(room, .04); this.scene.environment = this.environment.texture; this.scene.environmentIntensity = .3;
     room.dispose(); pmrem.dispose();
@@ -79,7 +85,7 @@ export class CollectionGame {
     this.orbit.enablePan=false;this.orbit.enableRotate=false;this.orbit.enableDamping=true;this.orbit.dampingFactor=.08;
     this.orbit.minDistance=12;this.orbit.maxDistance=65;this.orbit.minPolarAngle=.25;this.orbit.maxPolarAngle=1.05;
     this.orbit.rotateSpeed=.65;this.orbit.zoomSpeed=.7;this.orbit.enabled=false;
-    this.scene.add(this.truck, this.city, this.finishStage);
+    this.scene.add(this.truck, this.city, this.finishStage,this.street.root);this.street.root.visible=false;
     const stage = new THREE.Mesh(new THREE.CylinderGeometry(11, 12, .4, 64), new THREE.MeshStandardMaterial({color: 0xc9d9b6, roughness: .9}));
     stage.position.y = .1; stage.receiveShadow=true;
     const stageRing = new THREE.Mesh(new THREE.TorusGeometry(10.3, .10, 6, 64), new THREE.MeshBasicMaterial({color: 0xb0d377}));
@@ -101,6 +107,7 @@ export class CollectionGame {
     this.renderer.domElement.addEventListener("pointermove",this.cursorMove);
     this.renderer.domElement.addEventListener("pointerleave",this.cursorLeave);
     this.resizeObserver = new ResizeObserver(this.resize); this.resizeObserver.observe(host); this.resize();
+    window.addEventListener("pointerdown",this.resumeAudio);
     window.addEventListener("keydown", this.keydown); window.addEventListener("keyup", this.keyup); window.addEventListener("blur", this.blur);
     document.addEventListener("visibilitychange", this.visibility);
     this.frame = requestAnimationFrame(this.tick);
@@ -173,12 +180,15 @@ export class CollectionGame {
       this.truck.position.fromArray(this.data.playerStart); this.truck.position.y = .35;
       this.camera.position.copy(this.truck.position).add(new THREE.Vector3(-16, 16, 21));
       this.orbit.target.copy(this.truck.position).add(new THREE.Vector3(0,1,0));this.orbit.update();
+      this.solidWalls=[...WORLD_WALLS,...this.data.buildingBoxColliders.map(c=>({x:c.center[0],z:c.center[2],hx:c.size[0]/2,hz:c.size[2]/2})),...this.life.solidWalls,...this.street.walls];
       this.phase = "ready"; this.loaded(this.data); this.emit();
     } catch (error) { if (!this.disposed) { this.phase = "error"; this.message = error instanceof Error ? error.message : "Unable to load the game."; this.emit(); } }
   }
+  private resumeAudio=()=>{if(this.sound&&this.phase==="playing"&&!this.motor.isRunning())this.motor.unlock();};
   start() {
     if (!this.data || this.phase === "error") return;
-    this.cursorYaw=null;this.clearTouchDrive();this.life.reset();this.taken.clear(); this.cargo = emptyCargo(); this.seconds = ROUND_SECONDS; this.heading = Math.PI / 2; this.speed = 0;
+    if(this.sound)this.motor.unlock();
+    this.cursorYaw=null;this.clearTouchDrive();this.life.reset();this.street.reset();this.street.root.visible=true;this.drift={x:0,z:0};this.taken.clear(); this.cargo = emptyCargo(); this.seconds = ROUND_SECONDS; this.heading = Math.PI / 2; this.speed = 0;
     for (const p of this.data.collectibles) { const o = this.city.getObjectByName(p.node); if (o) o.visible = true; }
     this.truck.position.fromArray(this.data.playerStart); this.truck.position.y = .35;
     this.phase = "playing"; this.city.visible = true;this.life.root.visible=true; this.finishStage.visible = false; this.confetti.visible = false;
@@ -186,12 +196,13 @@ export class CollectionGame {
       this.orbit.target.copy(this.truck.position).add(new THREE.Vector3(0,1,0));this.orbit.update(); this.keys.clear(); this.say("Your round starts now. Follow the glowing marker.", 5);
     this.tone(523); this.emit();
   }
-  togglePause() { if (this.phase === "playing") { this.phase = "paused"; this.keys.clear();this.clearTouchDrive();this.motor.update(this.speed,false,false); } else if (this.phase === "paused") this.phase = "playing"; this.emit(); }
+  togglePause() { if (this.phase === "playing") { this.phase = "paused"; this.keys.clear();this.clearTouchDrive();this.motor.update(this.speed,false,false); } else if (this.phase === "paused") {this.phase = "playing";this.resumeAudio();} this.emit(); }
   toggleCamera() {
     this.view=(this.view+1)%3;this.cursorYaw=null;
     this.orbit.target.copy(this.truck.position).add(new THREE.Vector3(0,1,0));this.orbit.update();
     this.say(["Isometric camera","Overhead camera","360° camera · move cursor to look · J/L to rotate"][this.view]);this.emit();
   }
+  enableSound(){this.sound=true;this.motor.setEnabled(true);this.emit();}
   toggleSound() { this.sound = !this.sound; this.motor.setEnabled(this.sound); this.emit(); }
   private blur = () => { this.keys.clear(); if (this.phase === "playing") this.togglePause(); };
   private visibility = () => { if (document.hidden) this.blur(); };
@@ -201,6 +212,7 @@ export class CollectionGame {
     const key = event.key.toLowerCase();
     if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright","j","l","i","k"].includes(key))this.touchDriving=false;
     if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "tab"].includes(key) && key !== "tab") event.preventDefault();
+    this.resumeAudio();
     this.keys.add(key);
     if (event.repeat) return;
     if (key === "e") this.collect();
@@ -220,7 +232,14 @@ export class CollectionGame {
   private tone(frequency:number){this.motor.cue(frequency);}
   private say(text: string, seconds = 3) { this.message = text; this.messageUntil = performance.now() + seconds * 1000; }
   collect() {
-    if (this.phase !== "playing" || !this.nearest) return;
+    if (this.phase !== "playing") return;
+    const station=this.street.nearby(this.truck.position.x,this.truck.position.z);
+    if(station&&(!this.nearest||this.distance(this.nearest)>20)){
+      if(Math.abs(this.speed)>3){this.say("Brake to use the sorting stop.");return;}
+      const result=this.street.use(this.truck.position.x,this.truck.position.z,this.taken.size,this.seconds);
+      if(result){this.seconds+=result.bonus;this.say(result.message,4);this.tone(880);this.emit();}return;
+    }
+    if(!this.nearest)return;
     if (this.distance(this.nearest) > 20) { this.say("Drive closer to the glowing marker."); return; }
     if (Math.abs(this.speed) > 8) { this.say("Slow down or hold Space to collect."); return; }
     const p = this.nearest;
@@ -235,15 +254,15 @@ export class CollectionGame {
   }
   private rescue() {
     const snap = (v: number) => THREE.MathUtils.clamp(Math.round(v / 120) * 120, -360, 360);
-    this.truck.position.set(snap(this.truck.position.x), .35, snap(this.truck.position.z)); this.speed = 0; this.say("Back on the road. Keep going!");
+    this.truck.position.set(snap(this.truck.position.x), .35, snap(this.truck.position.z)); this.speed = 0;this.drift={x:0,z:0}; this.say("Back on the road. Keep going!");
   }
   endRound() { if (this.phase === "playing" || this.phase === "paused") this.finish(); }
-  private finish() { this.clearTouchDrive();this.life.root.visible=false;this.city.visible = false; this.finishStage.visible = true; this.truck.position.set(0,.35,0); this.truck.rotation.y = -.3; this.phase = "finished"; this.motor.update(0,false,false);this.keys.clear(); this.speed = 0; this.confettiTime = 0; this.confetti.visible = true; this.ring.visible = this.beam.visible = false; this.tone(1046); this.emit(); }
+  private finish() { this.clearTouchDrive();this.life.root.visible=false;this.street.root.visible=false;this.city.visible = false; this.finishStage.visible = true; this.truck.position.set(0,.35,0); this.truck.rotation.y = -.3; this.phase = "finished"; this.motor.update(0,false,false);this.keys.clear(); this.speed = 0; this.confettiTime = 0; this.confetti.visible = true; this.ring.visible = this.beam.visible = false; this.tone(1046); this.emit(); }
   private distance(p: Pickup) { return Math.hypot(this.truck.position.x - p.position[0], this.truck.position.z - p.position[2]); }
   private emit() {
     const pos = this.truck.position;
     const district = this.data?.districts.reduce((a, b) => Math.hypot(pos.x - a.center[0], pos.z - a.center[2]) < Math.hypot(pos.x - b.center[0], pos.z - b.center[2]) ? a : b);
-    this.update({ phase: this.phase, seconds: this.seconds, score: finalScore(this.cargo, this.seconds), cargo: { ...this.cargo }, collected: [...this.taken], nearest: this.nearest, distance: this.nearest ? this.distance(this.nearest) : 0, speed: Math.round(Math.abs(this.speed) * 3.6), x: pos.x, z: pos.z, heading: this.heading, message: this.message, district: district?.id.slice(3) ?? "Circular City", camera: this.view, sound: this.sound });
+    this.update({ phase: this.phase, seconds: this.seconds, score: finalScore(this.cargo, this.seconds), cargo: { ...this.cargo }, collected: [...this.taken], nearest: this.nearest, distance: this.nearest ? this.distance(this.nearest) : 0, speed: Math.round(Math.abs(this.speed) * 3.6), x: pos.x, z: pos.z, heading: this.heading, message: this.message, district: district?.id.slice(3) ?? "Circular City", camera: this.view, sound: this.sound, soundRunning:this.motor.isRunning(), interaction:this.street.nearby(pos.x,pos.z)?.name });
   }
   private tick = (now: number) => {
     if (this.disposed) return;
@@ -257,10 +276,14 @@ export class CollectionGame {
       const steering = THREE.MathUtils.clamp(Number(this.keys.has("a") || this.keys.has("arrowleft")) - Number(this.keys.has("d") || this.keys.has("arrowright"))-this.touch.steering,-1,1);
       this.heading += steering * Math.min(Math.abs(this.speed) / 8, 1) * Math.sign(this.speed) * 1.65 * dt;
       this.truck.rotation.y = this.heading;
-      const x = this.truck.position.x + Math.cos(this.heading) * this.speed * dt;
-      const z = this.truck.position.z - Math.sin(this.heading) * this.speed * dt;
-      if (!blocked(x, this.truck.position.z, this.data.buildingBoxColliders)) this.truck.position.x = x; else this.speed *= .8;
-      if (!blocked(this.truck.position.x, z, this.data.buildingBoxColliders)) this.truck.position.z = z; else this.speed *= .8;
+      const forwardX=Math.cos(this.heading),forwardZ=-Math.sin(this.heading),decay=Math.exp(-5*dt);
+      const body:Body={x:this.truck.position.x,z:this.truck.position.z,vx:forwardX*this.speed+this.drift.x*decay,vz:forwardZ*this.speed+this.drift.z*decay,radius:1.35,capsule:1.6,yaw:this.heading,mass:5};
+      const impact=physicsStep(body,this.street.bodies,[...this.solidWalls,...this.life.trafficWalls()],dt);
+      this.truck.position.x=body.x;this.truck.position.z=body.z;
+      this.speed=body.vx*forwardX+body.vz*forwardZ;
+      this.drift={x:body.vx-forwardX*this.speed,z:body.vz-forwardZ*this.speed};
+      if(impact>5&&now-this.lastImpact>900){this.lastImpact=now;this.say("Easy on the corners — brake before turning.",2);this.life.burst([body.x,.5,body.z],"#f6cf8c");this.tone(100);}
+      this.street.update(dt);
       for (const wheel of this.wheels) wheel.rotation.z -= this.speed * dt / .53;
       this.nearest = this.data.collectibles.filter(p => canCollect(p.wasteType, this.cargo, this.taken, p.id)).reduce<Pickup | null>((best, p) => !best || this.distance(p) < this.distance(best) ? p : best, null);
       if (this.seconds === 0) this.finish();
@@ -327,9 +350,10 @@ export class CollectionGame {
   }
   dispose() {
     this.disposed = true; this.abort.abort(); cancelAnimationFrame(this.frame); this.resizeObserver.disconnect(); this.keys.clear();
+    window.removeEventListener("pointerdown",this.resumeAudio);
     window.removeEventListener("keydown", this.keydown); window.removeEventListener("keyup", this.keyup); window.removeEventListener("blur", this.blur); document.removeEventListener("visibilitychange", this.visibility);
     this.renderer.domElement.removeEventListener("pointermove",this.cursorMove);this.renderer.domElement.removeEventListener("pointerleave",this.cursorLeave);
     this.renderer.domElement.removeEventListener("pointerdown",this.touchLookStart);this.renderer.domElement.removeEventListener("pointerup",this.touchLookEnd);this.renderer.domElement.removeEventListener("pointercancel",this.touchLookEnd);this.renderer.domElement.removeEventListener("lostpointercapture",this.touchLookEnd);
-    this.clearTouchDrive();this.life.dispose();this.orbit.dispose(); this.motor.dispose(); this.environment.dispose(); this.roadTexture?.dispose(); this.sun.shadow.dispose(); this.disposeObject(this.scene); this.renderer.dispose(); this.renderer.domElement.remove();
+    this.clearTouchDrive();this.street.dispose();this.life.dispose();this.orbit.dispose(); this.motor.dispose(); this.environment.dispose(); this.roadTexture?.dispose(); this.sun.shadow.dispose(); this.disposeObject(this.scene); this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }

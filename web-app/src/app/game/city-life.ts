@@ -1,9 +1,12 @@
 import * as THREE from "three";
+import type {Wall} from "@/lib/collection-game-physics";
 interface Actor { route:THREE.CatmullRomCurve3; progress:number; speed:number; yaw:number; x:number; z:number }
 const TAU=Math.PI*2;
-/** Ambient actors are decorative; they do not alter scoring or block a collection. */
+/** Traffic yields to the truck and provides kinematic collision footprints. */
 export class CityLife {
  readonly root=new THREE.Group();
+ readonly solidWalls:Wall[]=[];
+ trafficWalls():Wall[]{return this.cars.map(a=>({x:a.x,z:a.z,hx:1.02,hz:2.25,yaw:a.yaw}));}
  private cars:Actor[]=[];
  private walkers:Actor[]=[];
  private carBody:THREE.InstancedMesh;
@@ -56,12 +59,14 @@ export class CityLife {
   const arms=this.instances(box,metal,50),lamps=this.instances(box,material(0xffe7a4,0xffd88c),50);
   let lamp=0;
   for(let x=-240;x<=240;x+=120)for(let z=-240;z<=240;z+=120)for(const side of [-1,1]){
+   this.solidWalls.push({x:x+side*13,z:z+13,hx:.2,hz:.2});
    this.transform(poles,lamp,x+side*13,3.9,z+13,0,1,6.6,1);
    this.transform(arms,lamp,x+side*12.2,7.1,z+13,0,2,.13,.16);
    this.transform(lamps,lamp,x+side*11.4,7,z+13,0,.9,.18,.6);lamp++;
   }
   // Shelters and planters add street-level detail without filling road lanes.
   for(const [x,z] of [[-347,285],[133,45],[-107,-195]]){
+   this.solidWalls.push({x,z,hx:.6,hz:2.6});
    const canopy=new THREE.Mesh(new THREE.BoxGeometry(3.6,.3,7.4),cream);canopy.position.set(x,3.9,z);canopy.castShadow=true;this.root.add(canopy);
    for(const dz of [-3,3]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.10,.10,3.2,6),metal);post.position.set(x,2.15,z+dz);this.root.add(post);}
    const seat=new THREE.Mesh(new THREE.BoxGeometry(1.1,.3,5),material(0x8caa78));seat.position.set(x,1.2,z);seat.castShadow=true;this.root.add(seat);
