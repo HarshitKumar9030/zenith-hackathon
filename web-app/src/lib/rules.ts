@@ -34,6 +34,8 @@ export const identificationSchema = z.object({
   explanation: z.string().max(2000),
   clarification_question: z.string().max(500).nullable(),
 });
+// Legacy history may omit detections; new provider responses must include the list.
+export const scannerIdentificationSchema=identificationSchema.extend({detected_items:z.array(identificationSchema.shape.detected_items.unwrap().element.required({classification:true})).max(16)});
 export type Identification = z.infer<typeof identificationSchema>;
 export const ruleSchema = z.object({
   id: z.string().min(1).max(80),

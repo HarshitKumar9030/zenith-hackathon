@@ -18,3 +18,15 @@ test('bounded thinking preserves high-detail vision and legacy model compatibili
   assert.equal('thinkingConfig' in scannerGenerationConfig('gemini-2.5-flash',schema),false);
   assert.equal('thinkingConfig' in scannerGenerationConfig('custom-model',schema),false);
 });
+
+import {scannerIdentificationSchema,identificationSchema} from './rules';
+test('new scans require explicit object detections while legacy history remains readable',()=>{
+ const legacy={object_name:'banana peel',material:'food_waste',physical_state:'wet',contaminated:'no',mixed_material:false,special_handling:'no',explanation:'Organic food waste.',clarification_question:null};
+ assert(identificationSchema.safeParse(legacy).success);
+ assert.equal(scannerIdentificationSchema.safeParse(legacy).success,false);
+ const item={name:'banana peel',material:'food_waste',classification:'waste',special_handling:'no'};
+ assert(scannerIdentificationSchema.safeParse({...legacy,detected_items:[item]}).success);
+ assert(scannerIdentificationSchema.safeParse({...legacy,detected_items:[]}).success);
+ assert.equal(scannerIdentificationSchema.safeParse({...legacy,detected_items:[{...item,classification:undefined}]}).success,false);
+ assert.equal(scannerIdentificationSchema.safeParse({...legacy,detected_items:Array(17).fill(item)}).success,false);
+});

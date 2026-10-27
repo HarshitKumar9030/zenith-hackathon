@@ -8,10 +8,11 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { checkOrigin, currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { identificationSchema, recommend, type Guide } from "@/lib/rules";
+import { identificationSchema, scannerIdentificationSchema, recommend, type Guide } from "@/lib/rules";
 export const maxDuration = 60;
 const inputSchema = z.object({
   preview: z.boolean().default(true),
+  station: z.boolean().default(false),
   text: z.string().max(4000).default(""),
   ocr: z.string().max(8000).default(""),
   observedDetails: z.object({material:identificationSchema.shape.material,residue:z.enum(["yes","no","unknown"]),mixed:z.enum(["yes","no","unknown"]),special:z.enum(["yes","no","unknown"])}).optional(),
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
             ],
           },
           contents: [{ role: "user", parts }],
-          generationConfig: scannerGenerationConfig(model, geminiJsonSchema(z.toJSONSchema(identificationSchema))),
+          generationConfig: scannerGenerationConfig(model, geminiJsonSchema(z.toJSONSchema(scannerIdentificationSchema))),
         }),
       },
     );
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
         },
         { status: 422 },
       );
-    const identification = safeIdentification(identificationSchema.parse(JSON.parse(text)));
+    const identification = safeIdentification(scannerIdentificationSchema.parse(JSON.parse(text)));
     const guide = input.guideId
       ? await database
           .collection("guides")
@@ -152,6 +153,8 @@ export async function POST(request: Request) {
       identification,
       guide as unknown as Guide | null,
     );
+    // Shared stall scans must never alter a personal points balance or history.
+    if(input.station)return NextResponse.json({identification,latencyMs:Math.round(performance.now()-start)});
     const record = {
       preview: input.preview,
       expiresAt: new Date(Date.now() + 86400000),
