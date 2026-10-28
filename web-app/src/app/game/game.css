@@ -119,3 +119,12 @@
  .eco-game-start .eco-game-primary{min-height:43px;padding:11px 18px;font-size:13px}.eco-game .eco-game-touch-guide{margin-top:10px}.eco-game-local-note{margin-top:10px}
 }
 @media(max-width:650px) and (max-height:700px) and (orientation:portrait){.eco-game-start{top:96px;bottom:15px;transform:none;translate:none;overflow:auto;max-height:calc(100dvh - 111px)}.eco-game-start h1{font-size:38px;margin:14px 0}.eco-game-start-stats{margin:20px 0}}
+
+.eco-game-speedometer{position:absolute;z-index:3;right:214px;bottom:40px;width:112px;pointer-events:none;filter:drop-shadow(0 3px 12px rgba(12,30,22,.08))}
+.eco-game-speedometer svg{display:block;width:100%;height:auto;overflow:visible}
+.eco-game-speed-needle{transform-origin:60px 60px;transition:transform .18s linear}
+.eco-game-top-actions button>small{font-size:9px;letter-spacing:.04em}
+.eco-game-windshield{position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(70deg,rgba(14,32,26,.65) 0,transparent 2.5%,transparent 97.5%,rgba(14,32,26,.65)),linear-gradient(0deg,rgba(12,28,24,.95) 0,rgba(12,28,24,.7) 14px,transparent 55px)}
+@media(max-width:900px),(pointer:coarse){.eco-game-speedometer{right:calc(25px + env(safe-area-inset-right));top:211px;bottom:auto;width:82px}.eco-game.is-in-round .eco-game-header{right:16px}.eco-game-top-actions{gap:6px}.eco-game-top-actions button{padding:9px!important}.eco-game-top-actions button>small{font-size:8px}}
+@media(max-height:500px) and (orientation:landscape){.eco-game-speedometer{top:76px;right:104px;width:73px}}
+@media(prefers-reduced-motion:reduce){.eco-game-speed-needle{transition:none}}
