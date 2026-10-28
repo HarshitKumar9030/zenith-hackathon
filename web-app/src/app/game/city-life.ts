@@ -6,6 +6,10 @@ const TAU=Math.PI*2;
 export class CityLife {
  readonly root=new THREE.Group();
  readonly solidWalls:Wall[]=[];
+ walkerPoses(){return this.walkers.map(a=>({x:a.x,z:a.z,yaw:a.yaw}));}
+ useDetailedPeople(){for(const mesh of [this.torsos,this.heads,this.legs])mesh.visible=false;}
+ trafficPoses(){return this.cars.map(a=>({x:a.x,z:a.z,yaw:a.yaw}));}
+ useDetailedTraffic(){for(const mesh of [this.carBody,this.carGlass,this.carRoof,this.carWheels,this.headlights,this.taillights])mesh.visible=false;}
  trafficWalls():Wall[]{return this.cars.map(a=>({x:a.x,z:a.z,hx:1.02,hz:2.25,yaw:a.yaw}));}
  private cars:Actor[]=[];
  private walkers:Actor[]=[];
