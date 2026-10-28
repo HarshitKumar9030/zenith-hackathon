@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {googleReturnPath,googleEmailAuthoritative,googleAuthOrigin} from './google-auth';
 test('Google login redirects only to explicit same-site application pages',()=>{
- for(const path of ['/app','/scan-station','/account'])assert.equal(googleReturnPath(path),path);
+ for(const path of ['/app','/scan-station','/account','/game'])assert.equal(googleReturnPath(path),path);
  for(const path of ['https://evil.example','//evil.example','/\\evil.example','/scan-station?next=https://evil.example','/api/auth/logout',null,{},'/scan-station/../account'])assert.equal(googleReturnPath(path),'/app');
 });
 test('Google third-party email claims cannot automatically link existing accounts',()=>{

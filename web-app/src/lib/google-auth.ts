@@ -1,6 +1,6 @@
 import {OAuth2Client} from 'google-auth-library';
 export function googleConfigured(){return Boolean(process.env.GOOGLE_CLIENT_ID&&process.env.GOOGLE_CLIENT_SECRET&&process.env.APP_URL);}
-export function googleReturnPath(value:unknown){return typeof value==='string'&&['/app','/scan-station','/account'].includes(value)?value:'/app';}
+export function googleReturnPath(value:unknown){return typeof value==='string'&&['/app','/scan-station','/account','/game'].includes(value)?value:'/app';}
 export function googleAuthOrigin(requestUrl:string,appUrl=process.env.APP_URL||'http://localhost:3001',production=process.env.NODE_ENV==='production'){
  const origin=new URL(requestUrl).origin;
  const allowed=new Set([new URL(appUrl).origin,'https://ecomitra.harshit.page','https://wasteright.harshit.page',...(!production?['http://localhost:3001','http://127.0.0.1:3001']:[])]);
