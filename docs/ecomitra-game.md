@@ -1,6 +1,6 @@
 # EcoMitra Circular City — first playable iteration
 
-Open `/game` on the website, or `http://localhost:3001/game` while the local app is running. No sign-in, camera, API keys or database are required. This is a keyboard-driven, single-player browser game built with Three.js and the Blender city/truck assets. It does not award Discovery Points, pickup credits or real-world benefits.
+Open `/game` on the website, or `http://localhost:3001/game` while the local app is running. An account and an Operations-issued personal game pass are required; camera and model API keys are not used. MongoDB stores the access window. This is a single-player browser game built with Three.js and the Blender city/truck assets. It does not award Discovery Points, pickup credits or real-world benefits.
 
 ## Round
 
@@ -108,3 +108,7 @@ Audio is explicitly unlocked from Play and retried on Resume and subsequent poin
 Verification: tests cover fast impacts against a thin wall, tangential sliding, momentum transfer to props, rotated world-boundary collisions, zero delta and sorting reward repeat/cargo/time limits. Mocked audio tests cover suspended-context retry, mute, motor gain and disposal; these cannot certify audibility on a physical TV. Existing score/email rules remain unchanged, since sorting changes remaining time instead of adding unvalidated score fields.
 
 Live deployment verification found that a focused sound button could receive Space as a second click rather than a brake input. In-round buttons now release focus after activation so driving keys return to the game. Sound enable/mute and braking after clicking a control were rechecked in the browser.
+
+## Stall access
+
+Only the driving game at /game is access controlled. The quiz at /quiz remains open. See docs/game-access.md for staff checks, issue/revoke controls, thirty-minute access and verification. The five-minute round clock is separate from the thirty-minute account pass; pausing a round does not pause the pass.
