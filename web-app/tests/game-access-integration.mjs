@@ -7,7 +7,7 @@ import {createRequire} from 'node:module';
 createRequire(import.meta.url)('@next/env').loadEnvConfig(process.cwd());
 const port=3122,base='http://localhost:'+port,name='game_access_qa_'+Date.now(),hash=s=>createHash('sha256').update(s).digest('hex');
 const client=new MongoClient(process.env.MONGODB_URI||'mongodb://127.0.0.1:27017');await client.connect();const database=client.db(name);
-const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--port',String(port)],{env:{...process.env,MONGODB_DB:name,ADMIN_EMAILS:'game-ops@example.test',SMTP_PASSWORD:'',GOOGLE_CLIENT_SECRET:'',NODE_ENV:'production'},stdio:'ignore'});
+const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,MONGODB_DB:name,ADMIN_EMAILS:'game-ops@example.test',SMTP_PASSWORD:'',GOOGLE_CLIENT_SECRET:'',NODE_ENV:'production'},stdio:'ignore'});
 async function request(body,cookie='',path='/api/game-access',origin=base){
  const r=await fetch(base+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Origin:origin,...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});
  return {status:r.status,data:await r.json(),headers:r.headers};
@@ -55,7 +55,8 @@ try{
  let limited;for(let i=0;i<11;i++)limited=await request({action:'redeem',code:'WRONG-CODE'},other.cookie);assert.equal(limited.status,429);
  console.log('Game access integration passed: authentication, admin-only issue/revoke, manual checks, ownership, atomic redemption, fixed expiry, new-round gate, replacement, redaction and rate limits.');
  if(process.env.QA_HOLD==='1'){
-  await request({action:'issue',email:resident.email,following:true,story:true},admin.cookie);
+  const preview=await request({action:'issue',email:resident.email,following:true,story:true},admin.cookie);
+  console.log('Synthetic preview pass: '+preview.data.code);
   console.log('QA preview ready at '+base+'/game. Synthetic login: game-participant@example.test / Local-game-QA-123!; admin: game-ops@example.test with same QA password.');
   await new Promise(resolve=>{process.once('SIGTERM',resolve);process.once('SIGINT',resolve);});
  }

@@ -16,7 +16,8 @@ The 800 × 800 metre city has nine districts and 144 possible pickup locations. 
 | Space | Brake |
 | E | Collect the nearest eligible pickup |
 | M | Open / close city map; clock pauses |
-| C | Cycle isometric, overhead and 360° orbit cameras |
+| C | Switch third-person chase / first-person driving |
+| V | Open the 360° free-look camera |
 | J / L; I / K; + / − | Orbit, tilt and zoom the 360° camera |
 | Cursor position / wheel | Look around without clicking / zoom in 360° mode |
 | P / Escape | Pause / resume |
@@ -66,7 +67,7 @@ npm run build
 
 ## Graphics, camera, sound and email upgrade
 
-The default 360° orbit camera follows the truck while preserving the player's chosen angle. Moving the mouse cursor across the world controls a full 360° horizontal orbit; cursor height controls camera elevation. No mouse press is required; a stationary click does not change the camera. Drag gestures have no separate camera action. Scroll/pinch zooms; J/L orbit, I/K tilt and +/− zoom provide keyboard alternatives. The default camera is closer to the truck for an arcade chase view. Distance and elevation are bounded. C cycles all three camera modes; the pause menu also shows a camera selector. Controls are disposed on unmount and are disabled behind pause and map screens. Camera occlusion against buildings is not simulated.
+Third-person chase is the default camera. C switches between third person and a first-person driver viewpoint; V opens the separate 360° orbit camera. Moving the mouse cursor across the world controls a full 360° horizontal orbit; cursor height controls camera elevation. No mouse press is required; a stationary click does not change the camera. Drag gestures have no separate camera action. Scroll/pinch zooms; J/L orbit, I/K tilt and +/− zoom provide keyboard alternatives. The default camera is closer to the truck for an arcade chase view. Distance and elevation are bounded. A compact TPP/FPP button is available during play, with the camera name and free-look selector in the pause menu. Controls are disposed on unmount and are disabled behind pause and map screens. Camera occlusion against buildings is not simulated.
 
 Rendering uses procedurally textured darker asphalt, reflective windows, a warm directional light, environment reflections, reduced exposure, a 2048-pixel shadow map centred on the truck and shadow receivers on the city / finish platform. Shadows cover the nearby scene, not the entire 800-metre map. The radar displays a local 250-metre diameter area; the full M map retains the entire city and collection totals.
 
@@ -112,3 +113,20 @@ Live deployment verification found that a focused sound button could receive Spa
 ## Stall access
 
 Only the driving game at /game is access controlled. The quiz at /quiz remains open. See docs/game-access.md for staff checks, issue/revoke controls, thirty-minute access and verification. The five-minute round clock is separate from the thirty-minute account pass; pausing a round does not pause the pass.
+
+
+## Licensed environment and exploration update
+
+Selected models from Kenney City Kit (Suburban), Nature Kit, Car Kit and Mini Characters replace plain building façades, traffic cars, roadside trees and walking figures. Their official source pages and the supplied CC0 notices are recorded in public/game/ASSET-LICENSES.txt. Asset URLs are local: there are no third-party asset requests while playing.
+
+The reusable Blender source in assets/3d/city-pack/build-pack.py packs sixteen selected environment models into city-assets.glb (about 922 KB). Two pedestrian GLBs retain their rigging and walk animations; their image textures are embedded. All three new downloads together are roughly 1.5 MB. The existing branded EcoMitra truck is retained, with improved metal and glass response. Environment props and traffic use instanced meshes; 36 pedestrian skeletons are cloned and animated independently. Traffic retains its collision footprints. Pedestrians and vegetation are decorative.
+
+Building replacement removes only original triangles inside building footprints above ground level. It preserves roads, ground, pickup nodes, market stalls and the existing collision data. This is an approximate footprint collision system, not collision against every fence and roof. New models fit within those footprints. Unit tests check ground/pickup preservation and placement bounds. The original map still loads if optional asset downloads fail; that fallback retains the simpler visuals.
+
+Six gold Eco Trail arches encourage exploration. Driving through one gives up to five seconds once per round, capped at the five-minute round duration. Visited gates disappear from the scene and map. The fountain in Central Gardens animates during play and has a static collision footprint. Existing sorting stops, movable cones/crates, birds, flags and collection missions remain. These activities add time, not separate score fields or Discovery Points.
+
+The compact analog speedometer displays 0–100 km/h, a moving needle, numeric speed and D/N/R. C or the top camera button switches TPP/FPP; V or the pause menu opens free look. First-person uses a driver-height forward view and hides the external truck mesh to avoid an opaque windshield blocking the camera. A subtle screen edge suggests the cab; it is not a modeled interactive cockpit. Third-person follows behind the truck and keeps its branded body in view. Camera and needle helpers have deterministic tests, including turn direction, clamping and the camera-toggle sequence. Portrait/landscape controls and a physical TV/phone still require device-specific performance checks; no frame-rate guarantee is made.
+
+Sources: [Kenney City Kit (Suburban)](https://kenney.nl/assets/city-kit-suburban), [Nature Kit](https://kenney.nl/assets/nature-kit), [Car Kit](https://kenney.nl/assets/car-kit), [Mini Characters](https://kenney.nl/assets/mini-characters).
+
+Roof replacement regression: the old map roofs extend 0.75 m past their wall footprints, with windows/entrances also projecting beyond the wall face. The mask includes a 1.1 m apron to remove these old floating upper faces before drawing the detailed building. A fixture checks that projecting roof rims and windows disappear while the ground and collectible geometry remain intact. Asset tests also validate glTF containers, embedded texture references, required prefab roots and pedestrian walking clips.
