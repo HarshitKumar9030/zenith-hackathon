@@ -61,7 +61,7 @@ export class CollectionGame {
   private confetti: THREE.InstancedMesh;
   private confettiTime = 0;
   private reusable = new THREE.Object3D();
-  constructor(private host: HTMLElement, private update: (s: GameState) => void, private loaded: (data: CityData) => void) {
+  constructor(private host: HTMLElement, private update: (s: GameState) => void, private loaded: (data: CityData) => void, private requestStart?:()=>void) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.matchMedia("(pointer: coarse)").matches?1.25:1.5));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -184,6 +184,7 @@ export class CollectionGame {
       this.phase = "ready"; this.loaded(this.data); this.emit();
     } catch (error) { if (!this.disposed) { this.phase = "error"; this.message = error instanceof Error ? error.message : "Unable to load the game."; this.emit(); } }
   }
+  prepareAudio(){if(this.sound)this.motor.unlock();}
   private resumeAudio=()=>{if(this.sound&&this.phase==="playing"&&!this.motor.isRunning())this.motor.unlock();};
   start() {
     if (!this.data || this.phase === "error") return;
@@ -219,7 +220,7 @@ export class CollectionGame {
     if (key === "p" || key === "escape") this.togglePause();
     if (key === "c") this.toggleCamera();
     if (key === "r" && this.phase === "playing") this.rescue();
-    if (key === "enter") { if (this.phase === "ready" || this.phase === "finished") this.start(); else if (this.phase === "paused") this.togglePause(); }
+    if (key === "enter") { if (this.phase === "ready" || this.phase === "finished") {if(this.requestStart)this.requestStart();else this.start();} else if (this.phase === "paused") this.togglePause(); }
   };
   private keyup = (event: KeyboardEvent) => { this.keys.delete(event.key.toLowerCase()); };
   setTouchDrive(input:TouchDrive){
