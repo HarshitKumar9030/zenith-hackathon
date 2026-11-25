@@ -26,3 +26,7 @@ npm ci
 # Configure .env.local using .env.example and start local MongoDB.
 npm run dev
 ```
+
+## Portfolio preview
+
+The public homepage permits iframe embedding from `https://harshit.page` and `https://www.harshit.page` through its Content Security Policy. All other routes retain `frame-ancestors 'none'` and `X-Frame-Options: DENY`. Configure this in `web-app/next.config.ts`.
